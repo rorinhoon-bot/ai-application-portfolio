@@ -1,0 +1,36 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Node.js
+node_modules/
+.next/
+coverage/
+
+# Models and generated data
+models/
+checkpoints/
+artifacts/
+data/private/
+*.bin
+*.safetensors
+*.gguf
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
