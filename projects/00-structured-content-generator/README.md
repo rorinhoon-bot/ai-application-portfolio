@@ -11,17 +11,16 @@
 - 环境变量配置和 API Key 隐藏。
 - 供应商无关 `ModelClient` 协议。
 - JSON 解析、输出校验和有限重试。
+- MiMo `mimo-v2.5` OpenAI 兼容适配器。
 - CLI、固定评估集和自动指标计算。
 - 全部自动测试使用假客户端，不访问真实模型 API。
 
 尚未实现：
 
-- 真实模型供应商适配器。
-- HTTP 客户端。
 - 真实 API 基线与改进版评估。
 - 截图、演示和最终复盘。
 
-这些事项需要先确认供应商、模型、API 地址、HTTP 依赖和费用。
+真实调用需要用户先在本地配置 MiMo API Key，并明确启动调用。
 
 ## 环境要求
 
@@ -43,13 +42,13 @@ py -3.14 -m venv .venv
 
 ## 配置
 
-复制 `.env.example` 为 `.env`，再填写本地配置：
+复制 `.env.example` 为 `.env`。保留已确认的 MiMo 配置，只填写本地 API Key：
 
 ```text
-MODEL_PROVIDER=
+MODEL_PROVIDER=mimo
 MODEL_API_KEY=
-MODEL_BASE_URL=
-MODEL_NAME=
+MODEL_BASE_URL=https://api.xiaomimimo.com/v1
+MODEL_NAME=mimo-v2.5
 MODEL_TIMEOUT_SECONDS=30
 ```
 
@@ -58,7 +57,7 @@ MODEL_TIMEOUT_SECONDS=30
 - `.env` 已被 Git 忽略。
 - 不要把真实 API Key 写入源码、测试、日志或截图。
 - `MODEL_BASE_URL` 必须使用 HTTPS。
-- 当前还没有已注册供应商，因此暂时不要填写或运行真实调用。
+- MiMo API Key 只保存在本地 `.env`，不要通过聊天发送。
 
 ## 生成 JSON Schema
 
@@ -86,6 +85,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 - 嵌套输出、固定示例标签和 Schema 同步。
 - 缺少配置和 HTTPS 限制。
 - Prompt 与不可信材料隔离。
+- MiMo 请求地址、请求头、JSON 模式和响应提取。
 - 空响应、非法 JSON 和 Schema 不符。
 - 超时、网络、HTTP 错误及最多两次重试。
 - CLI stdout、stderr、退出码和失败前停止。
@@ -95,7 +95,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 
 ## CLI
 
-供应商适配器完成后使用：
+本地配置 MiMo API Key 后使用：
 
 ```powershell
 .\.venv\Scripts\python.exe -m structured_notes generate `
@@ -118,7 +118,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 - 1 条代码或命令文本。
 - 1 条接近输入下界的材料。
 
-真实供应商接入并确认费用后，才运行：
+完成单次冒烟调用并确认结果后，才运行：
 
 ```powershell
 .\.venv\Scripts\python.exe evals\run_eval.py --prompt-version baseline_v1
@@ -126,6 +126,8 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 ```
 
 两个版本必须使用相同模型、参数和评估集。
+
+当前真实测试费用上限为人民币 `5` 元。执行顺序固定为：先运行 1 次冒烟调用，确认成功和费用后，再运行固定评估。程序不会把“5 元”当作平台账户的硬限额；账户余额和平台消费上限仍需用户在 MiMo 控制台管理。
 
 ## 安全边界
 
@@ -138,7 +140,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 
 ## 已知限制
 
-- 当前无法完成真实端到端生成，因为供应商尚未选择。
+- 尚未使用真实 MiMo API Key 完成端到端验证。
 - Schema 校验不能证明内容事实正确。
 - 事实支持率需要人工评分。
 - 模型输出具有非确定性。

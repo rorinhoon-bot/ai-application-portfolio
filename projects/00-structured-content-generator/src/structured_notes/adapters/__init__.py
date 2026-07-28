@@ -1,11 +1,14 @@
 from collections.abc import Callable, Mapping
 
 from structured_notes.config import Settings
+from structured_notes.adapters.mimo import MiMoClient
 from structured_notes.errors import AppError, ErrorCode, ExitCode
 from structured_notes.model_client import ModelClient
 
 ProviderFactory = Callable[[Settings], ModelClient]
-PROVIDER_FACTORIES: Mapping[str, ProviderFactory] = {}
+PROVIDER_FACTORIES: Mapping[str, ProviderFactory] = {
+    "mimo": MiMoClient,
+}
 
 
 def create_model_client(

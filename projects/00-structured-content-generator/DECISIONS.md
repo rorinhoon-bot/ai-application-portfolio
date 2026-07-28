@@ -105,3 +105,17 @@
 - 状态：accepted
 - 决定：首版固定评估集保存 10 条 JSONL 样本，覆盖正常、信息不足、矛盾、提示注入、命令文本和输入边界；自动执行器记录 Schema 通过率、示例标记率和错误分类，事实支持率保留人工评分。
 - 原因：数据集和指标代码可以在无供应商阶段完成并测试；真实基线与改进版比较必须等供应商、模型和费用确认后再运行。
+
+## D-018：首个真实供应商选择 MiMo
+
+- 状态：accepted
+- 决定：P0 首个供应商使用 Xiaomi MiMo，模型使用 `mimo-v2.5`，按量付费 OpenAI 兼容 API 地址使用 `https://api.xiaomimimo.com/v1`。
+- 原因：用户明确选择 MiMo；`mimo-v2.5` 官方支持 Chat Completions JSON 模式，价格适合 P0 小规模验证。
+- 费用边界：真实 API 测试总预算上限为人民币 `5` 元；先执行 1 次冒烟调用，再决定是否运行完整固定评估。
+
+## D-019：MiMo 适配器直接使用 HTTPX
+
+- 状态：accepted
+- 决定：使用 `httpx==0.28.1` 直接调用 `/chat/completions`，不安装 OpenAI SDK；请求使用 `response_format={"type":"json_object"}`、`thinking={"type":"disabled"}` 和 `max_completion_tokens=4096`。
+- 原因：HTTPX 足以完成单一端点、超时和错误映射，依赖更少；MiMo JSON 模式不直接执行项目 JSON Schema，因此适配器把 Schema 放入可信系统消息，Service 继续使用 Pydantic 做最终校验。
+- 验证：HTTPX 及其精确依赖已在 CPython `3.14.3`、Windows AMD64 环境安装；导入、假 HTTP 响应测试和 `pip check` 通过。
