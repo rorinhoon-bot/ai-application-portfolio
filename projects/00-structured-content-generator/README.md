@@ -17,10 +17,10 @@
 
 尚未完成：
 
-- 人工事实支持率评分。
+- `improved_v2` 真实固定评估和人工评分。
 - 截图、演示和最终复盘。
 
-MiMo 冒烟、基线版和改进版固定评估已经运行。改进版 Schema 通过率为 100%，但人工事实评分尚未完成。
+MiMo 冒烟、`baseline_v1` 和 `improved_v1` 固定评估已经运行。`improved_v1` Schema 通过率为 100%，但确认后的事实支持率只有 52.2%，因此新增 `improved_v2` 继续改进。
 
 ## 环境要求
 
@@ -102,7 +102,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
   --topic "Transformer" `
   --material-file ".\material.txt" `
   --learner-level beginner `
-  --prompt-version improved_v1
+  --prompt-version improved_v2
 ```
 
 成功时，学习笔记 JSON 写入 stdout，退出码为 `0`。失败时，稳定错误 JSON 写入 stderr，退出码非零。
@@ -123,6 +123,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 ```powershell
 .\.venv\Scripts\python.exe evals\run_eval.py --prompt-version baseline_v1
 .\.venv\Scripts\python.exe evals\run_eval.py --prompt-version improved_v1
+.\.venv\Scripts\python.exe evals\run_eval.py --prompt-version improved_v2
 ```
 
 两个版本必须使用相同模型、参数和评估集。
@@ -140,7 +141,7 @@ Pydantic 模型是唯一真源，不手工编辑生成文件。
 
 ## 已知限制
 
-- 尚未使用真实 MiMo API Key 完成端到端验证。
 - Schema 校验不能证明内容事实正确。
 - 事实支持率需要人工评分。
 - 模型输出具有非确定性。
+- `improved_v2` 尚未获得真实固定评估结果。

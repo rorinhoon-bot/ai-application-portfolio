@@ -20,6 +20,7 @@ RETRY_DELAYS_SECONDS = (1.0, 2.0)
 PROMPT_FILENAMES = {
     "baseline_v1": "baseline_v1.txt",
     "improved_v1": "improved_v1.txt",
+    "improved_v2": "improved_v2.txt",
 }
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROMPT_DIRECTORY = PROJECT_ROOT / "prompts"
