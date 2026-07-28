@@ -1,8 +1,36 @@
 # STATUS
 
-- 状态：`not_started`
-- 当前目标：确认 Python 安装方案并完成项目需求定义。
-- 已完成：目录骨架。
-- 下一步：读取交接包，创建 `docs/PRD.md`。
-- 阻塞：Python 当前不在命令行路径。
-
+- 状态：`in_progress`
+- 当前唯一目标：确认首个模型供应商、模型名称、API 地址、HTTP 客户端和费用边界，再实现唯一的真实供应商适配器。
+- 已完成：
+  - 项目目录骨架。
+  - AI 学习笔记结构化生成器需求定义。
+  - `docs/PRD.md` v0.1。
+  - `docs/ARCHITECTURE.md` v0.1。
+  - 完成 CLI、Schema、供应商隔离、重试、错误、Prompt、评估和依赖管理的关键架构选择。
+  - 复用 Python `3.14.3`，确认 CMD、PowerShell、`py` 和 pip 可用。
+  - 创建并验证项目本地 `.venv`。
+  - 确认 `.venv/` 已被 Git 忽略。
+  - 确认并记录首批生产、开发和构建依赖的精确版本。
+  - 创建 `pyproject.toml`、`requirements.txt` 和 `requirements-dev.txt`。
+  - 在项目本地 `.venv` 安装全部固定生产与开发依赖。
+  - 使用 CPython `3.14.3` 完成 Pydantic、Pydantic Settings 和 pytest 导入验证。
+  - `pip check` 通过，固定依赖与实际安装版本一致。
+  - 创建可导入的 `structured_notes` 包骨架。
+  - 实现 `GenerationInput` 和 `LearnerLevel`，覆盖字段长度、默认值、枚举、空白清理和额外字段约束。
+  - 输入模型自动测试共 `10` 个，全部通过。
+  - 实现 `GeneratedExample`、`KeyConcept`、`QuizItem` 和 `LearningNote`，覆盖嵌套校验、固定标签、非空文本和额外字段约束。
+  - 由 Pydantic 生成 `schemas/learning_note.schema.json`，并增加 Schema 同步测试。
+  - 模型与 Schema 自动测试共 `33` 个，全部通过。
+  - 实现 `config.py`、`.env.example`、稳定错误对象、`ModelRequest`、`ModelResponse` 和 `ModelClient` 协议。
+  - 实现基线版与改进版 Prompt，并隔离系统指令、用户材料和响应 Schema。
+  - 实现 Service 的 JSON 解析、输出校验及最多 3 次请求的有限重试；测试使用假客户端和假等待器。
+  - 实现 `cli.py`、`__main__.py`、editable 安装入口和空供应商注册表。
+  - CLI 成功、材料读取、输入失败、配置失败、输出失败、stdout、stderr 和退出码均通过假客户端验证。
+  - 建立 `10` 条固定评估样本，覆盖正常、信息不足、矛盾、提示注入、命令文本和输入边界。
+  - 实现自动评估执行器，记录 Schema 通过率、示例标记率和错误分类；事实支持率保留人工评分。
+  - 更新 `.env.example`、README 和技术决策记录。
+  - 项目已成功 editable 安装；Schema 同步、CLI 入口和 `pip check` 通过。
+  - 当前全部自动测试共 `74` 个，全部通过，未访问真实网络。
+- 下一步：用户确认供应商、模型、API 地址、HTTP 客户端和可接受费用后，安装 HTTP 依赖并实现供应商适配器。
+- 阻塞：等待用户确认模型供应商、模型名称、API 地址、HTTP 客户端和费用边界；尚无真实 API Key，不运行真实调用或评估。
