@@ -1,6 +1,35 @@
 # STATUS
 
-- 状态：`blocked`
-- 阻塞：等待 P0 完成。
-- 下一步：P0 验收后编写 P1 PRD。
-
+- 状态：`in_progress`
+- 当前唯一目标：设计文档导入与真实元数据模型。
+- 已完成：
+  - P0 已通过最终验收。
+  - 从 `codex/p0-implementation` 创建并切换到 `codex/p1-cited-knowledge-base`。
+  - 确认 P1 使用版本化官方技术文档，主要语种为简体中文。
+  - 确认主语料为 Python `3.14` 官方简体中文文档子集，并使用少量 Python `3.13` 对照文档。
+  - 确认首版使用本地 CLI；核心服务与入口分离，后续增加本地 UI。
+  - 确认首版使用 MiMo `mimo-v2.5`、本地 Embedding 和本地持久化向量存储。
+  - 创建 `docs/PRD.md` v0.1 初稿。
+  - 确认首批使用官方 HTML：Python `3.14` 教程、`venv`、`pathlib`、`json`、`argparse` 和 3.14 新变化；Python `3.13` 使用新变化及少量冲突对照页面。
+  - 确认引用有效率 `100%`、`Recall@5 ≥ 80%`、忠实度 `≥ 90%`、拒答准确性 `≥ 80%`。
+  - PRD v0.1 状态改为 `accepted`。
+  - 确认使用 Beautiful Soup、FastEmbed、`BAAI/bge-small-zh-v1.5`、Qdrant Client 本地模式和 MiMo `mimo-v2.5`。
+  - 使用 CPython `3.14.3` 和 pip `--dry-run --only-binary=:all:` 成功解析 50 个固定依赖，无版本冲突。
+  - 创建 `docs/ARCHITECTURE.md` v0.1 初稿。
+  - 创建 `docs/DEPENDENCIES.md` 安装前提案。
+  - 获得学习者对四项环境操作的明确批准。
+  - 创建 P1 独立 `.venv`，确认 Python `3.14.3` 且环境隔离有效。
+  - 创建 `pyproject.toml`、`requirements.txt` 和 `requirements-dev.txt`。
+  - 安装全部 50 个固定生产与开发依赖，实际版本与清单完全一致。
+  - 核心依赖导入通过；Qdrant `:memory:` 假向量写入与检索通过。
+  - `pip check` 通过；`.venv` 已被 Git 忽略。
+  - 未实例化或下载 Embedding 模型，未下载语料，未调用真实 MiMo API。
+  - `docs/DEPENDENCIES.md` 状态改为 `accepted`，并写入实际验证结果。
+  - 学习者确认 `docs/ARCHITECTURE.md` v0.1，文档状态改为 `accepted`。
+- 下一步：
+  - 设计文档、章节、段落、Chunk 和来源快照的真实元数据字段。
+  - 定义 HTML 清洗边界、路径安全规则和固定测试夹具。
+  - 学习者参与确认数据合同与首批验收样例后，再实现最小导入链路。
+  - 模型下载和真实 API 调用继续单独审批。
+- 阻塞：
+  - 无。文档导入与数据模型设计不需要下载模型或调用真实 API。
