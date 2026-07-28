@@ -1,0 +1,22 @@
+{
+  "run_type": "smoke",
+  "date": "2026-07-28",
+  "provider": "mimo",
+  "model_name": "mimo-v2.5",
+  "prompt_version": "improved_v1",
+  "case_id": "normal-transformer",
+  "request_count": 1,
+  "retry_count": 0,
+  "schema_valid": true,
+  "output_summary": {
+    "title": "Transformer注意力机制入门",
+    "learning_objectives": 4,
+    "key_concepts": 2,
+    "review_points": 3,
+    "quiz_items": 2,
+    "missing_information": 5
+  },
+  "cost_limit_cny": 5,
+  "actual_cost_cny": null,
+  "cost_note": "本次响应摘要未保存 Token 用量；实际费用以 MiMo 控制台账单为准。"
+}

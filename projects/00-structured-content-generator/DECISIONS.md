@@ -119,3 +119,10 @@
 - 决定：使用 `httpx==0.28.1` 直接调用 `/chat/completions`，不安装 OpenAI SDK；请求使用 `response_format={"type":"json_object"}`、`thinking={"type":"disabled"}` 和 `max_completion_tokens=4096`。
 - 原因：HTTPX 足以完成单一端点、超时和错误映射，依赖更少；MiMo JSON 模式不直接执行项目 JSON Schema，因此适配器把 Schema 放入可信系统消息，Service 继续使用 Pydantic 做最终校验。
 - 验证：HTTPX 及其精确依赖已在 CPython `3.14.3`、Windows AMD64 环境安装；导入、假 HTTP 响应测试和 `pip check` 通过。
+
+## D-020：真实评估前先执行单请求冒烟验证
+
+- 状态：accepted
+- 决定：使用 `normal-transformer` 样本、`improved_v1` Prompt 和 `mimo-v2.5` 执行 1 次无重试真实请求；响应通过 Schema 后，才允许考虑运行完整评估。
+- 原因：先用最低成本验证 API Key、端点、请求格式、JSON 模式和本地输出校验，避免配置错误导致批量失败或重复费用。
+- 结果：请求成功，响应通过 `LearningNote` Schema；摘要保存于 `evals/results/20260728-mimo-smoke.json`。本地未保存 API Key、完整供应商响应或完整材料。
