@@ -93,6 +93,26 @@ def test_run_evaluation_marks_example_metric_not_applicable() -> None:
     assert result["metrics"]["generated_example_label_rate"] is None
 
 
+def test_run_evaluation_reports_case_progress() -> None:
+    progress: list[tuple[int, int, str, str]] = []
+
+    run_evaluation(
+        [eval_case("case-1"), eval_case("case-2")],
+        SequenceClient([output_json(with_example=False), "not-json"]),
+        system_prompt="Follow the schema.",
+        prompt_version="improved_v1",
+        model_name="fake-model",
+        progress_callback=lambda current, total, case_id, status: progress.append(
+            (current, total, case_id, status)
+        ),
+    )
+
+    assert progress == [
+        (1, 2, "case-1", "passed"),
+        (2, 2, "case-2", "failed"),
+    ]
+
+
 def test_eval_case_loader_and_result_writer_round_trip(tmp_path: Path) -> None:
     cases_path = tmp_path / "cases.jsonl"
     cases_path.write_text(

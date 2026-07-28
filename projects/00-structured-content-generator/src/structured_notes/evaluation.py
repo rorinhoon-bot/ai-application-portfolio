@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 
 from structured_notes.errors import AppError
@@ -23,13 +23,14 @@ def run_evaluation(
     system_prompt: str,
     prompt_version: str,
     model_name: str,
+    progress_callback: Callable[[int, int, str, str], None] | None = None,
 ) -> dict[str, object]:
     case_list = list(cases)
     case_results: list[dict[str, object]] = []
     successful_notes: list[LearningNote] = []
     failures: list[dict[str, str]] = []
 
-    for case in case_list:
+    for index, case in enumerate(case_list, start=1):
         case_id = str(case["id"])
         generation_input = GenerationInput.model_validate(case["input"])
         try:
@@ -51,6 +52,13 @@ def run_evaluation(
                     "error": failure,
                 }
             )
+            if progress_callback is not None:
+                progress_callback(
+                    index,
+                    len(case_list),
+                    case_id,
+                    "failed",
+                )
             continue
 
         successful_notes.append(note)
@@ -61,6 +69,13 @@ def run_evaluation(
                 "output": note.model_dump(mode="json"),
             }
         )
+        if progress_callback is not None:
+            progress_callback(
+                index,
+                len(case_list),
+                case_id,
+                "passed",
+            )
 
     example_labels = [
         concept.example.label

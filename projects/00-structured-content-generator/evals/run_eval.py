@@ -50,6 +50,10 @@ def main() -> int:
             system_prompt=prompt,
             prompt_version=args.prompt_version,
             model_name=settings.model_name,
+            progress_callback=lambda current, total, case_id, status: print(
+                f"[{current}/{total}] {case_id}: {status}",
+                flush=True,
+            ),
         )
         run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         result_path = (
