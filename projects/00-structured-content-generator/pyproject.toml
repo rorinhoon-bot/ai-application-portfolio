@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools==83.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "structured-notes"
+version = "0.1.0"
+description = "CLI that turns learning material into schema-validated structured notes."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "pydantic==2.13.4",
+    "pydantic-settings==2.14.2",
+]
+
+[project.scripts]
+structured-notes = "structured_notes.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]

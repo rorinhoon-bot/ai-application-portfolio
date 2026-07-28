@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "GeneratedExample": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "label": {
+          "const": "生成示例",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "label"
+      ],
+      "title": "GeneratedExample",
+      "type": "object"
+    },
+    "KeyConcept": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "example": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeneratedExample"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "common_mistakes": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Common Mistakes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "explanation",
+        "example",
+        "common_mistakes"
+      ],
+      "title": "KeyConcept",
+      "type": "object"
+    },
+    "QuizItem": {
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "reference_answer": {
+          "minLength": 1,
+          "title": "Reference Answer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question",
+        "reference_answer"
+      ],
+      "title": "QuizItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "learning_objectives": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Learning Objectives",
+      "type": "array"
+    },
+    "key_concepts": {
+      "items": {
+        "$ref": "#/$defs/KeyConcept"
+      },
+      "title": "Key Concepts",
+      "type": "array"
+    },
+    "review_points": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Review Points",
+      "type": "array"
+    },
+    "quiz": {
+      "items": {
+        "$ref": "#/$defs/QuizItem"
+      },
+      "title": "Quiz",
+      "type": "array"
+    },
+    "missing_information": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Missing Information",
+      "type": "array"
+    }
+  },
+  "required": [
+    "title",
+    "summary",
+    "learning_objectives",
+    "key_concepts",
+    "review_points",
+    "quiz",
+    "missing_information"
+  ],
+  "title": "LearningNote",
+  "type": "object"
+}

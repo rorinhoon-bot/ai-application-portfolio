@@ -1,0 +1,14 @@
+-r requirements.txt
+
+# Direct development dependency
+pytest==9.1.1
+
+# Direct build dependency used by editable installs
+setuptools==83.0.0
+
+# Transitive development dependencies, pinned for reproducibility
+colorama==0.4.6
+iniconfig==2.3.0
+packaging==26.2
+pluggy==1.6.0
+Pygments==2.20.0
