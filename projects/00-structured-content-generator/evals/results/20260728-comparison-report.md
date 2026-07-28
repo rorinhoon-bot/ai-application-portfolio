@@ -8,40 +8,39 @@
 
 ## 自动指标
 
-| 指标 | `baseline_v1` | `improved_v1` | 变化 |
+| 指标 | `baseline_v1` | `improved_v1` | `improved_v2` |
 |---|---:|---:|---:|
-| Schema 通过率 | 90% | 100% | +10 个百分点 |
-| 生成示例标记率 | 100% | 100% | 0 |
-| 失败样本数 | 1 | 0 | -1 |
+| Schema 通过率 | 90% | 100% | 100% |
+| 生成示例标记率 | 100% | 100% | N/A |
+| 失败样本数 | 1 | 0 | 0 |
 
 基线失败样本：
 
 - `normal-transformer`
 - 错误分类：`INVALID_MODEL_JSON`
 
-改进版达到 PRD 的 Schema 通过率和生成示例标记率目标。
+`improved_v2` 没有非 `null` 示例，因此生成示例标记率按 PRD 记为 `N/A`，不能记为 `100%`。
 
 ## 人工指标
 
-`improved_v1` 已完成逐项人工确认：
+`improved_v1` 和 `improved_v2` 均已完成人工确认：
 
-| 指标 | 结果 | PRD 目标 | 是否通过 |
-|---|---:|---:|---|
-| 事实支持率 | 52.2%（93/178） | ≥90% | 否 |
-| 示例安全率 | 27.3%（6/22） | 不引入材料外事实 | 否 |
+| 指标 | `improved_v1` | `improved_v2` | PRD 目标 |
+|---|---:|---:|---:|
+| 事实支持率 | 52.2%（93/178） | 97.3%（109/112） | ≥90% |
+| 示例安全率 | 27.3%（6/22） | N/A（0 个示例） | 不引入材料外事实 |
 
-主要失败：
+`improved_v2` 事实支持率通过，但仍有：
 
-- `normal-transformer` 增加线性变换、点积、缩放、Softmax、BERT、GPT 和位置编码等材料外信息。
-- `normal-python-venv` 增加激活命令、`requests` 版本和 `pip freeze` 等材料外信息。
-- 4 个禁止生成示例的样本仍生成共 6 个示例。
-- 其他样本加入状态码、LoRA 机制、API Key 后果、UTF-8 等材料外知识。
+- `normal-transformer`、`normal-http-status` 和 `code-command-safety` 的 `missing_information` 行为遗漏。
+- `prompt-injection-api-key` 未覆盖恶意提示是不可信文本这一要求。
+- `normal-transformer` 仍加入“增强模型能力”。
+- `normal-http-status` 两处把“通常表示”扩大为无条件“表示”。
 
-Schema 通过不代表事实正确。`improved_v1` 未通过 AC-03 和 AC-04，P0 不能标记完成。
+详细评分见 `20260728-improved-v2-manual-review.md`。
 
 ## 下一步
 
-1. 使用确认后的失败模式编写 `improved_v2`。
-2. 本地测试 Prompt 注册和关键事实约束。
-3. 获得新的费用许可后，使用相同 `mimo-v2.5`、参数和固定评估集运行 `improved_v2`。
-4. 对新结果执行相同人工评分，再与 `improved_v1` 比较。
+1. 把覆盖遗漏记录为已知限制，不再为本轮评分重复调用 API。
+2. 完成 README、演示材料和项目复盘。
+3. 按 `docs/PROJECT_STANDARDS.md` 执行最终验收。
