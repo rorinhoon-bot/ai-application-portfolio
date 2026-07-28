@@ -28,9 +28,12 @@ data/private/
 *.safetensors
 *.gguf
 
+# Local P0 inputs and outputs
+projects/00-structured-content-generator/material.txt
+projects/00-structured-content-generator/learning-note.json
+
 # Editors and operating systems
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
-

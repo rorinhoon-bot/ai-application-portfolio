@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from structured_notes.adapters import create_model_client
-from structured_notes.cli import run
+from structured_notes.cli import build_parser, run
 from structured_notes.config import Settings
 from structured_notes.errors import AppError, ErrorCode
 from structured_notes.models import ModelRequest, ModelResponse
@@ -78,6 +78,20 @@ def run_cli(
         stderr=stderr,
     )
     return exit_code, stdout, stderr
+
+
+def test_cli_uses_improved_v2_by_default() -> None:
+    args = build_parser().parse_args(
+        [
+            "generate",
+            "--topic",
+            "Transformer",
+            "--material-file",
+            "material.txt",
+        ]
+    )
+
+    assert args.prompt_version == "improved_v2"
 
 
 def test_cli_success_writes_json_to_stdout(tmp_path: Path) -> None:

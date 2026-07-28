@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument(
         "--prompt-version",
         choices=sorted(PROMPT_FILENAMES),
-        default="improved_v1",
+        default="improved_v2",
     )
     return parser
 
