@@ -1,0 +1,830 @@
+{
+  "case_count": 12,
+  "cases": [
+    {
+      "actual_evidence_ids": [
+        "atlasflow-security-cost-v1#data-boundary",
+        "atlasflow-reliability-v1#checkpointing",
+        "procurement-constraints-v1#privacy-policy"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "atlasflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "atlasflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "privacy-durable-selection",
+      "category": "success",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "atlasflow-security-cost-v1#data-boundary",
+        "atlasflow-reliability-v1#checkpointing"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-security-cost-v1#data-boundary",
+        "atlasflow-reliability-v1#checkpointing",
+        "procurement-constraints-v1#privacy-policy"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 2,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "beaconflow-security-cost-v1#cost-profile",
+        "beaconflow-overview-v1#deployment-model",
+        "beaconflow-reliability-v1#recovery-limit"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "beaconflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "beaconflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "low-cost-short-task",
+      "category": "success",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "beaconflow-security-cost-v1#cost-profile"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "beaconflow-security-cost-v1#cost-profile",
+        "beaconflow-reliability-v1#recovery-limit"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 1,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "cedarflow-overview-v1#deployment-model",
+        "cedarflow-reliability-v1#checkpointing",
+        "cedarflow-security-cost-v1#cost-profile"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "cedarflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "cedarflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "managed-observability",
+      "category": "success",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "cedarflow-overview-v1#deployment-model",
+        "cedarflow-reliability-v1#checkpointing",
+        "cedarflow-security-cost-v1#cost-profile"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "cedarflow-overview-v1#deployment-model",
+        "cedarflow-reliability-v1#checkpointing",
+        "cedarflow-security-cost-v1#cost-profile"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 3,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "atlasflow-overview-v1#deployment-model",
+        "atlasflow-overview-v1#workflow-control",
+        "atlasflow-overview-v1#human-approval"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "atlasflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "atlasflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "balanced-local-control",
+      "category": "success",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "atlasflow-overview-v1#workflow-control"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-overview-v1#deployment-model",
+        "atlasflow-overview-v1#workflow-control",
+        "atlasflow-overview-v1#human-approval"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 1,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "pause-human"
+      ],
+      "actual_recommendation": null,
+      "actual_status": "NEEDS_HUMAN",
+      "actual_tool_attempts": 0,
+      "allowed_recommendations": [],
+      "artifact_count": 0,
+      "case_id": "missing-candidates",
+      "category": "requirements-incomplete",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 0,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "pause-human"
+      ],
+      "expected_required_evidence_ids": [],
+      "expected_status": "NEEDS_HUMAN",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 0,
+      "retrieval_rounds": 0,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "pause-human"
+      ],
+      "actual_recommendation": null,
+      "actual_status": "NEEDS_HUMAN",
+      "actual_tool_attempts": 0,
+      "allowed_recommendations": [],
+      "artifact_count": 0,
+      "case_id": "missing-dimensions",
+      "category": "requirements-incomplete",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 0,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "pause-human"
+      ],
+      "expected_required_evidence_ids": [],
+      "expected_status": "NEEDS_HUMAN",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 0,
+      "retrieval_rounds": 0,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "cedarflow-overview-v1#deployment-model",
+        "cedarflow-security-cost-v1#data-boundary"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "assess-evidence",
+        "retrieve-evidence",
+        "assess-evidence",
+        "fail"
+      ],
+      "actual_recommendation": null,
+      "actual_status": "FAILED",
+      "actual_tool_attempts": 2,
+      "allowed_recommendations": [],
+      "artifact_count": 0,
+      "case_id": "missing-offline-proof",
+      "category": "evidence-insufficient",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 2,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "assess-evidence",
+        "retrieve-evidence",
+        "assess-evidence",
+        "fail"
+      ],
+      "expected_required_evidence_ids": [
+        "cedarflow-overview-v1#deployment-model"
+      ],
+      "expected_status": "FAILED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 0,
+      "retrieval_rounds": 2,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "atlasflow-security-cost-v1#cost-profile",
+        "beaconflow-security-cost-v1#cost-profile",
+        "cedarflow-security-cost-v1#cost-profile",
+        "procurement-constraints-v1#cost-policy"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "assess-evidence",
+        "retrieve-evidence",
+        "assess-evidence",
+        "fail"
+      ],
+      "actual_recommendation": null,
+      "actual_status": "FAILED",
+      "actual_tool_attempts": 2,
+      "allowed_recommendations": [],
+      "artifact_count": 0,
+      "case_id": "conflicting-cost-evidence",
+      "category": "evidence-insufficient",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 2,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "assess-evidence",
+        "retrieve-evidence",
+        "assess-evidence",
+        "fail"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-security-cost-v1#cost-profile",
+        "beaconflow-security-cost-v1#cost-profile",
+        "cedarflow-security-cost-v1#cost-profile"
+      ],
+      "expected_status": "FAILED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 0,
+      "retrieval_rounds": 2,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing",
+        "beaconflow-reliability-v1#checkpointing"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "retry-tool",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "atlasflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 2,
+      "allowed_recommendations": [
+        "atlasflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "transient-search-recovers",
+      "category": "tool-failure",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 2,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "retry-tool",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing",
+        "beaconflow-reliability-v1#checkpointing"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 1,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "fail"
+      ],
+      "actual_recommendation": null,
+      "actual_status": "FAILED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [],
+      "artifact_count": 0,
+      "case_id": "invalid-tool-arguments",
+      "category": "tool-failure",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "fail"
+      ],
+      "expected_required_evidence_ids": [],
+      "expected_status": "FAILED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 0,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "atlasflow-overview-v1#deployment-model",
+        "atlasflow-security-cost-v1#operations-limit"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "atlasflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "atlasflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "report-revision-approved",
+      "category": "human-revision",
+      "checkpoint_recovery_consistent": null,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "atlasflow-security-cost-v1#operations-limit"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-overview-v1#deployment-model",
+        "atlasflow-security-cost-v1#operations-limit"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 1,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 1,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing",
+        "atlasflow-reliability-v1#idempotency"
+      ],
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "resume-checkpoint",
+        "export-report",
+        "export-report",
+        "done"
+      ],
+      "actual_recommendation": "atlasflow",
+      "actual_status": "COMPLETED",
+      "actual_tool_attempts": 1,
+      "allowed_recommendations": [
+        "atlasflow"
+      ],
+      "artifact_count": 1,
+      "case_id": "checkpoint-resume-export",
+      "category": "recovery-idempotency",
+      "checkpoint_recovery_consistent": true,
+      "checks": {
+        "artifact_count_matches": true,
+        "citation_binding_valid": true,
+        "forbidden_evidence_absent": true,
+        "path_matches": true,
+        "recommendation_allowed": true,
+        "required_evidence_present": true,
+        "retry_and_stop_match": true,
+        "status_matches": true,
+        "tool_attempts_match": true
+      },
+      "citation_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing"
+      ],
+      "expected_forbidden_evidence_ids": [],
+      "expected_max_tool_attempts": 1,
+      "expected_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "resume-checkpoint",
+        "export-report",
+        "export-report",
+        "done"
+      ],
+      "expected_required_evidence_ids": [
+        "atlasflow-reliability-v1#checkpointing",
+        "atlasflow-reliability-v1#idempotency"
+      ],
+      "expected_status": "COMPLETED",
+      "human_revision_count": 0,
+      "passed": true,
+      "permission_expansion_count": 0,
+      "report_claim_count": 1,
+      "retrieval_rounds": 1,
+      "review_rounds": 0,
+      "schema_version": "workflow-case-result-v1",
+      "unapproved_export_count": 0,
+      "unsupported_claim_count": 0
+    }
+  ],
+  "evaluation_schema_version": "workflow-evaluation-v1",
+  "gold_schema_version": "workflow-gold-v1",
+  "metrics": {
+    "case_pass_rate": {
+      "denominator": 12,
+      "numerator": 12,
+      "score_bps": 10000
+    },
+    "checkpoint_recovery_consistency": {
+      "denominator": 1,
+      "numerator": 1,
+      "score_bps": 10000
+    },
+    "citation_binding_validity": {
+      "denominator": 10,
+      "numerator": 10,
+      "score_bps": 10000
+    },
+    "fixed_path_accuracy": {
+      "denominator": 12,
+      "numerator": 12,
+      "score_bps": 10000
+    },
+    "max_artifacts_per_case": 1,
+    "permission_expansion_count": 0,
+    "retry_and_stop_accuracy": {
+      "denominator": 12,
+      "numerator": 12,
+      "score_bps": 10000
+    },
+    "unapproved_export_count": 0,
+    "unsupported_claim_rate": {
+      "denominator": 10,
+      "numerator": 0,
+      "score_bps": 0
+    }
+  },
+  "model_api_used": false,
+  "network_used": false,
+  "passed_case_count": 12,
+  "runner_version": "workflow-runner-v1",
+  "schema_version": "workflow-baseline-v1",
+  "source_snapshot_id": "0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c"
+}

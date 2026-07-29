@@ -17,21 +17,42 @@
 ## 当前阶段
 
 - P1 已完成，满足 P2 启动条件。
-- P2 用户场景、PRD 和架构基线已形成。
-- P2 独立 `.venv`、固定依赖和 SQLite checkpoint 恢复验证已完成。
+- P2 独立 `.venv`、固定依赖、PRD 和架构基线已完成。
 - 10 份原创资料、40 个稳定证据章节、12 个固定案例和金标准已冻结。
-- 严格 `runtime-state-v1` 状态合同和需求确认 Human-in-the-loop 路径已实现。
-- 显式最小图支持完整/缺字段暂停、批准、编辑、拒绝、取消和 SQLite 恢复；批准后只到确定性规划占位状态。
-- 版本化只读 Tool Calling 合同、确定性假工具、业务作用域校验、瞬时重试和确定性停止路径已实现。
-- 工具切片成功后只到 `EVIDENCE_READY`；尚不合成证据或生成报告。
-- 当前普通测试：`60 passed`；测试默认阻断网络。
+- 显式 LangGraph 已覆盖需求确认、只读工具、两轮证据门、结构化写作、有限审校、最终人工确认和幂等 Markdown 导出。
+- 两个人工暂停点、SQLite 恢复、revision/hash 绑定、有限重试和不可覆盖导出均有离线测试。
+- 统一 `workflow-v1` 运行器实际执行全部 12 个案例；金标准未因结果修改。
+- 当前量化基线：案例通过 `12/12`，路径 `12/12`，引用绑定 `10/10`，重试/停止 `12/12`，checkpoint 恢复 `1/1`，无证据声明 `0/10`，未批准导出与权限扩大均为 `0`。
+- 当前普通测试：`123 passed`；测试默认阻断网络。
 - 需求见 `docs/PRD.md`，状态图和安全边界见 `docs/ARCHITECTURE.md`。
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
-依赖与 P2 独立 `.venv` 已完成验证；当前检索只使用固定脚本假工具。尚未下载真实研究语料、调用模型 API，尚未实现证据评估、写作、审校或导出。离线环境检查：
+当前仍只使用原创虚构资料、确定性假工具和假写作者。未下载真实研究语料，未调用模型 API，未产生费用，也未公开部署。
+
+## 离线验证
+
+在 P2 目录执行：
 
 ```powershell
 $env:LANGGRAPH_STRICT_MSGPACK="true"
+$env:LANGSMITH_TRACING="false"
 .\.venv\Scripts\python.exe scripts\verify_environment.py
 .\.venv\Scripts\python.exe -m pytest -q
 ```
+
+重新执行 12 个固定案例并检查是否与提交基线完全一致：
+
+```powershell
+$env:LANGGRAPH_STRICT_MSGPACK="true"
+$env:LANGSMITH_TRACING="false"
+.\.venv\Scripts\python.exe scripts\run_workflow_evaluation.py --check
+```
+
+去掉 `--check` 会把新运行结果打印为 JSON，但不会修改基线文件。提交基线位于 `evals/results/workflow-v1-baseline.json`。
+
+## 当前限制
+
+- 基线证明确定性工作流可靠性，不证明真实模型的语义质量。
+- 报告内容只来自原创虚构快照，不能用于现实技术选型。
+- 节点耗时、token、已知费用和机器可读运行摘要尚未实现。
+- 真实模型、真实官方资料和公开部署仍需单独批准。
