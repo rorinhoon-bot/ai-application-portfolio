@@ -10,6 +10,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
+from agent_research.observability import RunObserver, observed_node
 from agent_research.evidence_assessment import (
     DeterministicEvidenceAssessor,
     EvidenceAssessmentStatus,
@@ -1047,15 +1048,53 @@ def _route_after_report_human(
     raise ValueError("REPORT_HUMAN_INVALID_ROUTE")
 
 
-def _requirements_builder(plan_node: object) -> StateGraph:
-    builder = StateGraph(RuntimeState)
-    builder.add_node("validate_request", validate_request)
-    builder.add_node("confirm_requirements", confirm_requirements)
+def _add_runtime_node(
+    builder: StateGraph,
+    *,
+    node: RuntimeNode,
+    operation: object,
+    observer: RunObserver | None,
+) -> None:
     builder.add_node(
-        "await_human_requirements",
-        await_human_requirements,
+        node.value,
+        observed_node(
+            node=node,
+            operation=operation,  # type: ignore[arg-type]
+            observer=observer,
+        ),
     )
-    builder.add_node("plan_research", plan_node)
+
+
+def _requirements_builder(
+    plan_node: object,
+    *,
+    observer: RunObserver | None = None,
+) -> StateGraph:
+    builder = StateGraph(RuntimeState)
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.VALIDATE_REQUEST,
+        operation=validate_request,
+        observer=observer,
+    )
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.CONFIRM_REQUIREMENTS,
+        operation=confirm_requirements,
+        observer=observer,
+    )
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.AWAIT_HUMAN_REQUIREMENTS,
+        operation=await_human_requirements,
+        observer=observer,
+    )
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.PLAN_RESEARCH,
+        operation=plan_node,
+        observer=observer,
+    )
 
     builder.add_edge(START, "validate_request")
     builder.add_edge("validate_request", "confirm_requirements")
@@ -1075,10 +1114,14 @@ def _requirements_builder(plan_node: object) -> StateGraph:
     return builder
 
 
-def build_requirements_graph(checkpointer: BaseCheckpointSaver):
+def build_requirements_graph(
+    checkpointer: BaseCheckpointSaver,
+    *,
+    observer: RunObserver | None = None,
+):
     """Compile the requirements-only graph from the previous stage."""
 
-    builder = _requirements_builder(plan_research)
+    builder = _requirements_builder(plan_research, observer=observer)
     builder.add_edge("plan_research", END)
     return builder.compile(checkpointer=checkpointer)
 
@@ -1088,17 +1131,26 @@ def build_tool_execution_graph(
     checkpointer: BaseCheckpointSaver,
     tool_call: ToolCall,
     executor: DeterministicFakeToolExecutor,
+    observer: RunObserver | None = None,
 ):
     """Compile the next explicit slice through safe tool execution."""
 
     builder = _requirements_builder(
-        partial(plan_tool_call, tool_call=tool_call)
+        partial(plan_tool_call, tool_call=tool_call),
+        observer=observer,
     )
-    builder.add_node(
-        "execute_tools",
-        partial(execute_tools, executor=executor),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.EXECUTE_TOOLS,
+        operation=partial(execute_tools, executor=executor),
+        observer=observer,
     )
-    builder.add_node("retry_tool", retry_tool)
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.RETRY_TOOL,
+        operation=retry_tool,
+        observer=observer,
+    )
     builder.add_edge("plan_research", "execute_tools")
     builder.add_conditional_edges(
         "execute_tools",
@@ -1118,6 +1170,7 @@ def _evidence_builder(
     tool_calls: tuple[ToolCall, ToolCall],
     executor: DeterministicFakeToolExecutor,
     assessor: DeterministicEvidenceAssessor,
+    observer: RunObserver | None = None,
 ) -> StateGraph:
     """Build shared evidence nodes without choosing the post-assessment stop."""
 
@@ -1129,20 +1182,30 @@ def _evidence_builder(
             plan_evidence_round,
             tool_calls=tool_calls,
             assessor=assessor,
-        )
+        ),
+        observer=observer,
     )
-    builder.add_node(
-        "execute_tools",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.EXECUTE_TOOLS,
+        operation=partial(
             execute_tools,
             executor=executor,
             continue_to_assessment=True,
         ),
+        observer=observer,
     )
-    builder.add_node("retry_tool", retry_tool)
-    builder.add_node(
-        "assess_evidence",
-        partial(assess_evidence, assessor=assessor),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.RETRY_TOOL,
+        operation=retry_tool,
+        observer=observer,
+    )
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.ASSESS_EVIDENCE,
+        operation=partial(assess_evidence, assessor=assessor),
+        observer=observer,
     )
     builder.add_edge("plan_research", "execute_tools")
     builder.add_conditional_edges(
@@ -1164,6 +1227,7 @@ def build_evidence_assessment_graph(
     tool_calls: tuple[ToolCall, ToolCall],
     executor: DeterministicFakeToolExecutor,
     assessor: DeterministicEvidenceAssessor,
+    observer: RunObserver | None = None,
 ):
     """Compile the bounded evidence-only slice from the previous stage."""
 
@@ -1171,6 +1235,7 @@ def build_evidence_assessment_graph(
         tool_calls=tool_calls,
         executor=executor,
         assessor=assessor,
+        observer=observer,
     )
     builder.add_conditional_edges(
         "assess_evidence",
@@ -1192,6 +1257,7 @@ def build_draft_report_graph(
     assessor: DeterministicEvidenceAssessor,
     writer: DeterministicFakeWriter,
     binder: EvidenceCitationBinder,
+    observer: RunObserver | None = None,
 ):
     """Compile the evidence gate plus one safe deterministic draft node."""
 
@@ -1199,10 +1265,13 @@ def build_draft_report_graph(
         tool_calls=tool_calls,
         executor=executor,
         assessor=assessor,
+        observer=observer,
     )
-    builder.add_node(
-        "draft_report",
-        partial(draft_report, writer=writer, binder=binder),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.DRAFT_REPORT,
+        operation=partial(draft_report, writer=writer, binder=binder),
+        observer=observer,
     )
     builder.add_conditional_edges(
         "assess_evidence",
@@ -1227,6 +1296,7 @@ def build_report_review_graph(
     binder: EvidenceCitationBinder,
     reviewer: DeterministicReportReviewer,
     reviser: DeterministicDraftReviser,
+    observer: RunObserver | None = None,
 ):
     """Compile evidence, drafting, and at most two automatic revisions."""
 
@@ -1234,24 +1304,31 @@ def build_report_review_graph(
         tool_calls=tool_calls,
         executor=executor,
         assessor=assessor,
+        observer=observer,
     )
-    builder.add_node(
-        "draft_report",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.DRAFT_REPORT,
+        operation=partial(
             draft_report,
             writer=writer,
             binder=binder,
             continue_to_review=True,
             review_policy_id=reviewer.policy.policy_id,
         ),
+        observer=observer,
     )
-    builder.add_node(
-        "review_report",
-        partial(review_report, reviewer=reviewer),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.REVIEW_REPORT,
+        operation=partial(review_report, reviewer=reviewer),
+        observer=observer,
     )
-    builder.add_node(
-        "revise_report",
-        partial(revise_report, reviser=reviser, binder=binder),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.REVISE_REPORT,
+        operation=partial(revise_report, reviser=reviser, binder=binder),
+        observer=observer,
     )
     builder.add_conditional_edges(
         "assess_evidence",
@@ -1305,6 +1382,7 @@ def _report_confirmation_builder(
         "report-export-v1",
     ],
     exporter: SafeMarkdownExporter | None = None,
+    observer: RunObserver | None = None,
 ) -> StateGraph:
     """Build the report human gate with an optional export boundary."""
 
@@ -1312,10 +1390,12 @@ def _report_confirmation_builder(
         tool_calls=tool_calls,
         executor=executor,
         assessor=assessor,
+        observer=observer,
     )
-    builder.add_node(
-        "draft_report",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.DRAFT_REPORT,
+        operation=partial(
             draft_report,
             writer=writer,
             binder=binder,
@@ -1323,34 +1403,48 @@ def _report_confirmation_builder(
             review_policy_id=reviewer.policy.policy_id,
             report_graph_version=graph_version,
         ),
+        observer=observer,
     )
-    builder.add_node(
-        "review_report",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.REVIEW_REPORT,
+        operation=partial(
             review_report,
             reviewer=reviewer,
             continue_to_report_confirmation=True,
         ),
+        observer=observer,
     )
-    builder.add_node(
-        "revise_report",
-        partial(revise_report, reviser=reviser, binder=binder),
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.REVISE_REPORT,
+        operation=partial(revise_report, reviser=reviser, binder=binder),
+        observer=observer,
     )
-    builder.add_node("confirm_report", confirm_report)
-    builder.add_node(
-        "await_human_report",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.CONFIRM_REPORT,
+        operation=confirm_report,
+        observer=observer,
+    )
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.AWAIT_HUMAN_REPORT,
+        operation=partial(
             await_human_report,
             continue_to_export=exporter is not None,
         ),
+        observer=observer,
     )
-    builder.add_node(
-        "apply_human_report_revision",
-        partial(
+    _add_runtime_node(
+        builder,
+        node=RuntimeNode.APPLY_HUMAN_REPORT_REVISION,
+        operation=partial(
             apply_human_report_revision,
             reviser=human_reviser,
             binder=binder,
         ),
+        observer=observer,
     )
     builder.add_conditional_edges(
         "assess_evidence",
@@ -1405,9 +1499,11 @@ def _report_confirmation_builder(
         },
     )
     if exporter is not None:
-        builder.add_node(
-            "export_report",
-            partial(export_report, exporter=exporter),
+        _add_runtime_node(
+            builder,
+            node=RuntimeNode.EXPORT_REPORT,
+            operation=partial(export_report, exporter=exporter),
+            observer=observer,
         )
         builder.add_edge("export_report", END)
     return builder
@@ -1424,6 +1520,7 @@ def build_report_confirmation_graph(
     reviewer: DeterministicReportReviewer,
     reviser: DeterministicDraftReviser,
     human_reviser: DeterministicHumanReportReviser,
+    observer: RunObserver | None = None,
 ):
     """Compile the reviewed-report human gate without export."""
 
@@ -1437,6 +1534,7 @@ def build_report_confirmation_graph(
         reviser=reviser,
         human_reviser=human_reviser,
         graph_version="report-confirmation-v1",
+        observer=observer,
     )
     return builder.compile(checkpointer=checkpointer)
 
@@ -1454,6 +1552,7 @@ def build_report_export_graph(
     human_reviser: DeterministicHumanReportReviser,
     exporter: SafeMarkdownExporter,
     interrupt_before_export: bool = False,
+    observer: RunObserver | None = None,
 ):
     """Compile the approved-report safe Markdown export slice."""
 
@@ -1468,6 +1567,7 @@ def build_report_export_graph(
         human_reviser=human_reviser,
         graph_version="report-export-v1",
         exporter=exporter,
+        observer=observer,
     )
     return builder.compile(
         checkpointer=checkpointer,

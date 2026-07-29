@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.8
+- 版本：v0.9
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校、最终报告确认和幂等 Markdown 导出切片已实现
+- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校、最终报告确认、幂等 Markdown 导出和运行时可观测性切片已实现
 
 ## 1. 架构目标
 
@@ -208,6 +208,26 @@ flowchart TD
 - 同一文件同字节返回 `UNCHANGED`；同 ID 不同字节记录 `export-artifact-conflict` 并失败，原文件不变。
 - checkpoint 只保存 `ArtifactRecord` 和导出结果；根目录、文件句柄、临时路径和 `SafeMarkdownExporter` 是运行时依赖。
 
+### 3.8 当前运行时可观测性切片
+
+```text
+节点函数
+  │
+  ├─ observer 记录开始 monotonic 时间
+  ├─ 执行原节点
+  └─ observer 记录 SUCCEEDED / INTERRUPTED / FAILED
+          │
+          └─ 终态业务状态 + 安全事件 = run-summary-v1
+```
+
+- observer 是图构建时可选注入的运行时依赖；不改变节点输入输出，也不进入 `runtime-state-v1`。
+- `GraphInterrupt` 记为正常 `INTERRUPTED`，恢复后同一人工节点的新执行记为 `SUCCEEDED` 和结构化人工动作。
+- `node-event-v1` 只保存节点、顺序、monotonic 相对时间、主动执行耗时、前后状态、工具结果类别、人工动作和稳定错误码。
+- 节点输入、状态增量、Prompt、证据正文、报告正文、完整工具/模型响应、异常消息和路径不进入事件。
+- `run-summary-v1` 汇总工具尝试、重试、检索轮次、审校尝试、自动/人工返修、导出尝试、人工决策、错误码、报告 revision/hash 和制品 ID，并用规范 JSON 哈希绑定整个摘要。
+- 测试和提交样例使用固定步长 `DeterministicClock`；普通运行可使用 `SystemMonotonicClock`。两种 clock 都是运行时对象。
+- 当前 observer 不是外部 tracing 服务。进程崩溃前未外送的事件不会从 SQLite checkpoint 恢复；业务恢复能力不依赖 observer。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -223,7 +243,7 @@ flowchart TD
 | 报告 | `draft_revision`、`draft_sections`、`claims`、`citations`、`review_findings` | 草稿、声明和程序绑定引用 |
 | 循环计数 | `retrieval_round`、`review_round`、`human_revision_round`、`structured_output_retry` | 所有循环的硬上限依据 |
 | 运行状态 | `status`、`current_node`、`last_error`、`started_at`、`updated_at` | 可观察运行状态 |
-| 观测 | `node_metrics`、`model_usage`、`tool_usage` | 延迟、调用次数、token 和已知费用 |
+| 观测 | 不进入 `runtime-state-v1` | 由运行时 observer 生成事件和摘要，避免扩大 checkpoint 数据面 |
 | 制品 | `approved_content_hash`、`artifact_id`、`export_status` | 只在最终批准后生成 |
 
 不得保存：
@@ -517,15 +537,18 @@ artifact_id = hash(run_id + approved_revision + approved_content_hash + format)
 
 ## 13. 可观测性
 
-每个节点记录：
+当前已实现：
 
-- 节点名、开始和结束时间、结果状态。
-- 模型与工具调用次数。
-- 输入和输出 token；供应商提供时记录已知费用。
-- 重试次数、稳定错误码和路由原因。
-- checkpoint revision、来源快照和报告 revision。
+- `node-event-v1`：连续序号、节点名、相对开始时间、主动执行耗时、节点结果、前后状态。
+- 工具节点只额外记录 `ToolOutcomeKind` 和稳定错误码；不记录参数、证据正文或响应。
+- 人工节点只额外记录 `approve`、`edit`、`request-changes`、`reject` 或 `cancel`；不记录自由文本。
+- `run-summary-v1`：运行身份、图/来源版本、最终状态、节点/暂停/工具/重试/检索/审校尝试/自动与人工返修/导出/人工决策计数、错误码、报告和制品绑定。
+- 摘要保存 `summary_hash`；未知字段、非连续事件序号、计数不一致和内容篡改被拒绝。
+- 当前确定性夹具无模型调用，`model_call_count`、token 和已知费用均为 `0`。
 
-不记录完整 Prompt、完整供应商响应或秘密。测试断言指标字段完整，但不依赖真实时钟。
+不记录完整 Prompt、节点输入输出、完整供应商响应、异常消息、密钥、鉴权头、Cookie、SQLite 路径或导出根目录。测试通过注入确定性时钟断言精确耗时，不依赖真实时钟。observer、clock 和事件列表不进入 checkpoint。
+
+`observed_node_duration_ns` 是节点主动执行耗时之和，不含人工等待。未来真实模型适配器需新建 usage 合同；不能把当前全零字段解释为真实成本。
 
 ## 14. 测试与评估设计
 

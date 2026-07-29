@@ -1,6 +1,6 @@
 # P2 固定评估资料方案
 
-- 版本：v0.3
+- 版本：v0.4
 - 状态：implemented and verified
 - 日期：2026-07-29
 - 首批原则：原创、离线、确定性、无外部下载
@@ -198,7 +198,7 @@ $env:LANGSMITH_TRACING="false"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-2026-07-29 结果：`123 passed`。
+2026-07-29 结果：`132 passed`。
 
 已自动验证：
 
@@ -244,3 +244,26 @@ $env:LANGSMITH_TRACING="false"
 - 运行器只使用系统临时目录保存 checkpoint 和测试制品；JSON 基线不保存路径、密钥或完整供应商响应。
 - 运行器不使用 `expected` 路径、终态、尝试上限或必需证据去驱动图执行，避免把预期答案复制成实际结果。
 - 本阶段没有真实模型、真实资料、token、费用或人工质量量表结果。
+
+## 13. 确定性运行摘要样例
+
+`evals/results/privacy-durable-run-summary.json` 保存一个成功案例的 `run-summary-v1`：
+
+- 13 次节点执行事件。
+- 2 次正常 Human-in-the-loop 中断。
+- 2 次人工批准。
+- 1 次工具尝试，0 次重试。
+- 1 个检索轮次、1 次审校尝试、0 个自动审校修改轮次、1 次导出尝试。
+- 13,000,000 ns 确定性节点主动执行耗时。
+- 0 次模型调用、0 input/output token、0 已知费用。
+- 报告 revision/hash、最终 `artifact_id` 和摘要内容哈希。
+
+该样例只用于合同和回归，不代表真实性能。固定时钟每次读取增加 1,000,000 ns；真实耗时、模型 usage 和费用必须在未来获批的真实适配器评估中另测。
+
+验证命令：
+
+```powershell
+$env:LANGGRAPH_STRICT_MSGPACK="true"
+$env:LANGSMITH_TRACING="false"
+.\.venv\Scripts\python.exe scripts\run_observability_demo.py --check
+```

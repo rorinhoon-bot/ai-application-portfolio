@@ -34,6 +34,12 @@ from agent_research.models import (
     ToolOutcomeKind,
     WorkflowCase,
 )
+from agent_research.observability import (
+    DeterministicClock,
+    RunObserver,
+    RunSummary,
+    build_run_summary,
+)
 from agent_research.report_approval import DeterministicHumanReportReviser
 from agent_research.report_drafting import (
     DraftClaim,
@@ -689,12 +695,13 @@ def _run_incomplete_case(
     bundle: EvaluationBundle,
     case: WorkflowCase,
     case_root: Path,
-) -> WorkflowCaseResult:
+    observer: RunObserver | None = None,
+) -> tuple[WorkflowCaseResult, RunSummary | None]:
     checkpoint = case_root / "checkpoint.sqlite3"
     config = workflow_config(f"thread-{case.case_id}")
     path: list[str] = []
     with SqliteSaver.from_conn_string(str(checkpoint)) as saver:
-        graph = build_requirements_graph(saver)
+        graph = build_requirements_graph(saver, observer=observer)
         _stream(
             graph,
             create_initial_state(
@@ -709,7 +716,7 @@ def _run_incomplete_case(
         if graph.get_state(config).next != ("await_human_requirements",):
             raise EvaluationRunnerError("INCOMPLETE_CASE_DID_NOT_PAUSE")
     path.append("pause-human")
-    return _case_result(
+    result = _case_result(
         bundle=bundle,
         case=case,
         state=state,
@@ -718,6 +725,12 @@ def _run_incomplete_case(
         exporter=None,
         recovery_consistent=None,
     )
+    summary = (
+        build_run_summary(state=state, observer=observer)
+        if observer is not None
+        else None
+    )
+    return result, summary
 
 
 def _run_full_case(
@@ -725,7 +738,8 @@ def _run_full_case(
     bundle: EvaluationBundle,
     case: WorkflowCase,
     case_root: Path,
-) -> WorkflowCaseResult:
+    observer: RunObserver | None = None,
+) -> tuple[WorkflowCaseResult, RunSummary | None]:
     checkpoint = case_root / "checkpoint.sqlite3"
     export_root = case_root / "artifacts"
     config = workflow_config(f"thread-{case.case_id}")
@@ -762,6 +776,7 @@ def _run_full_case(
             human_reviser=human_reviser,
             exporter=exporter,
             interrupt_before_export=recovery,
+            observer=observer,
         )
 
     requirement_actions = [
@@ -844,6 +859,7 @@ def _run_full_case(
                 human_reviser=human_reviser,
                 exporter=fresh_exporter,
                 interrupt_before_export=True,
+                observer=observer,
             )
             restored = _snapshot(graph, config)
             _stream(graph, None, config, path)
@@ -857,7 +873,7 @@ def _run_full_case(
     artifact_count = (
         len(tuple(export_root.glob("*.md"))) if export_root.exists() else 0
     )
-    return _case_result(
+    result = _case_result(
         bundle=bundle,
         case=case,
         state=state,
@@ -866,6 +882,63 @@ def _run_full_case(
         exporter=exporter,
         recovery_consistent=recovery_consistent,
     )
+    summary = (
+        build_run_summary(state=state, observer=observer)
+        if observer is not None
+        else None
+    )
+    return result, summary
+
+
+def run_case_observability(
+    project_root: Path,
+    *,
+    case_id: str = "privacy-durable-selection",
+) -> RunSummary:
+    """Run one allowlisted frozen case with a deterministic runtime clock."""
+
+    if os.environ.get("LANGGRAPH_STRICT_MSGPACK") != "true":
+        raise EvaluationRunnerError(
+            "LANGGRAPH_STRICT_MSGPACK must equal 'true'"
+        )
+    root = project_root.resolve(strict=True)
+    bundle = load_evaluation_bundle(root)
+    try:
+        case = next(
+            item for item in bundle.evaluation.cases if item.case_id == case_id
+        )
+    except StopIteration as exc:
+        raise EvaluationRunnerError(
+            "UNKNOWN_WORKFLOW_OBSERVABILITY_CASE"
+        ) from exc
+
+    run_id = f"run-{case.case_id}"
+    thread_id = f"thread-{case.case_id}"
+    observer = RunObserver(
+        run_id=run_id,
+        thread_id=thread_id,
+        clock=DeterministicClock(),
+    )
+    with TemporaryDirectory(prefix="p2-observability-") as temp_dir:
+        case_root = Path(temp_dir) / case.case_id
+        case_root.mkdir()
+        if case.category is CaseCategory.REQUIREMENTS_INCOMPLETE:
+            _, summary = _run_incomplete_case(
+                bundle=bundle,
+                case=case,
+                case_root=case_root,
+                observer=observer,
+            )
+        else:
+            _, summary = _run_full_case(
+                bundle=bundle,
+                case=case,
+                case_root=case_root,
+                observer=observer,
+            )
+    if summary is None:
+        raise EvaluationRunnerError("OBSERVABILITY_SUMMARY_NOT_CREATED")
+    return summary
 
 
 def run_workflow_evaluation(project_root: Path) -> WorkflowBaseline:
@@ -884,13 +957,13 @@ def run_workflow_evaluation(project_root: Path) -> WorkflowBaseline:
             case_root = temp_root / case.case_id
             case_root.mkdir()
             if case.category is CaseCategory.REQUIREMENTS_INCOMPLETE:
-                result = _run_incomplete_case(
+                result, _ = _run_incomplete_case(
                     bundle=bundle,
                     case=case,
                     case_root=case_root,
                 )
             else:
-                result = _run_full_case(
+                result, _ = _run_full_case(
                     bundle=bundle,
                     case=case,
                     case_root=case_root,

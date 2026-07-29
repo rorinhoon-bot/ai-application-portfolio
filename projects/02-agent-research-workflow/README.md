@@ -22,8 +22,9 @@
 - 显式 LangGraph 已覆盖需求确认、只读工具、两轮证据门、结构化写作、有限审校、最终人工确认和幂等 Markdown 导出。
 - 两个人工暂停点、SQLite 恢复、revision/hash 绑定、有限重试和不可覆盖导出均有离线测试。
 - 统一 `workflow-v1` 运行器实际执行全部 12 个案例；金标准未因结果修改。
+- 可选运行时 observer 已覆盖完整图；生成 `node-event-v1` 和内容哈希绑定的 `run-summary-v1`，不进入 checkpoint。
 - 当前量化基线：案例通过 `12/12`，路径 `12/12`，引用绑定 `10/10`，重试/停止 `12/12`，checkpoint 恢复 `1/1`，无证据声明 `0/10`，未批准导出与权限扩大均为 `0`。
-- 当前普通测试：`123 passed`；测试默认阻断网络。
+- 当前普通测试：`132 passed`；测试默认阻断网络。
 - 需求见 `docs/PRD.md`，状态图和安全边界见 `docs/ARCHITECTURE.md`。
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
@@ -50,9 +51,20 @@ $env:LANGSMITH_TRACING="false"
 
 去掉 `--check` 会把新运行结果打印为 JSON，但不会修改基线文件。提交基线位于 `evals/results/workflow-v1-baseline.json`。
 
+重新生成一个成功案例的确定性运行摘要：
+
+```powershell
+$env:LANGGRAPH_STRICT_MSGPACK="true"
+$env:LANGSMITH_TRACING="false"
+.\.venv\Scripts\python.exe scripts\run_observability_demo.py --check
+```
+
+去掉 `--check` 会把 `run-summary-v1` 打印到标准输出。提交样例位于 `evals/results/privacy-durable-run-summary.json`。
+
 ## 当前限制
 
 - 基线证明确定性工作流可靠性，不证明真实模型的语义质量。
 - 报告内容只来自原创虚构快照，不能用于现实技术选型。
-- 节点耗时、token、已知费用和机器可读运行摘要尚未实现。
+- 当前摘要记录节点主动执行耗时，不包含人工等待时间；进程崩溃前未外送的 observer 事件不会由 checkpoint 恢复。
+- 当前没有模型调用，因此 token、模型调用和已知费用字段均为 `0`；不是未来真实模型成本估算。
 - 真实模型、真实官方资料和公开部署仍需单独批准。
