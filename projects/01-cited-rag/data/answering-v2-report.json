@@ -1,0 +1,300 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v2",
+  "evaluation_set_sha256": "f64de0691f7fb66a85e19ef4d9954b86cacff2828a6d441c694a29ea655bf946",
+  "generated_at": "2026-07-29T05:06:03.604256Z",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+  "model_provider": "mimo",
+  "model_name": "mimo-v2.5",
+  "api_call_count": 10,
+  "usage_response_count": 9,
+  "usage_complete": false,
+  "automatic_retries": 0,
+  "authorized_cny_limit": 5,
+  "prompt_tokens": 15776,
+  "completion_tokens": 708,
+  "total_tokens": 16484,
+  "answerable_recall": 0.8,
+  "refusal_accuracy": 0.6,
+  "citation_binding_validity": 1.0,
+  "minimum_class_target": 0.8,
+  "target_met": false,
+  "cases": [
+    {
+      "case_id": "answer-list-comprehension",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 中，列表推导式怎样从已有序列简洁地创建新列表？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，列表推导式通过在方括号内放置一个表达式、一个 `for` 子句，以及零个或多个 `for` 或 `if` 子句来简洁地创建新列表。例如，`squares = [x**2 for x in range(10)]` 可以从 `range(10)` 序列创建包含平方值的新列表。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "1a08bcf2-f467-5803-9231-506ee50a8dcd",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "5. 数据结构",
+              "5.1. 列表详解",
+              "5.1.3. 列表推导式"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/datastructures.html#list-comprehensions",
+            "excerpt": "列表推导式创建列表的方式更简洁。常见的用法为，对序列或可迭代对象中的每个元素应用某种操作，用生成的结果创建新的列表；或用满足特定条件的元素创建子序列。\n\n例如，创建平方值的列表：\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\n\n注意，这段代码创建（或覆盖）变量 x，该变量在循环结束后仍然存在。下述方法可以无副作用地计算平方列表：\n\nsquares = list(map(lambda x: x**2, range(10)))\n\n\n或等价于：\n\nsquares = [x**2 for x in range(10)]\n\n\n上面这种写法更简洁、易读。\n\n列表推导式的方括号内包含以下内容：一个表达式，后面为一个 for 子句，然后，是零个或多个 for 或 if 子句。结果是由表达式依据 for 和 if 子句求值计算而得出一个新列表。 举例来说，以下列表推导式将两个列表中不相等的元素组合起来："
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 2110,
+        "completion_tokens": 150,
+        "total_tokens": 2260
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 2110,
+      "completion_tokens": 150,
+      "total_tokens": 2260
+    },
+    {
+      "case_id": "answer-f-string-pi",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 f 字符串怎样嵌入表达式并把 pi 格式化到小数点后三位？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，可以使用 f-字符串嵌入表达式并格式化 `math.pi` 到小数点后三位，语法为：`f'The value of pi is approximately {math.pi:.3f}.'`。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "a6b404ac-ade9-5509-af0d-0175f9d10330",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "7. 输入与输出",
+              "7.1. 更复杂的输出格式",
+              "7.1.1. 格式化字符串字面值"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/inputoutput.html#formatted-string-literals",
+            "excerpt": "格式化字符串字面值 （简称为 f-字符串）在字符串前加前缀 f 或 F，通过 {expression} 表达式，把 Python 表达式的值添加到字符串内。\n\n格式说明符是可选的，写在表达式后面，可以更好地控制格式化值的方式。下例将 pi 舍入到小数点后三位：\n\n>>> import math\n>>> print(f'The value of pi is approximately {math.pi:.3f}.')\nThe value of pi is approximately 3.142.\n\n\n在 ':' 后传递整数，为该字段设置最小字符宽度，常用于列对齐：\n\n>>> table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 7678}\n>>> for name, phone in table.items():\n...     print(f'{name:10} ==> {phone:10d}')\n...\nSjoerd     ==>       4127\nJack       ==>       4098\nDcab       ==>       7678\n"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1742,
+        "completion_tokens": 105,
+        "total_tokens": 1847
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1742,
+      "completion_tokens": 105,
+      "total_tokens": 1847
+    },
+    {
+      "case_id": "answer-name-mangling",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 类定义中的 __spam 标识符会怎样被名称改写？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，类定义内任何形如 `__spam` 的标识符（至少两个前缀下划线，至多一个后缀下划线）会被改写为 `_classname__spam`，其中 `classname` 为当前类名（去除前缀下划线）。这种改写不考虑标识符的句法位置，只要它出现在类定义内部就会进行。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "9b998b19-241d-5809-8c24-17b667ac5e8f",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "9. 类",
+              "9.6. 私有变量"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/classes.html#private-variables",
+            "excerpt": "那种仅限从一个对象内部访问的“私有”实例变量在 Python 中并不存在。 但是，大多数 Python 代码都遵循这样一个约定：带有一个下划线的名称 (例如 _spam) 应该被当作是 API 的非公有部分 (无论它是函数、方法或是数据成员)。 这应当被视为一个实现细节，可能不经通知即加以改变。\n\n由于存在对于类私有成员的有效使用场景（例如避免名称与子类所定义的名称相冲突），因此存在对此种机制的有限支持，称为 名称改写。 任何形式为 __spam 的标识符（至少带有两个前缀下划线，至多一个后缀下划线）的文本将被替换为 _classname__spam，其中 classname 为去除了前缀下划线的当前类名称。 这种改写不考虑标识符的句法位置，只要它出现在类定义内部就会进行。\n\n参见\n私有名称调整规范说明 了解相关详情和特例。\n\n名称改写有助于让子类重写方法而不破坏类内方法调用。例如:"
+          },
+          {
+            "rank": 2,
+            "chunk_id": "1e9ea811-8bee-54fe-b943-d78af566840d",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "9. 类",
+              "9.6. 私有变量"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/classes.html#private-variables",
+            "excerpt": "上面的示例即使在 MappingSubclass 引入了一个 __update 标识符的情况下也不会出错，因为它会在 Mapping 类中被替换为 _Mapping__update 而在 MappingSubclass 类中被替换为 _MappingSubclass__update。\n\n请注意，改写规则的设计主要是为了避免意外冲突；访问或修改被视为私有的变量仍然是可能的。这在特殊情况下甚至会很有用，例如在调试器中。\n\n请注意传递给 exec() 或 eval() 的代码不会将唤起类的类名视作当前类；这类似于 global 语句的效果，因此这种效果仅限于同时经过字节码编译的代码。 同样的限制也适用于 getattr(), setattr() 和 delattr()，以及对于 __dict__ 的直接引用。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1821,
+        "completion_tokens": 171,
+        "total_tokens": 1992
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1821,
+      "completion_tokens": 171,
+      "total_tokens": 1992
+    },
+    {
+      "case_id": "answer-argparse-suggestion",
+      "expected_status": "answered",
+      "observed_status": "refused",
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 ArgumentParser 怎样为拼错的 choices 值提供建议？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1729,
+        "completion_tokens": 25,
+        "total_tokens": 1754
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1729,
+      "completion_tokens": 25,
+      "total_tokens": 1754
+    },
+    {
+      "case_id": "answer-module-name",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 导入模块后，哪个 __name__ 属性可查看模块名称？",
+        "status": "answered",
+        "answer": "导入模块后，可以使用模块的 `__name__` 属性查看其名称。例如，导入 `fibo` 模块后，`fibo.__name__` 的值为 `'fibo'`。如果模块作为主程序运行，其 `__name__` 属性会被赋值为 `'__main__'`。",
+        "citations": [
+          {
+            "rank": 2,
+            "chunk_id": "43fd3268-0f10-51d8-b1c3-48a7fa1032c0",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "6. 模块",
+              "6.1. 模块详解",
+              "6.1.1. 以脚本方式执行模块"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/modules.html#executing-modules-as-scripts",
+            "excerpt": "可以用以下方式运行 Python 模块：\n\npython fibo.py <arguments>\n\n\n这项操作将执行模块里的代码，和导入模块一样，但会把 __name__ 赋值为 \"__main__\"。 也就是把下列代码添加到模块末尾：\n\nif __name__ == \"__main__\":\n    import sys\n    fib(int(sys.argv[1]))\n\n\n这个文件既能被用作脚本，又能被用作一个可供导入的模块，因为解析命令行参数的那两行代码只有在模块作为“main”文件执行时才会运行：\n\n$ python fibo.py 50\n0 1 1 2 3 5 8 13 21 34\n\n\n当这个模块被导入到其它模块时，那两行代码不运行：\n\n>>> import fibo\n>>>\n\n\n这常用于为模块提供一个便捷的用户接口，或用于测试（把模块作为执行测试套件的脚本运行）。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1792,
+        "completion_tokens": 136,
+        "total_tokens": 1928
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1792,
+      "completion_tokens": 136,
+      "total_tokens": 1928
+    },
+    {
+      "case_id": "refuse-django-locking",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Django QuerySet.select_for_update 的 of 参数怎样限制加锁对象？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1689,
+        "completion_tokens": 18,
+        "total_tokens": 1707
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1689,
+      "completion_tokens": 18,
+      "total_tokens": 1707
+    },
+    {
+      "case_id": "refuse-requests-adapter",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "requests.Session.mount 怎样按 URL 前缀注册 HTTPAdapter？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1676,
+        "completion_tokens": 18,
+        "total_tokens": 1694
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1676,
+      "completion_tokens": 18,
+      "total_tokens": 1694
+    },
+    {
+      "case_id": "refuse-pytorch-no-grad",
+      "expected_status": "refused",
+      "observed_status": null,
+      "correct": false,
+      "answer": null,
+      "error_code": "MODEL_OUTPUT_ERROR",
+      "error_reason": "model JSON violates the answer schema (schema_version:missing)",
+      "prompt_tokens": 1449,
+      "completion_tokens": 60,
+      "total_tokens": 1509
+    },
+    {
+      "case_id": "refuse-decimal-traps",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 decimal.Context 默认启用了哪些 traps？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1768,
+        "completion_tokens": 25,
+        "total_tokens": 1793
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1768,
+      "completion_tokens": 25,
+      "total_tokens": 1793
+    },
+    {
+      "case_id": "refuse-asyncio-taskgroup",
+      "expected_status": "refused",
+      "observed_status": null,
+      "correct": false,
+      "answer": null,
+      "error_code": "MODEL_NETWORK_ERROR",
+      "error_reason": "model request failed before response",
+      "prompt_tokens": null,
+      "completion_tokens": null,
+      "total_tokens": null
+    }
+  ]
+}

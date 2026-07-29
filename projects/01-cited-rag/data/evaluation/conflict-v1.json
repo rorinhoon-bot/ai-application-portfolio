@@ -1,0 +1,20 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "conflict-v1",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "minimum_target": 0.8,
+  "cases": [
+    {
+      "case_id": "argparse-prog-version-difference",
+      "question": "Python 3.13 与 3.14 的 ArgumentParser 默认 prog 规则有什么不同？"
+    },
+    {
+      "case_id": "argparse-suggest-version-difference",
+      "question": "argparse 的 suggest_on_error 在 Python 3.13 和 3.14 中支持情况有什么差异？"
+    },
+    {
+      "case_id": "argparse-color-version-difference",
+      "question": "ArgumentParser 的 color 参数在 Python 3.13 和 3.14 中有什么差异？"
+    }
+  ]
+}

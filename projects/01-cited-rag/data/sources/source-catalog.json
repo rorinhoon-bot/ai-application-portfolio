@@ -1,0 +1,210 @@
+{
+  "schema_version": "1",
+  "license_name": "Python Software Foundation License Version 2; examples and code are additionally available under the Zero-Clause BSD License",
+  "license_evidence": {
+    "url": "https://docs.python.org/zh-cn/3.14/license.html",
+    "relative_path": "license/python-3.14-license.html"
+  },
+  "sources": [
+    {
+      "source_id": "py3146-tutorial-index",
+      "document_key": "tutorial-index",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/index.html",
+      "relative_path": "html/3.14.6/tutorial/index.html"
+    },
+    {
+      "source_id": "py3146-tutorial-appetite",
+      "document_key": "tutorial-appetite",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/appetite.html",
+      "relative_path": "html/3.14.6/tutorial/appetite.html"
+    },
+    {
+      "source_id": "py3146-tutorial-interpreter",
+      "document_key": "tutorial-interpreter",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/interpreter.html",
+      "relative_path": "html/3.14.6/tutorial/interpreter.html"
+    },
+    {
+      "source_id": "py3146-tutorial-introduction",
+      "document_key": "tutorial-introduction",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/introduction.html",
+      "relative_path": "html/3.14.6/tutorial/introduction.html"
+    },
+    {
+      "source_id": "py3146-tutorial-controlflow",
+      "document_key": "tutorial-controlflow",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/controlflow.html",
+      "relative_path": "html/3.14.6/tutorial/controlflow.html"
+    },
+    {
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/datastructures.html",
+      "relative_path": "html/3.14.6/tutorial/datastructures.html"
+    },
+    {
+      "source_id": "py3146-tutorial-modules",
+      "document_key": "tutorial-modules",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/modules.html",
+      "relative_path": "html/3.14.6/tutorial/modules.html"
+    },
+    {
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/inputoutput.html",
+      "relative_path": "html/3.14.6/tutorial/inputoutput.html"
+    },
+    {
+      "source_id": "py3146-tutorial-errors",
+      "document_key": "tutorial-errors",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/errors.html",
+      "relative_path": "html/3.14.6/tutorial/errors.html"
+    },
+    {
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/classes.html",
+      "relative_path": "html/3.14.6/tutorial/classes.html"
+    },
+    {
+      "source_id": "py3146-tutorial-stdlib",
+      "document_key": "tutorial-stdlib",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/stdlib.html",
+      "relative_path": "html/3.14.6/tutorial/stdlib.html"
+    },
+    {
+      "source_id": "py3146-tutorial-stdlib2",
+      "document_key": "tutorial-stdlib2",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/stdlib2.html",
+      "relative_path": "html/3.14.6/tutorial/stdlib2.html"
+    },
+    {
+      "source_id": "py3146-tutorial-venv",
+      "document_key": "tutorial-venv",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/venv.html",
+      "relative_path": "html/3.14.6/tutorial/venv.html"
+    },
+    {
+      "source_id": "py3146-tutorial-whatnow",
+      "document_key": "tutorial-whatnow",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/whatnow.html",
+      "relative_path": "html/3.14.6/tutorial/whatnow.html"
+    },
+    {
+      "source_id": "py3146-tutorial-interactive",
+      "document_key": "tutorial-interactive",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/interactive.html",
+      "relative_path": "html/3.14.6/tutorial/interactive.html"
+    },
+    {
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/floatingpoint.html",
+      "relative_path": "html/3.14.6/tutorial/floatingpoint.html"
+    },
+    {
+      "source_id": "py3146-tutorial-appendix",
+      "document_key": "tutorial-appendix",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/tutorial/appendix.html",
+      "relative_path": "html/3.14.6/tutorial/appendix.html"
+    },
+    {
+      "source_id": "py3146-library-venv",
+      "document_key": "library-venv",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/library/venv.html",
+      "relative_path": "html/3.14.6/library/venv.html"
+    },
+    {
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html",
+      "relative_path": "html/3.14.6/library/pathlib.html"
+    },
+    {
+      "source_id": "py3146-library-json",
+      "document_key": "library-json",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/library/json.html",
+      "relative_path": "html/3.14.6/library/json.html"
+    },
+    {
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html",
+      "relative_path": "html/3.14.6/library/argparse.html"
+    },
+    {
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "documentation_release": "3.14.6",
+      "source_url": "https://docs.python.org/zh-cn/3.14/whatsnew/3.14.html",
+      "relative_path": "html/3.14.6/whatsnew/3.14.html"
+    },
+    {
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "documentation_release": "3.13.14",
+      "source_url": "https://docs.python.org/zh-cn/3.13/whatsnew/3.13.html",
+      "relative_path": "html/3.13.14/whatsnew/3.13.html"
+    },
+    {
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "documentation_release": "3.13.14",
+      "source_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html",
+      "relative_path": "html/3.13.14/library/argparse.html"
+    },
+    {
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "documentation_release": "3.13.14",
+      "source_url": "https://docs.python.org/zh-cn/3.13/library/pathlib.html",
+      "relative_path": "html/3.13.14/library/pathlib.html"
+    }
+  ]
+}

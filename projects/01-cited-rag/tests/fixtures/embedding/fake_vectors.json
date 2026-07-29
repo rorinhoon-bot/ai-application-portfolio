@@ -1,0 +1,14 @@
+{
+  "fixture_marker": "synthetic test fixture",
+  "dimension": 3,
+  "max_input_tokens": 512,
+  "batch_size": 2,
+  "passages": {
+    "Page A\n\nalpha": [1.0, 0.0, 0.0],
+    "Page B\n\nbeta": [0.0, 1.0, 0.0],
+    "Page C\n\ngamma": [1.0, 1.0, 0.0]
+  },
+  "queries": {
+    "alpha query": [1.0, 0.0, 0.0]
+  }
+}

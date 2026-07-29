@@ -1,0 +1,6 @@
+{
+  "fixture_schema_version": "1",
+  "fixture_text_sha256": "c4b0f08de35015e3b6d3dfb00efa9002a19ff999af1b4a780630b0a08c574640",
+  "expected_error_code": "DOCUMENT_PARSE_ERROR",
+  "reason_contains": "main content"
+}

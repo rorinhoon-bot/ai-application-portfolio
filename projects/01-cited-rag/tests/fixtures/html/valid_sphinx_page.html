@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>venv — 创建虚拟环境 — Python 3.14 文档</title>
+  <link rel="canonical" href="https://docs.python.org/zh-cn/3.14/library/venv.html">
+  <style>.noise::before { content: "样式噪声"; }</style>
+  <script>window.fixtureNoise = "脚本噪声";</script>
+</head>
+<body>
+  <!-- synthetic test fixture; not downloaded official documentation -->
+  <header>页眉噪声</header>
+  <nav>导航噪声</nav>
+  <div class="document">
+    <div class="body" role="main">
+      <section id="venv">
+        <h1>venv — 创建虚拟环境<a class="headerlink" href="#venv">¶</a></h1>
+        <section id="creating">
+          <h2>创建虚拟环境<a class="headerlink" href="#creating">¶</a></h2>
+          <p>使用 <code>python -m venv .venv</code>&nbsp;创建   环境。</p>
+          <ul>
+            <li>不要提交环境目录。
+              <ul>
+                <li>例如 <code>.venv/</code></li>
+              </ul>
+            </li>
+          </ul>
+          <pre>python -m venv .venv
+  .venv\Scripts\Activate.ps1
+</pre>
+          <div class="admonition note">
+            <p class="admonition-title">注意</p>
+            <p>不要把虚拟环境目录提交到 Git。</p>
+          </div>
+        </section>
+        <section id="api">
+          <h2>API<a class="headerlink" href="#api">¶</a></h2>
+          <dl>
+            <dt id="venv.EnvBuilder"><code>class venv.EnvBuilder</code><a class="headerlink" href="#venv.EnvBuilder">¶</a></dt>
+            <dd><p>用于自定义环境创建。</p></dd>
+          </dl>
+          <table>
+            <thead>
+              <tr><th>选项</th><th>含义</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>clear</td><td>创建前清理目录</td></tr>
+            </tbody>
+          </table>
+          <blockquote><p>虚拟环境应当可以重新创建。</p></blockquote>
+          <img src="../_images/venv-layout.svg" alt="虚拟环境目录结构图">
+          <a class="viewcode-link" href="../_modules/venv.html">查看源码</a>
+          <button type="button">复制</button>
+        </section>
+      </section>
+    </div>
+  </div>
+  <footer>页脚噪声</footer>
+</body>
+</html>

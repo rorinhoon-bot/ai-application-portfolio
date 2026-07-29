@@ -1,0 +1,352 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "evidence-evaluation-v1",
+  "evaluation_set_sha256": "d78358d1f7c0c5f4654c2401aa85bdc292c3eddb3527e931a79ba1f0b6458833",
+  "generated_at": "2026-07-29T04:01:46.500276Z",
+  "policy": {
+    "schema_version": "1",
+    "policy_id": "evidence-score-v1",
+    "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+    "retrieval_config": {
+      "schema_version": "1",
+      "mode": "dense-plus-identifiers",
+      "top_k": 5,
+      "remove_filtered_version_terms": true,
+      "identifier_result_limit": 2
+    },
+    "calibration_set_id": "evidence-calibration-v1",
+    "calibration_set_sha256": "41dd7713f86ed1e3a1b51ab20e9e405e1da07cb0778ada83e404f29c25ff5099",
+    "score_definition": "maximum-cosine-among-returned-results",
+    "threshold": 0.6187245534246643
+  },
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "answerable_count": 10,
+  "refusal_count": 10,
+  "answerable_recall": 0.7,
+  "refusal_accuracy": 0.7,
+  "balanced_accuracy": 0.7,
+  "minimum_class_target": 0.8,
+  "target_met": false,
+  "cases": [
+    {
+      "observation": {
+        "case_id": "eval-answer-range-stop",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.5788290291903722,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "5e0ac2b1-1503-5d82-8d8d-0515ad6d440d",
+        "max_score_source_id": "py3146-tutorial-datastructures",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-loop-else",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.8175698167479017,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "d33b1fc4-2050-50dd-9760-36357be96110",
+        "max_score_source_id": "py3146-tutorial-controlflow",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-set-duplicates",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.622979734004917,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "90622426-3050-50ae-9ae9-b37a05e884e7",
+        "max_score_source_id": "py3146-tutorial-datastructures",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-with-file",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.7404351308838056,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "05a38132-b7ea-5a4e-9a81-714fd15296f7",
+        "max_score_source_id": "py3146-tutorial-inputoutput",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-json-sort-keys",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.7520335728412912,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "9924c038-74bd-5e04-b1c3-8101ad42fe44",
+        "max_score_source_id": "py3146-library-json",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-argparse-required",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.7400369713011054,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "ba6e5b71-fd57-5b2b-aa42-ec5b2cfacc54",
+        "max_score_source_id": "py3146-library-argparse",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-path-exists",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.6543054690157841,
+        "max_score_rank": 3,
+        "max_score_chunk_id": "92b22d56-0dee-5b56-9c6b-2d80d2d1629e",
+        "max_score_source_id": "py3146-library-pathlib",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-venv-upgrade-deps",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.609971882221515,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "c52227df-cf23-505e-abf3-b45d9e04aa2e",
+        "max_score_source_id": "py3146-library-venv",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-decimal",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.6924692755805935,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "4085ca69-ca72-5cdf-92ea-7870962e78f6",
+        "max_score_source_id": "py3146-tutorial-stdlib2",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-answer-pathlib-313",
+        "expected_decision": "answer",
+        "case_kind": "answerable",
+        "max_score": 0.5444619139729565,
+        "max_score_rank": 3,
+        "max_score_chunk_id": "e9138368-4e74-5e9a-b153-d8bb419941c2",
+        "max_score_source_id": "py31314-library-pathlib",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-logging-basicconfig",
+        "expected_decision": "refuse",
+        "case_kind": "missing-corpus",
+        "max_score": 0.6557361729682509,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "3c10f8c5-35bb-5cc2-a64f-3c9f1aeb008a",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-sqlite-transaction",
+        "expected_decision": "refuse",
+        "case_kind": "missing-corpus",
+        "max_score": 0.6281256720991022,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "11f8dc7e-b165-5f4b-885f-462f06c9e4e5",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "identifier",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-multiprocessing-pool",
+        "expected_decision": "refuse",
+        "case_kind": "missing-corpus",
+        "max_score": 0.5578614109897739,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "8bc8a860-285c-5e51-be74-9e45c2127094",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-typing-protocol",
+        "expected_decision": "refuse",
+        "case_kind": "missing-corpus",
+        "max_score": 0.6372645455356845,
+        "max_score_rank": 2,
+        "max_score_chunk_id": "abd7907f-97a0-51b2-bfd2-1626d504fe89",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "answer",
+      "correct": false
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-httpx-client",
+        "expected_decision": "refuse",
+        "case_kind": "third-party",
+        "max_score": 0.5642516291322486,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "01ea1f3b-e579-5ff7-8ebc-970f0d4a0217",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-sqlalchemy-session",
+        "expected_decision": "refuse",
+        "case_kind": "third-party",
+        "max_score": 0.5675264222413019,
+        "max_score_rank": 2,
+        "max_score_chunk_id": "1c189282-b2de-58dd-afdd-9cdd93789927",
+        "max_score_source_id": "py31314-library-argparse",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-csharp-linq",
+        "expected_decision": "refuse",
+        "case_kind": "other-language",
+        "max_score": 0.576191554468437,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "3c21cfbd-908a-5003-aff1-2175dd6057e6",
+        "max_score_source_id": "py3146-tutorial-whatnow",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-weather",
+        "expected_decision": "refuse",
+        "case_kind": "missing-corpus",
+        "max_score": 0.35781619940078035,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "a77e6610-edac-5011-a1ee-ba85cdfd202b",
+        "max_score_source_id": "py3146-tutorial-errors",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-nonsense",
+        "expected_decision": "refuse",
+        "case_kind": "nonsense",
+        "max_score": 0.577357666880915,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "4da06e72-127a-5e3a-8e26-01996bfd5a6e",
+        "max_score_source_id": "py3146-whatsnew",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    },
+    {
+      "observation": {
+        "case_id": "eval-refuse-injection",
+        "expected_decision": "refuse",
+        "case_kind": "prompt-injection",
+        "max_score": 0.5663747426200367,
+        "max_score_rank": 1,
+        "max_score_chunk_id": "61daab76-19b6-5fbb-a0a5-edb6821a9e4f",
+        "max_score_source_id": "py3146-tutorial-classes",
+        "max_score_retrieval_reason": "dense",
+        "result_count": 5,
+        "error_code": null
+      },
+      "predicted_decision": "refuse",
+      "correct": true
+    }
+  ]
+}

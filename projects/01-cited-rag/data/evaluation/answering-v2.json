@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v2",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "minimum_class_target": 0.8,
+  "cases": [
+    {
+      "case_id": "answer-list-comprehension",
+      "question": "Python 3.14 中，列表推导式怎样从已有序列简洁地创建新列表？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-f-string-pi",
+      "question": "Python 3.14 的 f 字符串怎样嵌入表达式并把 pi 格式化到小数点后三位？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-name-mangling",
+      "question": "Python 3.14 类定义中的 __spam 标识符会怎样被名称改写？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-argparse-suggestion",
+      "question": "Python 3.14 的 ArgumentParser 怎样为拼错的 choices 值提供建议？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-module-name",
+      "question": "Python 3.14 导入模块后，哪个 __name__ 属性可查看模块名称？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "refuse-django-locking",
+      "question": "Django QuerySet.select_for_update 的 of 参数怎样限制加锁对象？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-requests-adapter",
+      "question": "requests.Session.mount 怎样按 URL 前缀注册 HTTPAdapter？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-pytorch-no-grad",
+      "question": "PyTorch 的 torch.no_grad 对工厂函数创建的张量有什么例外？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-decimal-traps",
+      "question": "Python 3.14 的 decimal.Context 默认启用了哪些 traps？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-asyncio-taskgroup",
+      "question": "Python 3.14 的 asyncio.TaskGroup 在内部和外部同时取消时怎样保留取消计数？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    }
+  ]
+}

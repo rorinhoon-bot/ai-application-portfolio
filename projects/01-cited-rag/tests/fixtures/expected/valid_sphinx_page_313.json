@@ -1,0 +1,30 @@
+{
+  "fixture_schema_version": "1",
+  "fixture_text_sha256": "5e1ab33fdab733def8ae206c8fee1c7086a06f23855e77f5086d3b9fcdc02f97",
+  "page_title": "venv — 创建虚拟环境",
+  "html_canonical_url": "https://docs.python.org/zh-cn/3.13/library/venv.html",
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": 1,
+      "block_type": "paragraph",
+      "raw_text": "Python 3.13 示例使用  python -m venv env。",
+      "clean_text": "Python 3.13 示例使用 python -m venv env。",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 2,
+      "paragraph_order": null,
+      "block_type": "admonition",
+      "raw_text": "警告\n该示例仅用于版本冲突测试。",
+      "clean_text": "警告\n该示例仅用于版本冲突测试。",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": null
+    }
+  ]
+}

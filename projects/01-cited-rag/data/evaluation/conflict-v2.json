@@ -1,0 +1,20 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "conflict-v2",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "minimum_target": 0.8,
+  "cases": [
+    {
+      "case_id": "argparse-prog-balanced",
+      "question": "Python 3.13 与 3.14 中，ArgumentParser 默认 prog 对通过 -m 执行模块的名称规则有什么不同？"
+    },
+    {
+      "case_id": "pathlib-suffix-single-dot",
+      "question": "Python 3.13 与 3.14 中，PurePath.suffix 对单独点号后缀的处理有什么不同？"
+    },
+    {
+      "case_id": "pathlib-with-suffix-single-dot",
+      "question": "Python 3.13 与 3.14 中，PurePath.with_suffix 传入单独点号时行为有什么不同？"
+    }
+  ]
+}

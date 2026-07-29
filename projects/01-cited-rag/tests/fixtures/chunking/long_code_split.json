@@ -1,0 +1,52 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 12,
+    "overlap_characters": 4,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 6,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": null,
+      "block_type": "code",
+      "clean_text": "a = 1\nb = 2\nc = 3\n",
+      "section_path": ["Page", "Code"],
+      "section_anchor": "code"
+    }
+  ],
+  "expected": {
+    "chunks": [
+      {
+        "chunk_order": 1,
+        "block_start": 1,
+        "block_start_offset": 0,
+        "block_end": 1,
+        "block_end_offset": 12,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["Page", "Code"],
+        "section_anchor": "code",
+        "text": "a = 1\nb = 2\n",
+        "embedding_text": "Page > Code\n\na = 1\nb = 2\n"
+      },
+      {
+        "chunk_order": 2,
+        "block_start": 1,
+        "block_start_offset": 12,
+        "block_end": 1,
+        "block_end_offset": 18,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["Page", "Code"],
+        "section_anchor": "code",
+        "text": "c = 3\n",
+        "embedding_text": "Page > Code\n\nc = 3\n"
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "fixture_schema_version": "1",
+  "fixture_text_sha256": "14fcec75985e21d762d6cad420e6cc98e5e8225ad2521e50c336d111e21582e2",
+  "expected_error_code": "DOCUMENT_PARSE_ERROR",
+  "reason_contains": "duplicate anchor"
+}

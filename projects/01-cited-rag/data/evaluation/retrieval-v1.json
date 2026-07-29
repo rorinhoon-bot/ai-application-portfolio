@@ -1,0 +1,145 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "retrieval-v1",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "top_k": 5,
+  "authoring_method": "manual-from-verified-corpus",
+  "cases": [
+    {
+      "case_id": "create-virtual-environment",
+      "question": "用 Python 的 venv 创建虚拟环境时应运行什么命令？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "1c0bf31a-bd77-5b52-b1b6-19272cb88666",
+        "a8d37aee-807d-57fe-bec4-9375d57693b3"
+      ],
+      "rationale": "两个片段都直接给出 python -m venv 命令。"
+    },
+    {
+      "case_id": "json-non-ascii-output",
+      "question": "json.dump 怎样让非 ASCII 字符保持原样而不是转义？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "93877b62-515c-5e87-855c-0c105644784f"
+      ],
+      "rationale": "片段直接说明 ensure_ascii=False 的行为。"
+    },
+    {
+      "case_id": "list-comprehension-purpose",
+      "question": "列表推导式如何用已有序列简洁地创建新列表？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "1a08bcf2-f467-5803-9231-506ee50a8dcd"
+      ],
+      "rationale": "片段解释列表推导式的结构、用途和平方列表示例。"
+    },
+    {
+      "case_id": "match-first-pattern",
+      "question": "Python 的 match 语句会执行多少个匹配的 case，并且能否提取值？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "e47f7362-b3fc-526a-8f63-3179cf196acf"
+      ],
+      "rationale": "片段直接说明只执行第一个匹配模式，并可提取组成部分。"
+    },
+    {
+      "case_id": "finally-resource-cleanup",
+      "question": "为什么 finally 子句适合释放文件或网络连接等外部资源？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "3dd00bab-fda3-5bdf-bb61-2f5941011b14"
+      ],
+      "rationale": "片段说明 finally 总会执行，并明确列出外部资源清理场景。"
+    },
+    {
+      "case_id": "class-name-mangling",
+      "question": "类中名为 __spam 的标识符会怎样进行名称改写？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "9b998b19-241d-5809-8c24-17b667ac5e8f"
+      ],
+      "rationale": "片段给出 __spam 到 _classname__spam 的准确改写规则。"
+    },
+    {
+      "case_id": "float-isclose",
+      "question": "0.1 加三次与 0.3 比较时，怎样进行近似浮点值比较？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "a80785aa-c8de-5707-a124-69d858afcfc0"
+      ],
+      "rationale": "片段用同一数值例子展示 math.isclose。"
+    },
+    {
+      "case_id": "formatted-string-literal",
+      "question": "f 字符串怎样嵌入表达式，并把 pi 格式化到小数点后三位？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "a6b404ac-ade9-5509-af0d-0175f9d10330"
+      ],
+      "rationale": "片段解释 {expression} 并给出 math.pi:.3f 示例。"
+    },
+    {
+      "case_id": "path-read-text-314",
+      "question": "Python 3.14 中 Path.read_text 返回什么，文件是否会自动关闭？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "19707cdc-10cd-53ac-b8cc-f58b5b7c982a"
+      ],
+      "rationale": "3.14 片段说明返回解码后的字符串，并会打开再关闭文件。"
+    },
+    {
+      "case_id": "path-read-text-313",
+      "question": "Python 3.13 的 Path.read_text 有哪些可选参数，返回什么？",
+      "python_version": "3.13",
+      "relevant_chunk_ids": [
+        "8b0164ed-03b9-5700-b385-1fcba2207fb1"
+      ],
+      "rationale": "3.13 片段包含完整签名、返回值和 newline 版本说明。"
+    },
+    {
+      "case_id": "argparse-suggest-on-error",
+      "question": "Python 3.14 的 argparse 怎样为拼错的 choices 值提供建议？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "05a8b0bc-419e-5e02-b5e9-917202d6d6c2"
+      ],
+      "rationale": "片段直接展示 suggest_on_error=True 及错误建议示例。"
+    },
+    {
+      "case_id": "argparse-prog-313",
+      "question": "Python 3.13 的 ArgumentParser 默认如何确定帮助信息中的程序名？",
+      "python_version": "3.13",
+      "relevant_chunk_ids": [
+        "2068327f-db49-5a9f-b395-ed3fee465c4f"
+      ],
+      "rationale": "3.13 片段按文件、目录或 ZIP、-m 三种运行方式说明默认程序名。"
+    },
+    {
+      "case_id": "shutil-file-management",
+      "question": "标准库中哪个模块提供高级文件管理接口，并怎样复制文件？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "fb43671a-f577-5080-9fbb-06aae40383cc"
+      ],
+      "rationale": "片段说明 shutil 的定位，并给出 shutil.copyfile 示例。"
+    },
+    {
+      "case_id": "module-name-attribute",
+      "question": "导入一个 Python 模块后，可以查看哪个属性来获得模块名称？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "00ad43d2-433d-535c-8070-ac3df2d7d4e5"
+      ],
+      "rationale": "片段直接展示 fibo.__name__ 返回模块名。"
+    },
+    {
+      "case_id": "transpose-with-zip",
+      "question": "怎样用 zip 和参数解包转置一个矩阵？",
+      "python_version": "3.14",
+      "relevant_chunk_ids": [
+        "08fb7309-a8d4-5b2a-adc6-9eb4682a7179"
+      ],
+      "rationale": "片段直接给出 list(zip(*matrix)) 及转置结果。"
+    }
+  ]
+}

@@ -1,0 +1,333 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v3",
+  "evaluation_set_sha256": "78e2cb170b3cb56f807e469276f94ce64011f4166164085a060a11ff27381e97",
+  "generated_at": "2026-07-29T05:09:16.934930Z",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+  "model_provider": "mimo",
+  "model_name": "mimo-v2.5",
+  "api_call_count": 10,
+  "usage_response_count": 10,
+  "usage_complete": true,
+  "automatic_retries": 0,
+  "authorized_cny_limit": 5,
+  "prompt_tokens": 17144,
+  "completion_tokens": 624,
+  "total_tokens": 17768,
+  "answerable_recall": 0.8,
+  "refusal_accuracy": 1.0,
+  "citation_binding_validity": 1.0,
+  "minimum_class_target": 0.8,
+  "target_met": true,
+  "cases": [
+    {
+      "case_id": "answer-venv-activation",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 创建虚拟环境后，在 Windows cmd.exe 和 POSIX bash 中分别怎样激活？",
+        "status": "answered",
+        "answer": "在 Windows cmd.exe 中激活虚拟环境的命令是：`<venv>\\Scripts\\activate.bat`。在 POSIX bash 中激活虚拟环境的命令是：`source <venv>/bin/activate`。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "d2138529-fd27-5176-a590-2a745c3015c2",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "venv --- 虚拟环境的创建",
+              "虚拟环境是如何实现的"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#how-venvs-work",
+            "excerpt": "fish | $ source <venv>/bin/activate.fish\n\ncsh/tcsh | $ source <venv>/bin/activate.csh\n\npwsh | $ <venv>/bin/Activate.ps1\n\nWindows | cmd.exe | C:\\> <venv>\\Scripts\\activate.bat\n\nPowerShell | PS C:\\> <venv>\\Scripts\\Activate.ps1\n\nAdded in version 3.4: fish 和 csh 激活脚本。\n\nAdded in version 3.8: 在 POSIX 上安装 PowerShell 激活脚本，以支持 PowerShell Core。\n\n激活一个虚拟环境的操作 不是必需的，因为你完全可以在唤起 Python 时指明特定虚拟环境的 Python 解释器的完整路径。 更进一步地说，安装在虚拟环境中的所有脚本也都可以在不激活该虚拟环境的情况下运行。"
+          },
+          {
+            "rank": 4,
+            "chunk_id": "461bf4cb-627f-5196-b62f-a599554dec5a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "venv --- 虚拟环境的创建",
+              "虚拟环境是如何实现的"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#how-venvs-work",
+            "excerpt": "当运行虚拟环境中的 Python 解释器时，sys.prefix 和 sys.exec_prefix 将指向该虚拟环境的相应目录，而 sys.base_prefix 和 sys.base_exec_prefix 将指向用于创建该虚拟环境的基础 Python 的相应目录。 只需检测 sys.prefix != sys.base_prefix 就足以确定当前解释器是否运行于虚拟环境中。\n\n一个虚拟环境可以通过位于其二进制文件目录 (在 POSIX 上为 bin；在 Windows 上为 Scripts ) 中的脚本来“激活”。 这会将该目录添加到你的 PATH，这样运行 python 时就会唤起虚拟环境的 Python 解释器，从而可以运行该目录中安装的脚本而不必使用其完整路径。 激活脚本的唤起方式是平台专属的 (<venv> 必须用包含虚拟环境目录的路径来替换):\n\n平台 | Shell | 用于激活虚拟环境的命令\n\nPOSIX | bash/zsh | $ source <venv>/bin/activate\n\nfish | $ source <venv>/bin/activate.fish"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1608,
+        "completion_tokens": 139,
+        "total_tokens": 1747
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1608,
+      "completion_tokens": 139,
+      "total_tokens": 1747
+    },
+    {
+      "case_id": "answer-enumerate-index-value",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 遍历序列时，怎样用 enumerate 同时取得位置索引和对应值？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，遍历序列时可以使用 `enumerate()` 函数同时获取位置索引和对应值。例如：`for i, v in enumerate(['tic', 'tac', 'toe']): print(i, v)`。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "ca42418f-6b7a-582e-9695-7c8cd4d1a0b7",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "5. 数据结构",
+              "5.6. 循环的技巧"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/datastructures.html#looping-techniques",
+            "excerpt": "当对字典执行循环时，可以使用 items() 方法同时提取键及其对应的值。\n\n>>> knights = {'gallahad': 'the pure', 'robin': 'the brave'}\n>>> for k, v in knights.items():\n...     print(k, v)\n...\ngallahad the pure\nrobin the brave\n\n\n在序列中循环时，用 enumerate() 函数可以同时取出位置索引和对应的值：\n\n>>> for i, v in enumerate(['tic', 'tac', 'toe']):\n...     print(i, v)\n...\n0 tic\n1 tac\n2 toe\n\n\n同时循环两个或多个序列时，用 zip() 函数可以将其内的元素一一匹配："
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1812,
+        "completion_tokens": 107,
+        "total_tokens": 1919
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1812,
+      "completion_tokens": 107,
+      "total_tokens": 1919
+    },
+    {
+      "case_id": "answer-set-comprehension",
+      "expected_status": "answered",
+      "observed_status": "refused",
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 怎样用集合推导式从字符串生成互不相同的字符集合？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 2031,
+        "completion_tokens": 18,
+        "total_tokens": 2049
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 2031,
+      "completion_tokens": 18,
+      "total_tokens": 2049
+    },
+    {
+      "case_id": "answer-path-read-text-options",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 Path.read_text 支持哪些可选参数，并返回什么？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，`Path.read_text` 支持三个可选参数：`encoding`、`errors` 和 `newline`。它返回一个字符串，即路径指向文件的解码后文本内容。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "19707cdc-10cd-53ac-b8cc-f58b5b7c982a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "pathlib --- 面向对象的文件系统路径",
+              "具体路径",
+              "读写文件"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html#reading-and-writing-files",
+            "excerpt": "Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)\n\n打开路径指向的文件，就像内置的 open() 函数所做的一样:\n\n>>> p = Path('setup.py')\n>>> with p.open() as f:\n...     f.readline()\n...\n'#!/usr/bin/env python3\\n'\n\n\nPath.read_text(encoding=None, errors=None, newline=None)\n\n以字符串形式返回路径指向的文件的解码后文本内容:\n\n>>> p = Path('my_text_file')\n>>> p.write_text('Text file contents')\n18\n>>> p.read_text()\n'Text file contents'\n\n\n文件先被打开然后关闭。有和 open() 一样的可选形参。\n\nAdded in version 3.5.\n\n在 3.13 版本发生变更: 增加了 newline 形参。\n\nPath.read_bytes()"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1616,
+        "completion_tokens": 97,
+        "total_tokens": 1713
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1616,
+      "completion_tokens": 97,
+      "total_tokens": 1713
+    },
+    {
+      "case_id": "answer-argparse-prog-313",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.13 的 ArgumentParser 默认怎样确定帮助信息中的程序名 prog？",
+        "status": "answered",
+        "answer": "默认情况下，ArgumentParser 根据 Python 解释器的运行方式计算程序名：如果作为参数传递的是文件，则是 `sys.argv[0]` 的 base name；如果是目录或 ZIP 文件，则是 Python 解释器名称后接 `sys.argv[0]`；如果使用 `-m` 选项，则是 Python 解释器名称后接 `-m` 再加模块或包的名称。也可以通过 `prog=` 参数显式指定。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "2068327f-db49-5a9f-b395-ed3fee465c4f",
+            "python_version": "3.13",
+            "documentation_release": "3.13.14",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#prog",
+            "excerpt": "默认情况下 ，ArgumentParser 根据Python 解释器 的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是``sys.argv[0]`` 的 base name 。\n\n如果作为参数传递的是目录或 ZIP 文件，则是Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。 不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+          },
+          {
+            "rank": 5,
+            "chunk_id": "3acbe035-cb87-58a0-9672-e0e3954e473a",
+            "python_version": "3.13",
+            "documentation_release": "3.13.14",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#argumentparser-objects",
+            "excerpt": "class argparse.ArgumentParser(prog=None, usage=None, description=None, epilog=None, parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-', fromfile_prefix_chars=None, argument_default=None, conflict_handler='error', add_help=True, allow_abbrev=True, exit_on_error=True)\n\n创建一个新的 ArgumentParser 对象。所有的参数都应当作为关键字参数传入。每个参数在下面都有它更详细的描述，但简而言之，它们是：\n\nprog - 程序的名称 (默认值: os.path.basename(sys.argv[0]))\n\nusage - 描述程序用途的字符串（默认值：从添加到解析器的参数生成）\n\ndescription - 要在参数帮助信息之前显示的文本（默认：无文本）\n\nepilog - 要在参数帮助信息之后显示的文本（默认：无文本）"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1743,
+        "completion_tokens": 173,
+        "total_tokens": 1916
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1743,
+      "completion_tokens": 173,
+      "total_tokens": 1916
+    },
+    {
+      "case_id": "refuse-flask-app-context",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Flask 的 current_app 代理在应用上下文之外访问时会怎样报错？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1580,
+        "completion_tokens": 18,
+        "total_tokens": 1598
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1580,
+      "completion_tokens": 18,
+      "total_tokens": 1598
+    },
+    {
+      "case_id": "refuse-sqlalchemy-autoflush",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "SQLAlchemy Session.no_autoflush 上下文管理器会阻止哪些自动刷新？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1405,
+        "completion_tokens": 18,
+        "total_tokens": 1423
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1405,
+      "completion_tokens": 18,
+      "total_tokens": 1423
+    },
+    {
+      "case_id": "refuse-hashlib-file-digest",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 hashlib.file_digest 遇到非阻塞文件对象时会抛出什么异常？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1538,
+        "completion_tokens": 18,
+        "total_tokens": 1556
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1538,
+      "completion_tokens": 18,
+      "total_tokens": 1556
+    },
+    {
+      "case_id": "refuse-tomllib-parse-float",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 tomllib.load 对 parse_float 返回值有什么类型限制？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 2017,
+        "completion_tokens": 18,
+        "total_tokens": 2035
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 2017,
+      "completion_tokens": 18,
+      "total_tokens": 2035
+    },
+    {
+      "case_id": "refuse-zoneinfo-reset-path",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 zoneinfo.reset_tzpath 会怎样改变后续时区文件搜索路径？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1794,
+        "completion_tokens": 18,
+        "total_tokens": 1812
+      },
+      "error_code": null,
+      "error_reason": null,
+      "prompt_tokens": 1794,
+      "completion_tokens": 18,
+      "total_tokens": 1812
+    }
+  ]
+}

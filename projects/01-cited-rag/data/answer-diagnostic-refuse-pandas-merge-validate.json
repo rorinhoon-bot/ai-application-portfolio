@@ -1,0 +1,18 @@
+{
+  "schema_version": "1",
+  "purpose": "diagnostic-only",
+  "locked_result_unchanged": true,
+  "api_call_attempted": true,
+  "result": {
+    "case_id": "refuse-pandas-merge-validate",
+    "expected_status": "refused",
+    "observed_status": null,
+    "correct": false,
+    "answer": null,
+    "error_code": "MODEL_OUTPUT_ERROR",
+    "error_reason": "model JSON violates the answer schema (answer:string_too_short)",
+    "prompt_tokens": 1594,
+    "completion_tokens": 18,
+    "total_tokens": 1612
+  }
+}

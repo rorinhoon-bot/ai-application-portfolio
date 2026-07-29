@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v1",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "minimum_class_target": 0.8,
+  "cases": [
+    {
+      "case_id": "answer-float-near-comparison",
+      "question": "Python 3.14 中，0.1 加三次与 0.3 直接比较可能有什么问题，推荐怎样做近似比较？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-path-read-text-result",
+      "question": "Python 3.14 的 Path.read_text 返回什么类型的内容，读取后文件会怎样处理？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-json-keep-chinese",
+      "question": "Python 3.14 使用 json.dumps 输出中文时，怎样避免默认的 ASCII 转义？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-match-first-case",
+      "question": "Python 3.14 的 match 找到第一个匹配的 case 后，还会继续尝试后面的 case 吗？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-finally-cleanup",
+      "question": "Python 3.14 中，为什么 finally 子句适合确保文件或网络连接等外部资源被释放？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "refuse-pandas-merge-validate",
+      "question": "pandas DataFrame.merge 的 validate 参数支持哪些取值，各自检查什么关系？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-fastapi-depends-cache",
+      "question": "FastAPI 的 Depends 怎样缓存同一次请求中的依赖结果？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-logging-handlers-filename",
+      "question": "Python 3.14 的 logging.basicConfig 能否同时传入 handlers 和 filename，冲突时抛出什么异常？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-sqlite-autocommit-default",
+      "question": "Python 3.14 的 sqlite3.connect 中 autocommit 默认值是什么，未来版本计划怎样改变？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-numpy-reshape-order",
+      "question": "NumPy ndarray.reshape 的 order='A' 会怎样选择索引顺序？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    }
+  ]
+}

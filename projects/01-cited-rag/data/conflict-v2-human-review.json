@@ -1,0 +1,40 @@
+{
+  "schema_version": "1",
+  "review_id": "conflict-v2-human-review",
+  "source_report": "data/conflict-v2-evaluation-report.json",
+  "source_report_sha256": "78aa501821489b437b1c68787d980e57bfdd5f58139d1fb131e737c85784cfe9",
+  "reviewed_at": "2026-07-29",
+  "decision": "D-038",
+  "post_hoc_review": true,
+  "accepted_semantics": "Explicit cross-version comparisons may use answered when the answer labels each version and cited evidence supports every version claim.",
+  "cases": [
+    {
+      "case_id": "argparse-prog-balanced",
+      "version_claims_explicit": true,
+      "claims_supported_by_citations": true,
+      "citation_binding_valid": true,
+      "accepted": true,
+      "note": "The answer cites separate Python 3.13 and 3.14 prog sections."
+    },
+    {
+      "case_id": "pathlib-suffix-single-dot",
+      "version_claims_explicit": true,
+      "claims_supported_by_citations": true,
+      "citation_binding_valid": true,
+      "accepted": true,
+      "note": "The Python 3.14 change note explicitly states the new behavior relative to earlier versions."
+    },
+    {
+      "case_id": "pathlib-with-suffix-single-dot",
+      "version_claims_explicit": true,
+      "claims_supported_by_citations": true,
+      "citation_binding_valid": true,
+      "accepted": true,
+      "note": "The cited change note explicitly states both the 3.14 behavior and the previous ValueError behavior."
+    }
+  ],
+  "accepted_count": 3,
+  "case_count": 3,
+  "manual_version_comparison_accuracy": 1.0,
+  "citation_binding_validity": 1.0
+}

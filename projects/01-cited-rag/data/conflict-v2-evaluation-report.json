@@ -1,0 +1,161 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "conflict-v2",
+  "evaluation_set_sha256": "4a70d9a322fb3f0ba183b46e1019c16931407d8a71a17c1b57ee0bd5f4ea63f9",
+  "generated_at": "2026-07-29T05:46:38.563731+00:00",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+  "model": "mimo-v2.5",
+  "temperature": 0,
+  "api_call_count": 3,
+  "automatic_retries": 0,
+  "prompt_tokens": 5491,
+  "completion_tokens": 399,
+  "total_tokens": 5890,
+  "conflict_accuracy": 0.0,
+  "minimum_target": 0.8,
+  "target_met": false,
+  "cases": [
+    {
+      "case_id": "argparse-prog-balanced",
+      "question": "Python 3.13 与 3.14 中，ArgumentParser 默认 prog 对通过 -m 执行模块的名称规则有什么不同？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.13",
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.13 与 3.14 中，ArgumentParser 默认 prog 对通过 -m 执行模块的名称规则有什么不同？",
+        "status": "answered",
+        "answer": "在 Python 3.13 中，使用 -m 选项时，默认的 prog 是 Python 解释器名称后接 -m 再加模块或包的名称。在 Python 3.14 中，默认的 prog 值现在将反映出 __main__ 实际是如何被执行的，而不是始终为 os.path.basename(sys.argv[0])。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "2068327f-db49-5a9f-b395-ed3fee465c4f",
+            "python_version": "3.13",
+            "documentation_release": "3.13.14",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#prog",
+            "excerpt": "默认情况下 ，ArgumentParser 根据Python 解释器 的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是``sys.argv[0]`` 的 base name 。\n\n如果作为参数传递的是目录或 ZIP 文件，则是Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。 不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+          },
+          {
+            "rank": 2,
+            "chunk_id": "4643e0fb-4c81-516c-8e69-a2b3c9cd2ab4",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html#prog",
+            "excerpt": "需要注意程序名称，无论是由 sys.argv[0]，由 __main__ 模块属性还是由 prog= 参数来确定的，都可以在帮助消息中使用 %(prog)s 格式说明符来引用。\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.add_argument('--foo', help='foo of the %(prog)s program')\n>>> parser.print_help()\nusage: myprogram [-h] [--foo FOO]\n\noptions:\n -h, --help  show this help message and exit\n --foo FOO   foo of the myprogram program\n\n\n在 3.14 版本发生变更: 默认的 prog 值现在将反映出 __main__ 实际是如何被执行的，而不是始终为 os.path.basename(sys.argv[0])。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1686,
+        "completion_tokens": 165,
+        "total_tokens": 1851
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "pathlib-suffix-single-dot",
+      "question": "Python 3.13 与 3.14 中，PurePath.suffix 对单独点号后缀的处理有什么不同？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.13 与 3.14 中，PurePath.suffix 对单独点号后缀的处理有什么不同？",
+        "status": "answered",
+        "answer": "在 Python 3.13 中，`PurePath.suffix` 不将单独点号（\".\"）视为有效后缀。在 Python 3.14 中，一个单独点号（\".\"）会被视为有效的后缀。",
+        "citations": [
+          {
+            "rank": 2,
+            "chunk_id": "02547aae-889e-5532-af15-db87c16a116a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "pathlib --- 面向对象的文件系统路径",
+              "纯路径",
+              "方法和特征属性"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html#methods-and-properties",
+            "excerpt": "这通常被称作文件扩展名。\n\n在 3.14 版本发生变更: 一个单独点号 (\".\") 会被视为有效的后缀。\n\nPurePath.suffixes\n\n由路径后缀组成的列表，经常被称作文件扩展名:\n\n>>> PurePosixPath('my/library.tar.gar').suffixes\n['.tar', '.gar']\n>>> PurePosixPath('my/library.tar.gz').suffixes\n['.tar', '.gz']\n>>> PurePosixPath('my/library').suffixes\n[]\n\n\n在 3.14 版本发生变更: 一个单独点号 (\".\") 会被视为有效的后缀。\n\nPurePath.stem\n\n最后一个路径组件，除去后缀:\n\n>>> PurePosixPath('my/library.tar.gz').stem\n'library.tar'\n>>> PurePosixPath('my/library.tar').stem\n'library'\n>>> PurePosixPath('my/library').stem\n'library'\n"
+          },
+          {
+            "rank": 5,
+            "chunk_id": "8fc4e6b4-77e6-5ad6-8b03-5de53c5f8c5a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "pathlib --- 面向对象的文件系统路径",
+              "纯路径",
+              "方法和特征属性"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html#methods-and-properties",
+            "excerpt": "返回一个新的路径并修改 suffix。如果原本的路径没有后缀，新的 suffix 则被追加以代替。如果 suffix 是空字符串，则原本的后缀被移除:\n\n>>> p = PureWindowsPath('c:/Downloads/pathlib.tar.gz')\n>>> p.with_suffix('.bz2')\nPureWindowsPath('c:/Downloads/pathlib.tar.bz2')\n>>> p = PureWindowsPath('README')\n>>> p.with_suffix('.txt')\nPureWindowsPath('README.txt')\n>>> p = PureWindowsPath('README.txt')\n>>> p.with_suffix('')\nPureWindowsPath('README')\n\n\n在 3.14 版本发生变更: 单个点号 (\".\") 会被视为合法的后缀。 在之前版本中，如果提供单个点号则会引发 ValueError。\n\nPurePath.with_segments(*pathsegments)"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1909,
+        "completion_tokens": 131,
+        "total_tokens": 2040
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "pathlib-with-suffix-single-dot",
+      "question": "Python 3.13 与 3.14 中，PurePath.with_suffix 传入单独点号时行为有什么不同？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.13 与 3.14 中，PurePath.with_suffix 传入单独点号时行为有什么不同？",
+        "status": "answered",
+        "answer": "在 Python 3.13 中，向 `PurePath.with_suffix` 传入单个点号 (`.`) 会引发 `ValueError`。在 Python 3.14 中，单个点号被视为合法的后缀，不会引发错误。",
+        "citations": [
+          {
+            "rank": 5,
+            "chunk_id": "8fc4e6b4-77e6-5ad6-8b03-5de53c5f8c5a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "pathlib --- 面向对象的文件系统路径",
+              "纯路径",
+              "方法和特征属性"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html#methods-and-properties",
+            "excerpt": "返回一个新的路径并修改 suffix。如果原本的路径没有后缀，新的 suffix 则被追加以代替。如果 suffix 是空字符串，则原本的后缀被移除:\n\n>>> p = PureWindowsPath('c:/Downloads/pathlib.tar.gz')\n>>> p.with_suffix('.bz2')\nPureWindowsPath('c:/Downloads/pathlib.tar.bz2')\n>>> p = PureWindowsPath('README')\n>>> p.with_suffix('.txt')\nPureWindowsPath('README.txt')\n>>> p = PureWindowsPath('README.txt')\n>>> p.with_suffix('')\nPureWindowsPath('README')\n\n\n在 3.14 版本发生变更: 单个点号 (\".\") 会被视为合法的后缀。 在之前版本中，如果提供单个点号则会引发 ValueError。\n\nPurePath.with_segments(*pathsegments)"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1896,
+        "completion_tokens": 103,
+        "total_tokens": 1999
+      },
+      "error_code": null,
+      "error_reason": null
+    }
+  ]
+}

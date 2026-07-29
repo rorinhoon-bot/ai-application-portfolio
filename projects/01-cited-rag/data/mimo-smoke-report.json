@@ -1,0 +1,48 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-07-29T04:43:46.559656+00:00",
+  "provider": "mimo",
+  "model": "mimo-v2.5",
+  "call_count": 1,
+  "automatic_retries": 0,
+  "authorized_cny_limit": 5,
+  "maximum_completion_tokens": 800,
+  "request_payload_characters": 3237,
+  "answer": {
+    "schema_version": "1",
+    "question": "Python 3.14 中，使用 venv 创建虚拟环境应运行什么命令？",
+    "status": "answered",
+    "answer": "在 Python 3.14 中，使用 venv 创建虚拟环境的命令是：\n\npython -m venv /path/to/new/virtual/environment\n\n在 Windows 上，命令为：\n\npython -m venv C:\\path\\to\\new\\virtual\\environment",
+    "citations": [
+      {
+        "rank": 1,
+        "chunk_id": "7d0a14ae-f711-5b6d-ae97-e445cebc9e47",
+        "python_version": "3.14",
+        "documentation_release": "3.14.6",
+        "section_path": [
+          "venv --- 虚拟环境的创建",
+          "创建虚拟环境"
+        ],
+        "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#creating-virtual-environments",
+        "excerpt": "在 Windows 上，像下面这样唤起 venv 命令：\n\nPS> python -m venv C:\\path\\to\\new\\virtual\\environment\n\n\n本命令如果以 -h 参数运行，将显示可用的选项:"
+      },
+      {
+        "rank": 2,
+        "chunk_id": "1c0bf31a-bd77-5b52-b1b6-19272cb88666",
+        "python_version": "3.14",
+        "documentation_release": "3.14.6",
+        "section_path": [
+          "venv --- 虚拟环境的创建",
+          "创建虚拟环境"
+        ],
+        "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#creating-virtual-environments",
+        "excerpt": "虚拟环境 是通过执行 venv 模块来创建的：\n\npython -m venv /path/to/new/virtual/environment\n\n\n此命令会创建目标目录（必要时还包括父目录）并在其中放置一个 pyvenv.cfg 文件，文件带有一个指向运行此命令的 Python 安装版的 home 键。 它还会创建一个 bin 子目录 (在 Windows 上为 Scripts)，其中包含 Python 可执行文件的副本或符号链接 (具体由创建环境时所使用的平台或参数而定)。 它还会创建一个 lib/pythonX.Y/site-packages 子目录 (在 Windows 上则为 Lib\\site-packages )。 如果指定了现有的目录，则该目录将被重用。\n\n在 3.5 版本发生变更: 现在推荐使用 venv 来创建虚拟环境。\n\n从 3.6 版起已弃用，已在 3.8 版中移除: pyvenv 是针对 Python 3.3 和 3.4 创建虚拟环境的推荐工具，并在 3.5 中被直接执行 venv 的方式所取代。\n\n在 Windows 上，像下面这样唤起 venv 命令："
+      }
+    ],
+    "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+    "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+    "prompt_tokens": 1830,
+    "completion_tokens": 143,
+    "total_tokens": 1973
+  }
+}

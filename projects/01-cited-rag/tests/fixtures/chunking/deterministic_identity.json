@@ -1,0 +1,39 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 30,
+    "overlap_characters": 12,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 15,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": 1,
+      "block_type": "paragraph",
+      "clean_text": "alpha beta.",
+      "section_path": ["Page", "Identity"],
+      "section_anchor": "identity"
+    },
+    {
+      "block_order": 2,
+      "paragraph_order": 2,
+      "block_type": "paragraph",
+      "clean_text": "gamma delta.",
+      "section_path": ["Page", "Identity"],
+      "section_anchor": "identity"
+    }
+  ],
+  "expected": {
+    "repeat_is_identical": true,
+    "changed_config": {
+      "max_characters": 29,
+      "same_chunk_boundaries": true,
+      "chunk_config_sha256_changes": true,
+      "all_chunk_ids_change": true
+    }
+  }
+}

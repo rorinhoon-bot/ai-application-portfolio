@@ -1,0 +1,52 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 8,
+    "overlap_characters": 2,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 4,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": null,
+      "block_type": "code",
+      "clean_text": "xxxxxxxxxxxxx",
+      "section_path": ["Page", "Long line"],
+      "section_anchor": "long-line"
+    }
+  ],
+  "expected": {
+    "chunks": [
+      {
+        "chunk_order": 1,
+        "block_start": 1,
+        "block_start_offset": 0,
+        "block_end": 1,
+        "block_end_offset": 8,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["Page", "Long line"],
+        "section_anchor": "long-line",
+        "text": "xxxxxxxx",
+        "embedding_text": "Page > Long line\n\nxxxxxxxx"
+      },
+      {
+        "chunk_order": 2,
+        "block_start": 1,
+        "block_start_offset": 8,
+        "block_end": 1,
+        "block_end_offset": 13,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["Page", "Long line"],
+        "section_anchor": "long-line",
+        "text": "xxxxx",
+        "embedding_text": "Page > Long line\n\nxxxxx"
+      }
+    ]
+  }
+}

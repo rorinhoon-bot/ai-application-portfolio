@@ -1,0 +1,53 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 8,
+    "overlap_characters": 2,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 4,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": null,
+      "block_type": "list_item",
+      "clean_text": "第一句。第二句。第三句。",
+      "section_path": ["页面", "长文本"],
+      "section_anchor": "long-text",
+      "list_level": 1
+    }
+  ],
+  "expected": {
+    "chunks": [
+      {
+        "chunk_order": 1,
+        "block_start": 1,
+        "block_start_offset": 0,
+        "block_end": 1,
+        "block_end_offset": 8,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["页面", "长文本"],
+        "section_anchor": "long-text",
+        "text": "第一句。第二句。",
+        "embedding_text": "页面 > 长文本\n\n第一句。第二句。"
+      },
+      {
+        "chunk_order": 2,
+        "block_start": 1,
+        "block_start_offset": 8,
+        "block_end": 1,
+        "block_end_offset": 12,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "section_path": ["页面", "长文本"],
+        "section_anchor": "long-text",
+        "text": "第三句。",
+        "embedding_text": "页面 > 长文本\n\n第三句。"
+      }
+    ]
+  }
+}

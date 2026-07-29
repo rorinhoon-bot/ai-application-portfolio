@@ -1,0 +1,89 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 30,
+    "overlap_characters": 12,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 15,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": 1,
+      "block_type": "paragraph",
+      "clean_text": "alpha beta.",
+      "section_path": ["Page", "Section A"],
+      "section_anchor": "section-a"
+    },
+    {
+      "block_order": 2,
+      "paragraph_order": 2,
+      "block_type": "paragraph",
+      "clean_text": "gamma delta.",
+      "section_path": ["Page", "Section A"],
+      "section_anchor": "section-a"
+    },
+    {
+      "block_order": 3,
+      "paragraph_order": 3,
+      "block_type": "paragraph",
+      "clean_text": "theta kappa.",
+      "section_path": ["Page", "Section A"],
+      "section_anchor": "section-a"
+    },
+    {
+      "block_order": 4,
+      "paragraph_order": 4,
+      "block_type": "paragraph",
+      "clean_text": "new section.",
+      "section_path": ["Page", "Section B"],
+      "section_anchor": "section-b"
+    }
+  ],
+  "expected": {
+    "chunks": [
+      {
+        "chunk_order": 1,
+        "block_start": 1,
+        "block_start_offset": 0,
+        "block_end": 2,
+        "block_end_offset": 12,
+        "paragraph_start": 1,
+        "paragraph_end": 2,
+        "section_path": ["Page", "Section A"],
+        "section_anchor": "section-a",
+        "text": "alpha beta.\n\ngamma delta.",
+        "embedding_text": "Page > Section A\n\nalpha beta.\n\ngamma delta."
+      },
+      {
+        "chunk_order": 2,
+        "block_start": 2,
+        "block_start_offset": 0,
+        "block_end": 3,
+        "block_end_offset": 12,
+        "paragraph_start": 2,
+        "paragraph_end": 3,
+        "section_path": ["Page", "Section A"],
+        "section_anchor": "section-a",
+        "text": "gamma delta.\n\ntheta kappa.",
+        "embedding_text": "Page > Section A\n\ngamma delta.\n\ntheta kappa."
+      },
+      {
+        "chunk_order": 3,
+        "block_start": 4,
+        "block_start_offset": 0,
+        "block_end": 4,
+        "block_end_offset": 12,
+        "paragraph_start": 4,
+        "paragraph_end": 4,
+        "section_path": ["Page", "Section B"],
+        "section_anchor": "section-b",
+        "text": "new section.",
+        "embedding_text": "Page > Section B\n\nnew section."
+      }
+    ]
+  }
+}

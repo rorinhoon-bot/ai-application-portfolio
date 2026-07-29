@@ -1,0 +1,124 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "ambiguous-conflict-v1",
+  "evaluation_set_sha256": "e5fd5024d8e1bf8f958368dce20464e3f971e1d48aa004d2945d0e4fa23980ff",
+  "generated_at": "2026-07-29T05:49:20.429228+00:00",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+  "model": "mimo-v2.5",
+  "temperature": 0,
+  "api_call_count": 2,
+  "automatic_retries": 0,
+  "prompt_tokens": 3451,
+  "completion_tokens": 380,
+  "total_tokens": 3831,
+  "conflict_accuracy": 0.0,
+  "minimum_target": 0.8,
+  "target_met": false,
+  "cases": [
+    {
+      "case_id": "argparse-prog-version-omitted",
+      "question": "ArgumentParser 的默认 prog 规则是什么？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.13",
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "ArgumentParser 的默认 prog 规则是什么？",
+        "status": "answered",
+        "answer": "ArgumentParser 的默认 prog 规则如下：\n\n默认情况下，ArgumentParser 根据 Python 解释器的运行方式计算程序名称：\n- 如果作为参数传递的是文件，则是 sys.argv[0] 的 basename。\n- 如果作为参数传递的是目录或 ZIP 文件，则是 Python 解释器名称，后接 sys.argv[0]。\n- 如果使用 -m 选项，则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n可以通过 prog= 参数传入 ArgumentParser 来提供另外的值以更改此默认行为。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "e862d328-9872-53ef-8061-2ef7b49b053c",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html#prog",
+            "excerpt": "默认情况下，ArgumentParser 根据 Python 解释器的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是 sys.argv[0] 的 basename。\n\n如果作为参数传递的是目录或 ZIP 文件，则是 Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+          },
+          {
+            "rank": 4,
+            "chunk_id": "2068327f-db49-5a9f-b395-ed3fee465c4f",
+            "python_version": "3.13",
+            "documentation_release": "3.13.14",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#prog",
+            "excerpt": "默认情况下 ，ArgumentParser 根据Python 解释器 的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是``sys.argv[0]`` 的 base name 。\n\n如果作为参数传递的是目录或 ZIP 文件，则是Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。 不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1732,
+        "completion_tokens": 205,
+        "total_tokens": 1937
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-prog-basename-version-omitted",
+      "question": "ArgumentParser 默认 prog 是否始终是 os.path.basename(sys.argv[0])？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.13",
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "ArgumentParser 默认 prog 是否始终是 os.path.basename(sys.argv[0])？",
+        "status": "answered",
+        "answer": "不是。根据 Python 3.14 的文档，ArgumentParser 的默认 prog 值在 3.14 版本发生了变更，现在将反映出 `__main__` 实际是如何被执行的，而不是始终为 `os.path.basename(sys.argv[0])`。在 3.13 及更早版本中，默认行为是：如果作为参数传递的是文件，则是 `sys.argv[0]` 的 basename。",
+        "citations": [
+          {
+            "rank": 3,
+            "chunk_id": "4643e0fb-4c81-516c-8e69-a2b3c9cd2ab4",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html#prog",
+            "excerpt": "需要注意程序名称，无论是由 sys.argv[0]，由 __main__ 模块属性还是由 prog= 参数来确定的，都可以在帮助消息中使用 %(prog)s 格式说明符来引用。\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.add_argument('--foo', help='foo of the %(prog)s program')\n>>> parser.print_help()\nusage: myprogram [-h] [--foo FOO]\n\noptions:\n -h, --help  show this help message and exit\n --foo FOO   foo of the myprogram program\n\n\n在 3.14 版本发生变更: 默认的 prog 值现在将反映出 __main__ 实际是如何被执行的，而不是始终为 os.path.basename(sys.argv[0])。"
+          },
+          {
+            "rank": 2,
+            "chunk_id": "2068327f-db49-5a9f-b395-ed3fee465c4f",
+            "python_version": "3.13",
+            "documentation_release": "3.13.14",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "prog"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#prog",
+            "excerpt": "默认情况下 ，ArgumentParser 根据Python 解释器 的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是``sys.argv[0]`` 的 base name 。\n\n如果作为参数传递的是目录或 ZIP 文件，则是Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。 不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1719,
+        "completion_tokens": 175,
+        "total_tokens": 1894
+      },
+      "error_code": null,
+      "error_reason": null
+    }
+  ]
+}

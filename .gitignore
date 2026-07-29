@@ -32,6 +32,11 @@ data/private/
 projects/00-structured-content-generator/material.txt
 projects/00-structured-content-generator/learning-note.json
 
+# Local P1 official-document snapshots
+projects/01-cited-rag/data/sources/html/
+projects/01-cited-rag/data/sources/license/
+projects/01-cited-rag/data/indexes/
+
 # Editors and operating systems
 .vscode/
 .idea/

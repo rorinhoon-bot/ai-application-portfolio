@@ -1,0 +1,129 @@
+{
+  "fixture_schema_version": "1",
+  "fixture_text_sha256": "2f21d765dd5439d63f22b991a3db7cbe20088c5ab08ed7eab2553c32a1206e91",
+  "page_title": "venv — 创建虚拟环境",
+  "html_canonical_url": "https://docs.python.org/zh-cn/3.14/library/venv.html",
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": 1,
+      "block_type": "paragraph",
+      "raw_text": "使用 python -m venv .venv\u00a0创建   环境。",
+      "clean_text": "使用 python -m venv .venv 创建 环境。",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 2,
+      "paragraph_order": null,
+      "block_type": "list_item",
+      "raw_text": "不要提交环境目录。",
+      "clean_text": "不要提交环境目录。",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": 1
+    },
+    {
+      "block_order": 3,
+      "paragraph_order": null,
+      "block_type": "list_item",
+      "raw_text": "例如 .venv/",
+      "clean_text": "例如 .venv/",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": 2
+    },
+    {
+      "block_order": 4,
+      "paragraph_order": null,
+      "block_type": "code",
+      "raw_text": "python -m venv .venv\n  .venv\\Scripts\\Activate.ps1\n",
+      "clean_text": "python -m venv .venv\n  .venv\\Scripts\\Activate.ps1\n",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 5,
+      "paragraph_order": null,
+      "block_type": "admonition",
+      "raw_text": "注意\n不要把虚拟环境目录提交到 Git。",
+      "clean_text": "注意\n不要把虚拟环境目录提交到 Git。",
+      "section_path": ["venv — 创建虚拟环境", "创建虚拟环境"],
+      "section_anchor": "creating",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 6,
+      "paragraph_order": null,
+      "block_type": "definition_term",
+      "raw_text": "class venv.EnvBuilder",
+      "clean_text": "class venv.EnvBuilder",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": "venv.EnvBuilder",
+      "list_level": null
+    },
+    {
+      "block_order": 7,
+      "paragraph_order": 2,
+      "block_type": "paragraph",
+      "raw_text": "用于自定义环境创建。",
+      "clean_text": "用于自定义环境创建。",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 8,
+      "paragraph_order": null,
+      "block_type": "table_row",
+      "raw_text": "选项 | 含义",
+      "clean_text": "选项 | 含义",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 9,
+      "paragraph_order": null,
+      "block_type": "table_row",
+      "raw_text": "clear | 创建前清理目录",
+      "clean_text": "clear | 创建前清理目录",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 10,
+      "paragraph_order": null,
+      "block_type": "blockquote",
+      "raw_text": "虚拟环境应当可以重新创建。",
+      "clean_text": "虚拟环境应当可以重新创建。",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": null,
+      "list_level": null
+    },
+    {
+      "block_order": 11,
+      "paragraph_order": null,
+      "block_type": "image_alt",
+      "raw_text": "虚拟环境目录结构图",
+      "clean_text": "虚拟环境目录结构图",
+      "section_path": ["venv — 创建虚拟环境", "API"],
+      "section_anchor": "api",
+      "block_anchor": null,
+      "list_level": null
+    }
+  ]
+}

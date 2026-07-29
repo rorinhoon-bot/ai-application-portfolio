@@ -1,0 +1,265 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v1",
+  "evaluation_set_sha256": "9e9a374c965ea6e8cfd0fbad1d6d8a2be37283f068bb11b500a4f260e26e5eb4",
+  "api_call_count": 10,
+  "automatic_retries": 0,
+  "authorized_cny_limit": 5,
+  "cases": [
+    {
+      "case_id": "answer-float-near-comparison",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 中，0.1 加三次与 0.3 直接比较可能有什么问题，推荐怎样做近似比较？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，由于二进制浮点数无法精确表示十进制小数（如 0.1 和 0.3），直接比较 `0.1 + 0.1 + 0.1 == 0.3` 会得到 `False`。这属于表示性错误，是二进制浮点数的本质特性。推荐使用 `math.isclose()` 函数进行近似比较，例如 `math.isclose(0.1 + 0.1 + 0.1, 0.3)` 会返回 `True`。",
+        "citations": [
+          {
+            "rank": 2,
+            "chunk_id": "a80785aa-c8de-5707-a124-69d858afcfc0",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "15. 浮点算术：问题和限制"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/floatingpoint.html#floating-point-arithmetic-issues-and-limitations",
+            "excerpt": "而且，由于这个 0.1 无法精确表示 1/10 而这个 0.3 也无法精确表示 3/10 的值，使用 round() 函数进行预先舍入也是没用的:\n\n>>> round(0.1, 1) + round(0.1, 1) + round(0.1, 1) == round(0.3, 1)\nFalse\n\n\n虽然这些数字无法精确表示其所要代表的实际值，但是可以使用 math.isclose() 函数来进行不精确的值比较:\n\n>>> math.isclose(0.1 + 0.1 + 0.1, 0.3)\nTrue\n\n\n或者，也可以使用 round() 函数来大致地比较近似程度：\n\n>>> round(math.pi, ndigits=2) == round(22 / 7, ndigits=2)\nTrue\n"
+          },
+          {
+            "rank": 4,
+            "chunk_id": "a191a776-70c4-56eb-a2fb-8f70ee3abf27",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "15. 浮点算术：问题和限制"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/floatingpoint.html#floating-point-arithmetic-issues-and-limitations",
+            "excerpt": "请注意这种情况是二进制浮点数的本质特性：它不是 Python 的错误，也不是你代码中的错误。 你会在所有支持你的硬件中的浮点运算的语言中发现同样的情况（虽然某些语言在默认状态或所有输出模式下都不会 显示 这种差异）。\n\n想要更美观的输出，你可能会希望使用字符串格式化来产生限定长度的有效位数:\n\n>>> format(math.pi, '.12g')  # 有 12 个有效数位\n'3.14159265359'\n\n>>> format(math.pi, '.2f')   # 小数点后有 2 个数位\n'3.14'\n\n>>> repr(math.pi)\n'3.141592653589793'\n\n\n必须重点了解的是，这在实际上只是一个假象：你只是将真正的机器值进行了舍入操作再 显示 而已。\n\n一个假象还可能导致另一个假象。 例如，由于这个 0.1 并非真正的 1/10，将三个 0.1 的值相加也无法恰好得到 0.3:\n\n>>> 0.1 + 0.1 + 0.1 == 0.3\nFalse\n\n\n而且，由于这个 0.1 无法精确表示 1/10 而这个 0.3 也无法精确表示 3/10 的值，使用 round() 函数进行预先舍入也是没用的:"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 2230,
+        "completion_tokens": 224,
+        "total_tokens": 2454
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "answer-path-read-text-result",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 Path.read_text 返回什么类型的内容，读取后文件会怎样处理？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，`Path.read_text()` 方法返回路径指向文件的解码后字符串内容。在读取完成后，文件会被先打开然后关闭。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "19707cdc-10cd-53ac-b8cc-f58b5b7c982a",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "pathlib --- 面向对象的文件系统路径",
+              "具体路径",
+              "读写文件"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/pathlib.html#reading-and-writing-files",
+            "excerpt": "Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)\n\n打开路径指向的文件，就像内置的 open() 函数所做的一样:\n\n>>> p = Path('setup.py')\n>>> with p.open() as f:\n...     f.readline()\n...\n'#!/usr/bin/env python3\\n'\n\n\nPath.read_text(encoding=None, errors=None, newline=None)\n\n以字符串形式返回路径指向的文件的解码后文本内容:\n\n>>> p = Path('my_text_file')\n>>> p.write_text('Text file contents')\n18\n>>> p.read_text()\n'Text file contents'\n\n\n文件先被打开然后关闭。有和 open() 一样的可选形参。\n\nAdded in version 3.5.\n\n在 3.13 版本发生变更: 增加了 newline 形参。\n\nPath.read_bytes()"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1843,
+        "completion_tokens": 85,
+        "total_tokens": 1928
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "answer-json-keep-chinese",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 使用 json.dumps 输出中文时，怎样避免默认的 ASCII 转义？",
+        "status": "answered",
+        "answer": "使用 `json.dumps` 时，将 `ensure_ascii` 参数设置为 `False` 即可避免默认的 ASCII 转义。",
+        "citations": [
+          {
+            "rank": 3,
+            "chunk_id": "93877b62-515c-5e87-855c-0c105644784f",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "json --- JSON 编码器和解码器",
+              "基本使用"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/json.html#basic-usage",
+            "excerpt": "skipkeys (bool) -- 如为 True，则不为基本类型 (str, int, float, bool, None) 的键将被跳过而不会引发 TypeError。 默认为 False。\n\nensure_ascii (bool) -- 如果为 True (默认值)，输出将确保对所有输入的非 ASCII 和不可打印字符进行转义。 如果为 False，则所有字符将被原样输出，只有必须被转义的字符除外：引号、反斜线，以及 U+0000 至 U+001F 范围的控制字符。\n\ncheck_circular (bool) -- 如为 False，则对容器类型的循环引用检查会被跳过并且循环引用将导致 RecursionError (或更糟的情况)。 默认为 True。\n\nallow_nan (bool) -- 如为 False，则对超范围的 float 值 (nan, inf, -inf) 进行序列化将导致 ValueError，以严格遵循 JSON 规范。 如为 True (默认值)，则将使用它们的 JavaScript 等价形式 (NaN, Infinity, -Infinity)。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1865,
+        "completion_tokens": 85,
+        "total_tokens": 1950
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "answer-match-first-case",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 match 找到第一个匹配的 case 后，还会继续尝试后面的 case 吗？",
+        "status": "answered",
+        "answer": "不会。match 语句在找到第一个匹配的 case 后就会执行该分支，并且不再尝试后续的 case。只有在第一个匹配的 case 失败（例如守卫子句为假）时，才会继续尝试下一个 case。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "e47f7362-b3fc-526a-8f63-3179cf196acf",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "4. 更多控制流工具",
+              "4.7. match 语句"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/controlflow.html#match-statements",
+            "excerpt": "match 语句接受一个表达式并把它的值与一个或多个 case 块给出的一系列模式进行比较。这表面上像 C、Java 或 JavaScript（以及许多其他程序设计语言）中的 switch 语句，但其实它更像 Rust 或 Haskell 中的模式匹配。只有第一个匹配的模式会被执行，并且它还可以提取值的组成部分（序列的元素或对象的属性）赋给变量。如果没有匹配的case，则不执行任何分支。\n\n最简单的形式是将一个主语值与一个或多个字面值进行比较：\n\ndef http_error(status):\n    match status:\n        case 400:\n            return \"Bad request\"\n        case 404:\n            return \"Not found\"\n        case 418:\n            return \"I'm a teapot\"\n        case _:\n            return \"Something's wrong with the internet\"\n"
+          },
+          {
+            "rank": 2,
+            "chunk_id": "329e8f79-4a9f-5055-8497-6b6843f6eb5c",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "4. 更多控制流工具",
+              "4.7. match 语句"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/controlflow.html#match-statements",
+            "excerpt": "我们可以为模式添加 if 作为守卫子句。如果守卫子句的值为假，那么 match 会继续尝试匹配下一个 case 块。注意是先将值捕获，再对守卫子句求值：\n\nmatch point:\n    case Point(x, y) if x == y:\n        print(f\"Y=X at {x}\")\n    case Point(x, y):\n        print(f\"Not on the diagonal\")\n\n\n该语句的一些其它关键特性：\n\n与解包赋值类似，元组和列表模式具有完全相同的含义并且实际上都能匹配任意序列，区别是它们不能匹配迭代器或字符串。\n\n序列模式支持扩展解包：[x, y, *rest] 和 (x, y, *rest) 和相应的解包赋值做的事是一样的。接在 * 后的名称也可以为 _，所以 (x, y, *_) 匹配含至少两项的序列，而不必绑定剩余的项。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1915,
+        "completion_tokens": 150,
+        "total_tokens": 2065
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "answer-finally-cleanup",
+      "expected_status": "answered",
+      "observed_status": "answered",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 中，为什么 finally 子句适合确保文件或网络连接等外部资源被释放？",
+        "status": "answered",
+        "answer": "在 Python 3.14 中，finally 子句适合确保文件或网络连接等外部资源被释放，是因为它在任何情况下（无论 try 子句是否触发异常）都会执行。文档明确指出，finally 子句对于释放外部资源非常有用，无论是否成功使用资源。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "3dd00bab-fda3-5bdf-bb61-2f5941011b14",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "8. 错误和异常",
+              "8.7. 定义清理操作"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/tutorial/errors.html#defining-clean-up-actions",
+            "excerpt": "    ~~~~~~^^^^^^^^^^\n  File \"<stdin>\", line 3, in divide\n    result = x / y\n             ~~^~~\nTypeError: unsupported operand type(s) for /: 'str' and 'str'\n\n\n如上所示，任何情况下都会执行 finally 子句。except 子句不处理两个字符串相除触发的 TypeError，因此会在 finally 子句执行后被重新触发。\n\n在实际应用程序中，finally 子句对于释放外部资源（例如文件或者网络连接）非常有用，无论是否成功使用资源。"
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1640,
+        "completion_tokens": 118,
+        "total_tokens": 1758
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "refuse-pandas-merge-validate",
+      "expected_status": "refused",
+      "observed_status": null,
+      "correct": false,
+      "answer": null,
+      "error_code": "MODEL_OUTPUT_ERROR",
+      "error_reason": "model JSON violates the answer schema"
+    },
+    {
+      "case_id": "refuse-fastapi-depends-cache",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "FastAPI 的 Depends 怎样缓存同一次请求中的依赖结果？",
+        "status": "refused",
+        "answer": "提供的证据中没有关于 FastAPI 的 Depends 如何在同一次请求中缓存依赖结果的信息。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1729,
+        "completion_tokens": 52,
+        "total_tokens": 1781
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "refuse-logging-handlers-filename",
+      "expected_status": "refused",
+      "observed_status": null,
+      "correct": false,
+      "answer": null,
+      "error_code": "MODEL_OUTPUT_ERROR",
+      "error_reason": "model JSON violates the answer schema"
+    },
+    {
+      "case_id": "refuse-sqlite-autocommit-default",
+      "expected_status": "refused",
+      "observed_status": "refused",
+      "correct": true,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.14 的 sqlite3.connect 中 autocommit 默认值是什么，未来版本计划怎样改变？",
+        "status": "refused",
+        "answer": "提供的证据中没有关于 Python 3.14 中 sqlite3.connect 的 autocommit 参数的任何信息，因此无法回答问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1529,
+        "completion_tokens": 59,
+        "total_tokens": 1588
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "refuse-numpy-reshape-order",
+      "expected_status": "refused",
+      "observed_status": null,
+      "correct": false,
+      "answer": null,
+      "error_code": "MODEL_OUTPUT_ERROR",
+      "error_reason": "model JSON violates the answer schema"
+    }
+  ]
+}

@@ -1,0 +1,908 @@
+{
+  "schema_version": "1",
+  "audited_at": "2026-07-28T14:15:04.210843+00:00",
+  "status": "failed",
+  "model": {
+    "repository_id": "Qdrant/bge-small-zh-v1.5",
+    "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+    "model_assets_sha256": "dea3d1b18367c7734c34cdcdc01d4cc78ccf8f591fceb7e74d6e272e8f8e4133",
+    "configured_truncation": {
+      "max_length": 512,
+      "stride": 0,
+      "strategy": "longest_first",
+      "direction": "right"
+    },
+    "audit_truncation": null,
+    "audit_padding": null,
+    "max_input_tokens": 512
+  },
+  "corpus": {
+    "corpus_id": "5386ccee-bb5f-5417-b70a-33395abe9669",
+    "manifest_sha256": "60258d7589162244cce9dc24ef79a26fe7f1cee1d05af5692f228d614947ae43",
+    "document_count": 25
+  },
+  "chunking": {
+    "schema_version": "chunker-v1",
+    "chunk_config_sha256": "ca957ae7b04de07964d249e255a03c50550ca95b8c9f2ef056f562e9f72ecd0b",
+    "chunk_count": 974
+  },
+  "token_count": {
+    "median": 329,
+    "p90": 507,
+    "p95": 544,
+    "p99": 606,
+    "maximum": 694,
+    "over_limit_count": 94,
+    "per_source_over_limit": {
+      "py31314-library-argparse": 7,
+      "py31314-library-pathlib": 7,
+      "py31314-whatsnew": 6,
+      "py3146-library-argparse": 8,
+      "py3146-library-json": 2,
+      "py3146-library-pathlib": 10,
+      "py3146-library-venv": 3,
+      "py3146-tutorial-appetite": 2,
+      "py3146-tutorial-classes": 9,
+      "py3146-tutorial-controlflow": 4,
+      "py3146-tutorial-datastructures": 6,
+      "py3146-tutorial-errors": 1,
+      "py3146-tutorial-floatingpoint": 6,
+      "py3146-tutorial-index": 3,
+      "py3146-tutorial-inputoutput": 6,
+      "py3146-tutorial-interpreter": 1,
+      "py3146-tutorial-introduction": 4,
+      "py3146-tutorial-modules": 2,
+      "py3146-tutorial-stdlib2": 1,
+      "py3146-tutorial-whatnow": 1,
+      "py3146-whatsnew": 5
+    }
+  },
+  "over_limit": [
+    {
+      "chunk_id": "2ca147a7-8b29-5a67-a5b4-8821a404b7f4",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 4,
+      "character_count": 768,
+      "token_count": 694
+    },
+    {
+      "chunk_id": "a09dd0ad-c001-5dda-a77c-ed9af756b18d",
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "chunk_order": 7,
+      "character_count": 844,
+      "token_count": 651
+    },
+    {
+      "chunk_id": "b848b50d-361f-5345-9d9a-c7fbdc458618",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 16,
+      "character_count": 795,
+      "token_count": 650
+    },
+    {
+      "chunk_id": "8783ddf8-d54f-50a9-8e2a-22f605313ff8",
+      "source_id": "py3146-tutorial-appetite",
+      "document_key": "tutorial-appetite",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 790,
+      "token_count": 643
+    },
+    {
+      "chunk_id": "d9176bd6-d4ff-53d7-8a5d-b11d5550ce12",
+      "source_id": "py3146-tutorial-modules",
+      "document_key": "tutorial-modules",
+      "python_version": "3.14",
+      "chunk_order": 3,
+      "character_count": 803,
+      "token_count": 643
+    },
+    {
+      "chunk_id": "a61e8980-4e83-550a-a5a6-76f3ee9e94eb",
+      "source_id": "py3146-tutorial-modules",
+      "document_key": "tutorial-modules",
+      "python_version": "3.14",
+      "chunk_order": 7,
+      "character_count": 769,
+      "token_count": 622
+    },
+    {
+      "chunk_id": "7b5544d2-bb22-5ad2-98c0-0071f7dd9bcd",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 2,
+      "character_count": 811,
+      "token_count": 617
+    },
+    {
+      "chunk_id": "49f06de4-5e84-56c7-9f31-838044736357",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 4,
+      "character_count": 806,
+      "token_count": 616
+    },
+    {
+      "chunk_id": "c749d14c-a272-50a7-bcbb-584956121894",
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "chunk_order": 6,
+      "character_count": 786,
+      "token_count": 612
+    },
+    {
+      "chunk_id": "33743376-1080-58bd-9a21-f5e7b79e26bd",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 41,
+      "character_count": 833,
+      "token_count": 609
+    },
+    {
+      "chunk_id": "de386c8f-5305-58bb-a619-d100cd698b1a",
+      "source_id": "py3146-tutorial-controlflow",
+      "document_key": "tutorial-controlflow",
+      "python_version": "3.14",
+      "chunk_order": 17,
+      "character_count": 812,
+      "token_count": 606
+    },
+    {
+      "chunk_id": "f0d7f0ca-4217-5e45-9d69-17633c52a5e2",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 42,
+      "character_count": 832,
+      "token_count": 606
+    },
+    {
+      "chunk_id": "ea16631a-ade2-5ec9-be3b-190aa955d540",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 17,
+      "character_count": 811,
+      "token_count": 605
+    },
+    {
+      "chunk_id": "2d9c2699-648e-58d4-a441-d8639051e7b7",
+      "source_id": "py3146-tutorial-controlflow",
+      "document_key": "tutorial-controlflow",
+      "python_version": "3.14",
+      "chunk_order": 39,
+      "character_count": 734,
+      "token_count": 600
+    },
+    {
+      "chunk_id": "b7d96837-55a1-5941-aac4-8679dfe29ea2",
+      "source_id": "py3146-tutorial-index",
+      "document_key": "tutorial-index",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 808,
+      "token_count": 599
+    },
+    {
+      "chunk_id": "71b906e7-feb2-54cd-8b07-2c425ae7ad3e",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 3,
+      "character_count": 812,
+      "token_count": 593
+    },
+    {
+      "chunk_id": "12c4d7de-6784-5f3b-bc16-d139bc556e66",
+      "source_id": "py3146-library-json",
+      "document_key": "library-json",
+      "python_version": "3.14",
+      "chunk_order": 16,
+      "character_count": 817,
+      "token_count": 592
+    },
+    {
+      "chunk_id": "e84ee957-fbd7-51dc-8f88-ab09c606f6c0",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 49,
+      "character_count": 763,
+      "token_count": 590
+    },
+    {
+      "chunk_id": "f33029a2-4afa-5a59-8e97-91f14ebf5fc2",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 51,
+      "character_count": 763,
+      "token_count": 590
+    },
+    {
+      "chunk_id": "213052be-f5cc-52cc-a135-ace1f956f94d",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 19,
+      "character_count": 802,
+      "token_count": 589
+    },
+    {
+      "chunk_id": "577b3422-bc84-549d-a7e1-1c1644fabc36",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 16,
+      "character_count": 831,
+      "token_count": 588
+    },
+    {
+      "chunk_id": "4e6f1d22-30d3-53f4-a580-d94076cc47b2",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 8,
+      "character_count": 821,
+      "token_count": 585
+    },
+    {
+      "chunk_id": "1e6981ad-91cb-5b99-9d16-eb14aca76461",
+      "source_id": "py3146-tutorial-index",
+      "document_key": "tutorial-index",
+      "python_version": "3.14",
+      "chunk_order": 3,
+      "character_count": 800,
+      "token_count": 584
+    },
+    {
+      "chunk_id": "34a858fd-fa27-5c55-af50-164e5ba6c040",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 3,
+      "character_count": 730,
+      "token_count": 584
+    },
+    {
+      "chunk_id": "fd076020-6d6f-5ec4-b8cf-747a93e89865",
+      "source_id": "py3146-tutorial-interpreter",
+      "document_key": "tutorial-interpreter",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 808,
+      "token_count": 578
+    },
+    {
+      "chunk_id": "0072c39a-702c-5976-9aab-8fdc2e256795",
+      "source_id": "py3146-tutorial-appetite",
+      "document_key": "tutorial-appetite",
+      "python_version": "3.14",
+      "chunk_order": 2,
+      "character_count": 692,
+      "token_count": 577
+    },
+    {
+      "chunk_id": "42bd3abd-b5d0-50bf-bafd-f86adc580bb2",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 2,
+      "character_count": 783,
+      "token_count": 573
+    },
+    {
+      "chunk_id": "8d07081a-d1d2-584e-bdf4-46ad1b2367b9",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 10,
+      "character_count": 801,
+      "token_count": 573
+    },
+    {
+      "chunk_id": "760975de-1eda-57e0-8d48-2b66115417dc",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 717,
+      "token_count": 570
+    },
+    {
+      "chunk_id": "2083a98a-7f77-5e8d-89ca-213d7abbee52",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 54,
+      "character_count": 818,
+      "token_count": 569
+    },
+    {
+      "chunk_id": "4aa47314-d450-5af1-b104-2af4e7b2bf65",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 52,
+      "character_count": 818,
+      "token_count": 569
+    },
+    {
+      "chunk_id": "cd574d3b-642c-5965-99da-5582fa0165bb",
+      "source_id": "py3146-tutorial-introduction",
+      "document_key": "tutorial-introduction",
+      "python_version": "3.14",
+      "chunk_order": 14,
+      "character_count": 699,
+      "token_count": 567
+    },
+    {
+      "chunk_id": "e6a1e692-116b-50bc-ad09-77ac57c6ddf1",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 13,
+      "character_count": 746,
+      "token_count": 566
+    },
+    {
+      "chunk_id": "8a16dd79-03e3-59f5-b3f4-c099cea1a4ec",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 26,
+      "character_count": 748,
+      "token_count": 565
+    },
+    {
+      "chunk_id": "ff47239f-1087-54ef-b319-e67fb4e2d537",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 695,
+      "token_count": 562
+    },
+    {
+      "chunk_id": "0f7fb8f3-d4ec-5dc0-b71c-49ff7c9eb245",
+      "source_id": "py3146-tutorial-controlflow",
+      "document_key": "tutorial-controlflow",
+      "python_version": "3.14",
+      "chunk_order": 4,
+      "character_count": 815,
+      "token_count": 559
+    },
+    {
+      "chunk_id": "bcf87383-6965-5959-a66f-4e49f7f698d6",
+      "source_id": "py3146-library-json",
+      "document_key": "library-json",
+      "python_version": "3.14",
+      "chunk_order": 14,
+      "character_count": 829,
+      "token_count": 559
+    },
+    {
+      "chunk_id": "9f5e2fc8-b60f-5c25-b656-66e06b75194d",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 13,
+      "character_count": 658,
+      "token_count": 553
+    },
+    {
+      "chunk_id": "13d75029-82c2-5919-885d-786f7edcd1c1",
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "chunk_order": 2,
+      "character_count": 824,
+      "token_count": 552
+    },
+    {
+      "chunk_id": "1fa11a52-bc4a-5809-94ba-dca6dd41c447",
+      "source_id": "py3146-tutorial-introduction",
+      "document_key": "tutorial-introduction",
+      "python_version": "3.14",
+      "chunk_order": 15,
+      "character_count": 790,
+      "token_count": 552
+    },
+    {
+      "chunk_id": "9157cd87-6107-5658-9bbf-bb6e126837e2",
+      "source_id": "py3146-tutorial-index",
+      "document_key": "tutorial-index",
+      "python_version": "3.14",
+      "chunk_order": 2,
+      "character_count": 787,
+      "token_count": 552
+    },
+    {
+      "chunk_id": "a3888264-a66e-5d9a-89b4-5c87d6454c19",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 21,
+      "character_count": 706,
+      "token_count": 551
+    },
+    {
+      "chunk_id": "e36c36d9-bf14-5c92-8b8f-df620708d0ec",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 75,
+      "character_count": 821,
+      "token_count": 551
+    },
+    {
+      "chunk_id": "c791a5cb-cfc2-55ca-b0ee-3258e22086dd",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 4,
+      "character_count": 823,
+      "token_count": 550
+    },
+    {
+      "chunk_id": "c2585168-5d96-53d5-9f5a-36089bae8595",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 25,
+      "character_count": 772,
+      "token_count": 549
+    },
+    {
+      "chunk_id": "fbdec426-8db6-557e-997b-803e47881525",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 18,
+      "character_count": 774,
+      "token_count": 549
+    },
+    {
+      "chunk_id": "73ca4c93-2fb3-5050-ba3d-33ac47d7cdc8",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 29,
+      "character_count": 860,
+      "token_count": 548
+    },
+    {
+      "chunk_id": "8858973d-795c-58b9-933f-f0fb15c35ffb",
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "chunk_order": 150,
+      "character_count": 815,
+      "token_count": 547
+    },
+    {
+      "chunk_id": "3eda9651-f953-50f8-be2e-514694bb1925",
+      "source_id": "py3146-tutorial-classes",
+      "document_key": "tutorial-classes",
+      "python_version": "3.14",
+      "chunk_order": 18,
+      "character_count": 794,
+      "token_count": 544
+    },
+    {
+      "chunk_id": "7a6b5e42-d855-5733-9077-2829df568428",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 72,
+      "character_count": 818,
+      "token_count": 544
+    },
+    {
+      "chunk_id": "c3a0c77e-0843-54b2-90ef-0e7a3997b324",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 40,
+      "character_count": 858,
+      "token_count": 544
+    },
+    {
+      "chunk_id": "317eb891-92a0-5dd7-8b0d-bc68c5c14523",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 40,
+      "character_count": 801,
+      "token_count": 543
+    },
+    {
+      "chunk_id": "ae5a7f80-e753-5fb6-ba21-b5d6d247b4c6",
+      "source_id": "py3146-tutorial-introduction",
+      "document_key": "tutorial-introduction",
+      "python_version": "3.14",
+      "chunk_order": 9,
+      "character_count": 823,
+      "token_count": 543
+    },
+    {
+      "chunk_id": "e89c2ea2-8bcc-5898-99c3-a141a89818ed",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 41,
+      "character_count": 800,
+      "token_count": 542
+    },
+    {
+      "chunk_id": "c50c726f-8f36-55ab-aa28-e77e1ae02f40",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 15,
+      "character_count": 808,
+      "token_count": 540
+    },
+    {
+      "chunk_id": "c4e3b827-cb09-53c7-942b-95b82c82afdb",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 19,
+      "character_count": 629,
+      "token_count": 539
+    },
+    {
+      "chunk_id": "710343c0-dd5d-568d-a0ea-b3e5accc7e35",
+      "source_id": "py3146-library-venv",
+      "document_key": "library-venv",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 775,
+      "token_count": 537
+    },
+    {
+      "chunk_id": "90a78be1-e1ad-5164-adb4-6f02771e9abc",
+      "source_id": "py3146-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.14",
+      "chunk_order": 15,
+      "character_count": 751,
+      "token_count": 537
+    },
+    {
+      "chunk_id": "ec67be14-ef9a-5ff4-8cb2-705d25110c27",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 32,
+      "character_count": 837,
+      "token_count": 537
+    },
+    {
+      "chunk_id": "b33eca83-b6e8-51af-8e19-62a3ad5c09e9",
+      "source_id": "py3146-library-venv",
+      "document_key": "library-venv",
+      "python_version": "3.14",
+      "chunk_order": 13,
+      "character_count": 817,
+      "token_count": 536
+    },
+    {
+      "chunk_id": "8e087523-7599-5578-b405-c3d39011a6dd",
+      "source_id": "py3146-tutorial-floatingpoint",
+      "document_key": "tutorial-floatingpoint",
+      "python_version": "3.14",
+      "chunk_order": 5,
+      "character_count": 716,
+      "token_count": 532
+    },
+    {
+      "chunk_id": "993abfe7-265a-53be-9782-3b0a858bcaf7",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 15,
+      "character_count": 676,
+      "token_count": 532
+    },
+    {
+      "chunk_id": "9a2255a0-94d6-5740-bdfa-357025dd594a",
+      "source_id": "py3146-library-venv",
+      "document_key": "library-venv",
+      "python_version": "3.14",
+      "chunk_order": 4,
+      "character_count": 782,
+      "token_count": 532
+    },
+    {
+      "chunk_id": "48a74db2-a5cc-53dd-8490-5dc08d56916c",
+      "source_id": "py3146-tutorial-stdlib2",
+      "document_key": "tutorial-stdlib2",
+      "python_version": "3.14",
+      "chunk_order": 16,
+      "character_count": 763,
+      "token_count": 531
+    },
+    {
+      "chunk_id": "81ded38b-f6df-50bd-ae7b-b42d83571521",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 58,
+      "character_count": 791,
+      "token_count": 531
+    },
+    {
+      "chunk_id": "bd17c506-2ae6-5684-bae7-2b346f33fe79",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 2,
+      "character_count": 820,
+      "token_count": 531
+    },
+    {
+      "chunk_id": "9af29ec6-c0bd-53d3-98e4-701925a5f515",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 34,
+      "character_count": 836,
+      "token_count": 530
+    },
+    {
+      "chunk_id": "92c261fb-b6a4-5b30-bcfd-1cf7488a5cf3",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 3,
+      "character_count": 832,
+      "token_count": 529
+    },
+    {
+      "chunk_id": "7c42494a-ce8e-585b-8918-973f3c938bb0",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 33,
+      "character_count": 821,
+      "token_count": 527
+    },
+    {
+      "chunk_id": "eca0b833-b253-5b99-a165-b38cde46861e",
+      "source_id": "py3146-tutorial-introduction",
+      "document_key": "tutorial-introduction",
+      "python_version": "3.14",
+      "chunk_order": 8,
+      "character_count": 834,
+      "token_count": 527
+    },
+    {
+      "chunk_id": "b6cab374-8752-5f3f-807f-92dba4b6bece",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 151,
+      "character_count": 765,
+      "token_count": 525
+    },
+    {
+      "chunk_id": "03f5d86a-b0e5-596f-b203-daac20304ba1",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 18,
+      "character_count": 876,
+      "token_count": 522
+    },
+    {
+      "chunk_id": "10bc111d-e90f-5cd4-ba83-58de7ff57cc7",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 18,
+      "character_count": 876,
+      "token_count": 522
+    },
+    {
+      "chunk_id": "467ee599-fc11-5368-ba24-00f112dde887",
+      "source_id": "py3146-tutorial-inputoutput",
+      "document_key": "tutorial-inputoutput",
+      "python_version": "3.14",
+      "chunk_order": 11,
+      "character_count": 754,
+      "token_count": 520
+    },
+    {
+      "chunk_id": "d2632fd6-8d32-565d-9d57-ae5cb96b2f87",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 32,
+      "character_count": 799,
+      "token_count": 520
+    },
+    {
+      "chunk_id": "44b4d8b1-7b9f-5140-90ec-d0c618f5df9d",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 115,
+      "character_count": 756,
+      "token_count": 519
+    },
+    {
+      "chunk_id": "48b8e6af-2fd2-5770-98e9-d5a6a8b5d729",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 31,
+      "character_count": 804,
+      "token_count": 519
+    },
+    {
+      "chunk_id": "3886e741-92e6-5197-9ece-f8f7e64993c6",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 33,
+      "character_count": 791,
+      "token_count": 518
+    },
+    {
+      "chunk_id": "14595f9a-3654-5f00-946e-eb85005a7c8e",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 80,
+      "character_count": 843,
+      "token_count": 517
+    },
+    {
+      "chunk_id": "201684a8-0f53-54e6-aa8c-4eab62b0edcb",
+      "source_id": "py3146-tutorial-datastructures",
+      "document_key": "tutorial-datastructures",
+      "python_version": "3.14",
+      "chunk_order": 11,
+      "character_count": 826,
+      "token_count": 517
+    },
+    {
+      "chunk_id": "53ae7650-2cb7-5441-a15b-0f93f61a2b71",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 802,
+      "token_count": 517
+    },
+    {
+      "chunk_id": "5729ccb0-186c-5edf-9017-a650f0c3baa0",
+      "source_id": "py31314-whatsnew",
+      "document_key": "whatsnew",
+      "python_version": "3.13",
+      "chunk_order": 14,
+      "character_count": 784,
+      "token_count": 517
+    },
+    {
+      "chunk_id": "69e17dda-0fce-54e3-9e67-5a283bbd54fa",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 83,
+      "character_count": 843,
+      "token_count": 517
+    },
+    {
+      "chunk_id": "2ac4d0f0-a320-5dc5-a25e-014f95cc4093",
+      "source_id": "py3146-tutorial-whatnow",
+      "document_key": "tutorial-whatnow",
+      "python_version": "3.14",
+      "chunk_order": 1,
+      "character_count": 798,
+      "token_count": 516
+    },
+    {
+      "chunk_id": "c0e5a2d3-c05a-5905-93b4-96362e105d24",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 70,
+      "character_count": 856,
+      "token_count": 516
+    },
+    {
+      "chunk_id": "d4c9b1b4-2d59-59b1-ae43-b6a1d16d920b",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 67,
+      "character_count": 856,
+      "token_count": 516
+    },
+    {
+      "chunk_id": "41ebbbc0-405c-549b-96b3-908bf4276354",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 57,
+      "character_count": 803,
+      "token_count": 515
+    },
+    {
+      "chunk_id": "44b70057-22c4-5a2b-aa02-94dc9685c8a6",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 1,
+      "character_count": 805,
+      "token_count": 515
+    },
+    {
+      "chunk_id": "460a7921-7e5d-50d0-b45a-d7dd159c596a",
+      "source_id": "py3146-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.14",
+      "chunk_order": 60,
+      "character_count": 798,
+      "token_count": 515
+    },
+    {
+      "chunk_id": "526fa7d2-63f6-5df8-b3f3-b579383bee5e",
+      "source_id": "py31314-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.13",
+      "chunk_order": 39,
+      "character_count": 805,
+      "token_count": 515
+    },
+    {
+      "chunk_id": "97a9e1d4-52c0-518d-82a5-ff1a90ef2988",
+      "source_id": "py3146-library-pathlib",
+      "document_key": "library-pathlib",
+      "python_version": "3.14",
+      "chunk_order": 40,
+      "character_count": 805,
+      "token_count": 515
+    },
+    {
+      "chunk_id": "2c50c42c-8723-50fc-9da2-707c7d518222",
+      "source_id": "py3146-tutorial-controlflow",
+      "document_key": "tutorial-controlflow",
+      "python_version": "3.14",
+      "chunk_order": 14,
+      "character_count": 754,
+      "token_count": 514
+    },
+    {
+      "chunk_id": "53989ce4-4867-5eaf-a145-3b51016377cf",
+      "source_id": "py31314-library-argparse",
+      "document_key": "library-argparse",
+      "python_version": "3.13",
+      "chunk_order": 37,
+      "character_count": 807,
+      "token_count": 514
+    },
+    {
+      "chunk_id": "e601ae45-0e37-5a9f-9d0f-8dfe330049db",
+      "source_id": "py3146-tutorial-errors",
+      "document_key": "tutorial-errors",
+      "python_version": "3.14",
+      "chunk_order": 5,
+      "character_count": 819,
+      "token_count": 514
+    }
+  ]
+}

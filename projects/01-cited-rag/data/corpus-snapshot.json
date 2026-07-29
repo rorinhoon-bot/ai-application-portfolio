@@ -1,0 +1,140 @@
+{
+  "schema_version": "1",
+  "archive_name": "corpus-snapshot.zip",
+  "archive_sha256": "c1d3fb0a04968f8810fe71efede103c04d28bb2499ac53e690f5bbbc27d1c2a0",
+  "archive_byte_count": 580230,
+  "file_count": 26,
+  "uncompressed_byte_count": 3581318,
+  "files": [
+    {
+      "relative_path": "html/3.13.14/library/argparse.html",
+      "byte_count": 318716,
+      "sha256": "20548d071bc5f8b380eb7c84466a60790b25d39a69e925c32e88b9135bb3b39b"
+    },
+    {
+      "relative_path": "html/3.13.14/library/pathlib.html",
+      "byte_count": 253991,
+      "sha256": "2a41270dd36370a08c8483077e10a6d0c54775116b1bf0d600dc386c4d0b8417"
+    },
+    {
+      "relative_path": "html/3.13.14/whatsnew/3.13.html",
+      "byte_count": 489555,
+      "sha256": "42e8656ea8bc38f5fd38986375ca309dfe4be96d4690146404a3e2114853919a"
+    },
+    {
+      "relative_path": "html/3.14.6/library/argparse.html",
+      "byte_count": 333008,
+      "sha256": "26801318f29b74c653ae31fd906568fa37b7b386074914337663c2083660b4b2"
+    },
+    {
+      "relative_path": "html/3.14.6/library/json.html",
+      "byte_count": 115899,
+      "sha256": "9b5076619c569087f1b243f16f7764bf4bea584f0195250ec8d5fdad2599436c"
+    },
+    {
+      "relative_path": "html/3.14.6/library/pathlib.html",
+      "byte_count": 277264,
+      "sha256": "4e4550cb604a37f80def15a63b7bb31df421329bc0118253625db58b5ac9992e"
+    },
+    {
+      "relative_path": "html/3.14.6/library/venv.html",
+      "byte_count": 105829,
+      "sha256": "295c7ca6ed4ea48622d1c1b97cc09ae1276c5e1757c9f190906ada247ae846af"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/appendix.html",
+      "byte_count": 30092,
+      "sha256": "a3a90cde739a972da09c83cc156cdcacdc4eaa1006881d8d62c9a32303d90b91"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/appetite.html",
+      "byte_count": 20579,
+      "sha256": "dbd4f66067db7aea17a67b8f51edd9392b6025c080bf9a819fe6561ca6429d7c"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/classes.html",
+      "byte_count": 106166,
+      "sha256": "6930f8eb82d16fc19876ef3897a3d2dfa8f6392f337ca9a6a88483685e2faa13"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/controlflow.html",
+      "byte_count": 141405,
+      "sha256": "f6735c008367c3020ff03349575b1d91ad1008c38cd33b020c92518e55f9ae0e"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/datastructures.html",
+      "byte_count": 103732,
+      "sha256": "ac8c40c6709fbec11bb0ae6848371acc4556cb8876ebef74612bf24e0ca7f52b"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/errors.html",
+      "byte_count": 87355,
+      "sha256": "5bbd8828457d2ae17c810991e201fa71723125097a283a44ec9af8589a402f15"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/floatingpoint.html",
+      "byte_count": 47055,
+      "sha256": "02c8244be3570d0b95cef24ea0eeaff88274b306f8731c9eb68cc9f399cb23e2"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/index.html",
+      "byte_count": 37347,
+      "sha256": "cfbb85220a23fcbdcca9239cdac966480342354966a1c1f4bea208d1fe715e4c"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/inputoutput.html",
+      "byte_count": 79137,
+      "sha256": "328e940a013292acc35a69e3b9ccc55eddaad1549f50506a04b1ee67443a8db8"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/interactive.html",
+      "byte_count": 20562,
+      "sha256": "dfb16cbf793ccee693e8444f9894107dac90a597e9d4638cebaa1fdf3c0a3f09"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/interpreter.html",
+      "byte_count": 30275,
+      "sha256": "725673c9e4cca0b396b67b04bf51ab30e4a080c70b1e4d655bb810c238cbf6f1"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/introduction.html",
+      "byte_count": 74241,
+      "sha256": "1097e388947ba837f0aa33d7038caa5c709fa9174fb69c10ec28b33e62977054"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/modules.html",
+      "byte_count": 75213,
+      "sha256": "7d7ee7822fe84ad9d7599bc638db0194c58b8d28047c19ae5c1c835f0c9481e8"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/stdlib.html",
+      "byte_count": 61196,
+      "sha256": "875973202cd3c3da4f5a95450c9b846437ea12ee06c63feb5b40f9a54e76113b"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/stdlib2.html",
+      "byte_count": 69892,
+      "sha256": "6dc70e5d92e98b51bc57c0594f17ab3d8210ca568ebd99db28247659530fbe94"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/venv.html",
+      "byte_count": 33173,
+      "sha256": "c21fddb94e4bb35f64bc68988eced3ba5b54f2d69c8559eb3f598af59d090df7"
+    },
+    {
+      "relative_path": "html/3.14.6/tutorial/whatnow.html",
+      "byte_count": 20963,
+      "sha256": "b3585589a643b2d1b07d9f8280c9015a78f2cf2d470cd048980837853020dfc4"
+    },
+    {
+      "relative_path": "html/3.14.6/whatsnew/3.14.html",
+      "byte_count": 554439,
+      "sha256": "5f7998da2d1ab923b407551e485682c1a39b11b367968afe7ab70d4ae2f84187"
+    },
+    {
+      "relative_path": "license/python-3.14-license.html",
+      "byte_count": 94234,
+      "sha256": "085e82ac3d50f389656657cb85e1fbdea90c44719762c1f96fb91370820589d0"
+    }
+  ]
+}

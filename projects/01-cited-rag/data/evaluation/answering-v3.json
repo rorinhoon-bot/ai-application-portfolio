@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "answering-v3",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "minimum_class_target": 0.8,
+  "cases": [
+    {
+      "case_id": "answer-venv-activation",
+      "question": "Python 3.14 创建虚拟环境后，在 Windows cmd.exe 和 POSIX bash 中分别怎样激活？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-enumerate-index-value",
+      "question": "Python 3.14 遍历序列时，怎样用 enumerate 同时取得位置索引和对应值？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-set-comprehension",
+      "question": "Python 3.14 怎样用集合推导式从字符串生成互不相同的字符集合？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-path-read-text-options",
+      "question": "Python 3.14 的 Path.read_text 支持哪些可选参数，并返回什么？",
+      "python_version": "3.14",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "answer-argparse-prog-313",
+      "question": "Python 3.13 的 ArgumentParser 默认怎样确定帮助信息中的程序名 prog？",
+      "python_version": "3.13",
+      "expected_status": "answered"
+    },
+    {
+      "case_id": "refuse-flask-app-context",
+      "question": "Flask 的 current_app 代理在应用上下文之外访问时会怎样报错？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-sqlalchemy-autoflush",
+      "question": "SQLAlchemy Session.no_autoflush 上下文管理器会阻止哪些自动刷新？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-hashlib-file-digest",
+      "question": "Python 3.14 的 hashlib.file_digest 遇到非阻塞文件对象时会抛出什么异常？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-tomllib-parse-float",
+      "question": "Python 3.14 的 tomllib.load 对 parse_float 返回值有什么类型限制？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    },
+    {
+      "case_id": "refuse-zoneinfo-reset-path",
+      "question": "Python 3.14 的 zoneinfo.reset_tzpath 会怎样改变后续时区文件搜索路径？",
+      "python_version": "3.14",
+      "expected_status": "refused"
+    }
+  ]
+}

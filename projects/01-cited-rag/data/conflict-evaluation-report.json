@@ -1,0 +1,102 @@
+{
+  "schema_version": "1",
+  "evaluation_set_id": "conflict-v1",
+  "evaluation_set_sha256": "bd8995b248d4fbbe9aed057e41ddecf5b24ecbc55a5a8c364cabb375b77fe878",
+  "generated_at": "2026-07-29T05:32:23.688236+00:00",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+  "model": "mimo-v2.5",
+  "temperature": 0,
+  "api_call_count": 3,
+  "automatic_retries": 0,
+  "prompt_tokens": 4524,
+  "completion_tokens": 168,
+  "total_tokens": 4692,
+  "conflict_accuracy": 0.0,
+  "minimum_target": 0.8,
+  "target_met": false,
+  "cases": [
+    {
+      "case_id": "argparse-prog-version-difference",
+      "question": "Python 3.13 与 3.14 的 ArgumentParser 默认 prog 规则有什么不同？",
+      "expected_status": "conflict",
+      "observed_status": "refused",
+      "cited_versions": [],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "Python 3.13 与 3.14 的 ArgumentParser 默认 prog 规则有什么不同？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1515,
+        "completion_tokens": 18,
+        "total_tokens": 1533
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-suggest-version-difference",
+      "question": "argparse 的 suggest_on_error 在 Python 3.13 和 3.14 中支持情况有什么差异？",
+      "expected_status": "conflict",
+      "observed_status": "answered",
+      "cited_versions": [
+        "3.14"
+      ],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "argparse 的 suggest_on_error 在 Python 3.13 和 3.14 中支持情况有什么差异？",
+        "status": "answered",
+        "answer": "根据证据，`argparse.suggest_on_error` 是在 Python 3.14 中新增的特性。证据显示，在 Python 3.14 中，可以通过关键字参数或初始化后设置属性的方式使用它。证据中未提及 Python 3.13 支持此特性，因此可以推断 Python 3.13 不支持 `suggest_on_error`。",
+        "citations": [
+          {
+            "rank": 1,
+            "chunk_id": "333172ac-1973-5527-99ce-a7858009f326",
+            "python_version": "3.14",
+            "documentation_release": "3.14.6",
+            "section_path": [
+              "argparse --- 用于命令行选项、参数和子命令的解析器",
+              "ArgumentParser 对象",
+              "suggest_on_error"
+            ],
+            "citation_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html#suggest-on-error",
+            "excerpt": "如果你正在编写需要与旧版本的 Python 兼容的代码，并希望在可用时使用 suggest_on_error，你可以在初始化解析器后将其设置为属性，而不是使用关键字参数:\n\n>>> parser = argparse.ArgumentParser(description='Process some integers.')\n>>> parser.suggest_on_error = True\n\n\nAdded in version 3.14."
+          }
+        ],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1508,
+        "completion_tokens": 132,
+        "total_tokens": 1640
+      },
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-color-version-difference",
+      "question": "ArgumentParser 的 color 参数在 Python 3.13 和 3.14 中有什么差异？",
+      "expected_status": "conflict",
+      "observed_status": "refused",
+      "cited_versions": [],
+      "correct": false,
+      "answer": {
+        "schema_version": "1",
+        "question": "ArgumentParser 的 color 参数在 Python 3.13 和 3.14 中有什么差异？",
+        "status": "refused",
+        "answer": "当前知识库没有检索到足够证据支持该问题。",
+        "citations": [],
+        "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+        "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+        "prompt_tokens": 1501,
+        "completion_tokens": 18,
+        "total_tokens": 1519
+      },
+      "error_code": null,
+      "error_reason": null
+    }
+  ]
+}

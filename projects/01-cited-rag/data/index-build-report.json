@@ -1,0 +1,72 @@
+{
+  "schema_version": "1",
+  "status": "ready",
+  "started_at": "2026-07-28T15:13:31.947592+00:00",
+  "completed_at": "2026-07-28T15:14:10.999762+00:00",
+  "duration_seconds": 39.052,
+  "network_mode": "offline",
+  "model": {
+    "schema_version": "1",
+    "provider": "fastembed",
+    "model_name": "BAAI/bge-small-zh-v1.5",
+    "resolved_model_source": "Qdrant/bge-small-zh-v1.5",
+    "model_revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+    "model_assets_sha256": "dea3d1b18367c7734c34cdcdc01d4cc78ccf8f591fceb7e74d6e272e8f8e4133",
+    "model_license": "mit",
+    "model_cache_relative_path": "data/models/fastembed",
+    "dimension": 512,
+    "max_input_tokens": 512,
+    "batch_size": 64,
+    "distance": "cosine",
+    "normalize": true,
+    "query_instruction": null,
+    "passage_instruction": null
+  },
+  "corpus": {
+    "corpus_id": "5386ccee-bb5f-5417-b70a-33395abe9669",
+    "source_manifest_sha256": "60258d7589162244cce9dc24ef79a26fe7f1cee1d05af5692f228d614947ae43",
+    "document_count": 25
+  },
+  "chunking": {
+    "schema_version": "1",
+    "max_characters": 520,
+    "overlap_characters": 80,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 260,
+    "include_section_path": true,
+    "chunk_count": 1359,
+    "chunk_config_sha256": "ff8d07e2916a175093ce9c06920013dda95e6ce61036ece84ac34e614c9b28b4"
+  },
+  "index_manifest": {
+    "schema_version": "1",
+    "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+    "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+    "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+    "collection_name": "cited-rag-614f6c237c35-4facb454cca4",
+    "built_at": "2026-07-28T15:13:36.356603Z",
+    "status": "ready",
+    "specification": {
+      "schema_version": "1",
+      "corpus_id": "5386ccee-bb5f-5417-b70a-33395abe9669",
+      "source_manifest_sha256": "60258d7589162244cce9dc24ef79a26fe7f1cee1d05af5692f228d614947ae43",
+      "parser_schema_version": "parser-v1",
+      "chunking_schema_version": "chunker-v1",
+      "chunk_config_sha256": "ff8d07e2916a175093ce9c06920013dda95e6ce61036ece84ac34e614c9b28b4",
+      "chunk_count": 1359,
+      "embedding_config_sha256": "db152eac59c563e8867b8debc577cccc0a267a632173845b3ac9a21013cd21bd",
+      "embedding_dimension": 512,
+      "distance": "cosine",
+      "payload_schema_version": "payload-v1"
+    },
+    "point_count": 1359,
+    "qdrant_client_version": "1.18.0"
+  },
+  "validation": {
+    "point_count": 1359,
+    "payload_count": 1359,
+    "unique_point_count": 1359,
+    "self_query_top_score": 1.0000000591424474,
+    "version_filter_checked": true
+  },
+  "embedded_count": 1359
+}

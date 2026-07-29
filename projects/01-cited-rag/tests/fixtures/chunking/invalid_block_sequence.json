@@ -1,0 +1,34 @@
+{
+  "fixture_marker": "synthetic chunking fixture",
+  "schema_version": "1",
+  "config": {
+    "schema_version": "1",
+    "max_characters": 30,
+    "overlap_characters": 12,
+    "block_separator": "\n\n",
+    "minimum_split_characters": 15,
+    "include_section_path": true
+  },
+  "blocks": [
+    {
+      "block_order": 1,
+      "paragraph_order": 1,
+      "block_type": "paragraph",
+      "clean_text": "first.",
+      "section_path": ["Page", "Broken"],
+      "section_anchor": "broken"
+    },
+    {
+      "block_order": 3,
+      "paragraph_order": 2,
+      "block_type": "paragraph",
+      "clean_text": "third.",
+      "section_path": ["Page", "Broken"],
+      "section_anchor": "broken"
+    }
+  ],
+  "expected": {
+    "error_code": "CHUNKING_ERROR",
+    "reason_contains": "block_order must be consecutive"
+  }
+}
