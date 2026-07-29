@@ -23,6 +23,11 @@ from agent_research.models import (
     StrictModel,
     ToolOutcomeKind,
 )
+from agent_research.report_drafting import (
+    MAX_REPORT_REVISIONS,
+    ReportDraft,
+    hash_report_draft,
+)
 from agent_research.tool_contracts import (
     MAX_TOOL_ATTEMPTS,
     SOURCE_SNAPSHOT_V1,
@@ -37,8 +42,6 @@ MAX_CONFIRMATION_REVISIONS = 32
 MAX_RETRIEVAL_ROUNDS = 2
 MAX_REVIEW_ROUNDS = 2
 MAX_HUMAN_REVISIONS = 2
-MAX_REPORT_REVISIONS = 32
-
 _SENSITIVE_VALUE_PATTERN = re.compile(
     r"(?i)(authorization\s*:|cookie\s*:|set-cookie\s*:|"
     r"bearer\s+[a-z0-9._~+/=-]{8,}|"
@@ -58,6 +61,7 @@ class RuntimeStatus(StrEnum):
     EVIDENCE_PENDING_ASSESSMENT = "EVIDENCE_PENDING_ASSESSMENT"
     EVIDENCE_NEEDS_MORE = "EVIDENCE_NEEDS_MORE"
     EVIDENCE_SUFFICIENT = "EVIDENCE_SUFFICIENT"
+    DRAFTED = "DRAFTED"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -71,6 +75,7 @@ class RuntimeNode(StrEnum):
     EXECUTE_TOOLS = "execute_tools"
     RETRY_TOOL = "retry_tool"
     ASSESS_EVIDENCE = "assess_evidence"
+    DRAFT_REPORT = "draft_report"
     END = "end"
 
 
@@ -103,6 +108,7 @@ class RuntimeState(StrictModel):
         "requirements-confirmation-v1",
         "tool-execution-v1",
         "evidence-assessment-v1",
+        "draft-report-v1",
     ] = (
         "requirements-confirmation-v1"
     )
@@ -152,6 +158,7 @@ class RuntimeState(StrictModel):
         Field(ge=0, le=MAX_REPORT_REVISIONS),
     ] = 0
     report_hash: Sha256 | None = None
+    report_draft: ReportDraft | None = None
     plan_id: Sha256 | None = None
     artifact_id: Sha256 | None = None
     idempotency_key: Sha256 | None = None
@@ -216,6 +223,7 @@ class RuntimeState(StrictModel):
             RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT,
             RuntimeStatus.EVIDENCE_NEEDS_MORE,
             RuntimeStatus.EVIDENCE_SUFFICIENT,
+            RuntimeStatus.DRAFTED,
         }
         if self.status in tool_statuses:
             if self.pending_tool_call is None:
@@ -300,16 +308,22 @@ class RuntimeState(StrictModel):
                 raise ValueError("evidence assessment IDs mismatch")
             if assessment.gap_requirement_ids != self.evidence_gaps:
                 raise ValueError("evidence assessment gaps mismatch")
-            expected_runtime_status = {
+            expected_runtime_statuses = {
                 EvidenceAssessmentStatus.NEEDS_MORE_EVIDENCE: (
-                    RuntimeStatus.EVIDENCE_NEEDS_MORE
+                    {RuntimeStatus.EVIDENCE_NEEDS_MORE}
                 ),
                 EvidenceAssessmentStatus.SUFFICIENT: (
-                    RuntimeStatus.EVIDENCE_SUFFICIENT
+                    {
+                        RuntimeStatus.EVIDENCE_SUFFICIENT,
+                        RuntimeStatus.DRAFTED,
+                        RuntimeStatus.FAILED,
+                    }
                 ),
-                EvidenceAssessmentStatus.INSUFFICIENT: RuntimeStatus.FAILED,
+                EvidenceAssessmentStatus.INSUFFICIENT: {
+                    RuntimeStatus.FAILED
+                },
             }[assessment.status]
-            if self.status is not expected_runtime_status:
+            if self.status not in expected_runtime_statuses:
                 raise ValueError("evidence assessment status mismatch")
 
         if self.status is RuntimeStatus.EVIDENCE_NEEDS_MORE:
@@ -332,6 +346,39 @@ class RuntimeState(StrictModel):
             ):
                 raise ValueError("sufficient state requires sufficient assessment")
 
+        if self.status is RuntimeStatus.DRAFTED:
+            if self.graph_version != "draft-report-v1":
+                raise ValueError("DRAFTED requires draft-report graph version")
+            if self.current_node is not RuntimeNode.END:
+                raise ValueError("DRAFTED must stop at end")
+            if self.report_draft is None:
+                raise ValueError("DRAFTED requires report_draft")
+            if self.confirmed_requirements is None:
+                raise ValueError("DRAFTED requires confirmed requirements")
+
+        if self.report_draft is not None:
+            draft = self.report_draft
+            if self.status is not RuntimeStatus.DRAFTED:
+                raise ValueError("report_draft requires DRAFTED status")
+            if draft.source_snapshot_id != self.source_snapshot_id:
+                raise ValueError("report draft snapshot mismatch")
+            if draft.revision != self.report_revision:
+                raise ValueError("report draft revision mismatch")
+            if self.report_hash != hash_report_draft(draft):
+                raise ValueError("report draft hash mismatch")
+            if not {
+                evidence_id
+                for claim in draft.claims
+                for evidence_id in claim.evidence_ids
+            } <= set(self.evidence_ids):
+                raise ValueError("report draft uses unavailable evidence")
+            if (
+                self.confirmed_requirements is None
+                or draft.recommendation_candidate_id
+                not in self.confirmed_requirements.candidates
+            ):
+                raise ValueError("report recommendation outside confirmed scope")
+
         if self.status in {
             RuntimeStatus.REJECTED,
             RuntimeStatus.CANCELLED,
@@ -339,8 +386,15 @@ class RuntimeState(StrictModel):
         } and self.current_node is not RuntimeNode.END:
             raise ValueError("terminal state must use the end node")
 
-        if self.report_hash is None and self.report_revision != 0:
-            raise ValueError("report_revision requires report_hash")
+        report_parts = (
+            self.report_draft is not None,
+            self.report_hash is not None,
+            self.report_revision != 0,
+        )
+        if any(report_parts) and not all(report_parts):
+            raise ValueError(
+                "report draft, revision, and hash must be stored together"
+            )
         if (
             self.artifact_id is not None or self.idempotency_key is not None
         ) and self.report_hash is None:

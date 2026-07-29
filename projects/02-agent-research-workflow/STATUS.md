@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：冻结确定性证据充分性评估、最多 2 个检索轮次和证据不足稳定停止路径。
-- 当前阶段：`证据充分性评估最小切片已完成`
+- 当前唯一目标：冻结证据到声明绑定合同、最小报告草稿状态和确定性假写作路径。
+- 当前阶段：`安全报告草稿最小切片已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -67,10 +67,20 @@
   - SQLite checkpoint 关闭重开后恢复最终证据评估一致；评估器、假工具执行器和完整敏感响应不进入 checkpoint。
   - 新增 12 项证据合同、状态版本和证据图测试；P2 全部普通测试结果 `72 passed`。
   - 环境检查、`compileall`、`pip check`、`git diff --check` 和敏感信息扫描通过；无真实模型、网络、费用、写工具、报告或制品。
+  - 新增 `draft-proposal-v1`、`draft-policy-v1` 和 `report-draft-v1`；未知字段、重复声明/引用、秘密形态文本和不完整引用绑定被拒绝。
+  - 实现确定性假写作者和 `EvidenceCitationBinder`；写作者只提声明与 evidence ID，程序从已验证来源目录绑定来源 ID、章节、标题、版本和 SHA-256。
+  - 草稿声明必须精确匹配固定金标准，并保持在人工确认候选、评价维度、本次已收集 evidence ID 和允许推荐集合内。
+  - `RuntimeState` 新增结构化 `report_draft`；草稿、revision 和内容哈希必须一起存在，哈希篡改、来源快照错配和越界推荐被拒绝。
+  - `report_hash` 排除 revision；同内容跨 revision 保持同哈希，revision 继续单独参与后续人工批准绑定。
+  - 新增显式 `draft_report` 节点和 `draft-report-v1` 图版本；只有 `EVIDENCE_SUFFICIENT` 可进入，成功停在 `DRAFTED`。
+  - 非法草稿提案以 `invalid-draft-proposal` 稳定进入 `FAILED`；`missing-offline-proof` 证据不足路径确认写作者调用数为 0。
+  - `privacy-durable-selection` 固定成功案例生成 revision 1 结构化草稿；未执行审校、最终人工确认或导出，`artifact_id` 保持空。
+  - SQLite checkpoint 关闭重开后草稿恢复一致；写作者、绑定器、来源索引和完整敏感响应不进入 checkpoint。
+  - 新增 12 项草稿合同、引用绑定、路由和恢复测试；P2 全部普通测试结果 `84 passed in 4.35s`。
 - 下一步：
-  - 下一阶段先设计证据到声明的绑定合同和最小报告草稿状态。
-  - 使用确定性假写作者验证“只引用已验证 evidence ID”和“证据不足不能进入写作”。
-  - 不提前实现真实模型、审校循环、最终人工确认或导出。
+  - 下一阶段设计确定性报告审校合同、发现项和最多 2 轮自动修改路径。
+  - 验证引用完整性、候选与维度覆盖、禁止断言和修改上限。
+  - 不提前实现真实模型、最终报告 Human-in-the-loop 或导出。
 - 阻塞：
   - 无。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

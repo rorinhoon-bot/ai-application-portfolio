@@ -21,6 +21,11 @@ from agent_research.models import (
     ResearchInput,
     ToolOutcomeKind,
 )
+from agent_research.report_drafting import (
+    DeterministicFakeWriter,
+    EvidenceCitationBinder,
+    hash_report_draft,
+)
 from agent_research.runtime_state import (
     MissingRequirement,
     RequirementsDecision,
@@ -459,6 +464,63 @@ def assess_evidence(
     )
 
 
+def draft_report(
+    state: RuntimeState,
+    *,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+) -> dict[str, object]:
+    """Create one structured draft only after sufficient evidence."""
+
+    if state.status is not RuntimeStatus.EVIDENCE_SUFFICIENT:
+        raise ValueError("DRAFT_REQUIRES_SUFFICIENT_EVIDENCE")
+    if state.confirmed_requirements is None:
+        raise ValueError("DRAFT_REQUIRES_CONFIRMED_REQUIREMENTS")
+    if (
+        state.last_evidence_assessment is None
+        or state.last_evidence_assessment.status
+        is not EvidenceAssessmentStatus.SUFFICIENT
+    ):
+        raise ValueError("DRAFT_REQUIRES_SUFFICIENT_ASSESSMENT")
+    if binder.policy.source_snapshot_id != state.source_snapshot_id:
+        raise ValueError("DRAFT_POLICY_SNAPSHOT_MISMATCH")
+
+    proposal = writer.write()
+    try:
+        draft = binder.bind(
+            proposal=proposal,
+            confirmed_requirements=state.confirmed_requirements,
+            available_evidence_ids=state.evidence_ids,
+            revision=state.report_revision + 1,
+        )
+    except ValueError:
+        errors = (
+            *state.errors,
+            _safe_error(
+                code="invalid-draft-proposal",
+                summary="draft proposal failed evidence or research scope checks",
+                retryable=False,
+                node=RuntimeNode.DRAFT_REPORT,
+            ),
+        )
+        return _validated_update(
+            state,
+            graph_version="draft-report-v1",
+            status=RuntimeStatus.FAILED.value,
+            current_node=RuntimeNode.END.value,
+            errors=errors,
+        )
+    return _validated_update(
+        state,
+        graph_version="draft-report-v1",
+        status=RuntimeStatus.DRAFTED.value,
+        current_node=RuntimeNode.END.value,
+        report_draft=draft.model_dump(mode="json"),
+        report_revision=draft.revision,
+        report_hash=hash_report_draft(draft),
+    )
+
+
 def _route_after_tool(
     state: RuntimeState,
 ) -> Literal["success", "retry", "failed"]:
@@ -485,14 +547,13 @@ def _route_after_evidence_tool(
 
 def _route_after_assessment(
     state: RuntimeState,
-) -> Literal["retrieve", "stop"]:
+) -> Literal["retrieve", "sufficient", "failed"]:
     if state.status is RuntimeStatus.EVIDENCE_NEEDS_MORE:
         return "retrieve"
-    if state.status in {
-        RuntimeStatus.EVIDENCE_SUFFICIENT,
-        RuntimeStatus.FAILED,
-    }:
-        return "stop"
+    if state.status is RuntimeStatus.EVIDENCE_SUFFICIENT:
+        return "sufficient"
+    if state.status is RuntimeStatus.FAILED:
+        return "failed"
     raise ValueError("EVIDENCE_ASSESSMENT_INVALID_ROUTE")
 
 
@@ -562,14 +623,13 @@ def build_tool_execution_graph(
     return builder.compile(checkpointer=checkpointer)
 
 
-def build_evidence_assessment_graph(
+def _evidence_builder(
     *,
-    checkpointer: BaseCheckpointSaver,
     tool_calls: tuple[ToolCall, ToolCall],
     executor: DeterministicFakeToolExecutor,
     assessor: DeterministicEvidenceAssessor,
-):
-    """Compile the bounded two-round evidence assessment slice."""
+) -> StateGraph:
+    """Build shared evidence nodes without choosing the post-assessment stop."""
 
     if len(tool_calls) != MAX_RETRIEVAL_ROUNDS:
         raise ValueError("EVIDENCE_GRAPH_REQUIRES_TWO_FROZEN_TOOL_CALLS")
@@ -605,12 +665,63 @@ def build_evidence_assessment_graph(
         },
     )
     builder.add_edge("retry_tool", "execute_tools")
+    return builder
+
+
+def build_evidence_assessment_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+):
+    """Compile the bounded evidence-only slice from the previous stage."""
+
+    builder = _evidence_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+    )
     builder.add_conditional_edges(
         "assess_evidence",
         _route_after_assessment,
         {
             "retrieve": "plan_research",
-            "stop": END,
+            "sufficient": END,
+            "failed": END,
         },
     )
+    return builder.compile(checkpointer=checkpointer)
+
+
+def build_draft_report_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+):
+    """Compile the evidence gate plus one safe deterministic draft node."""
+
+    builder = _evidence_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+    )
+    builder.add_node(
+        "draft_report",
+        partial(draft_report, writer=writer, binder=binder),
+    )
+    builder.add_conditional_edges(
+        "assess_evidence",
+        _route_after_assessment,
+        {
+            "retrieve": "plan_research",
+            "sufficient": "draft_report",
+            "failed": END,
+        },
+    )
+    builder.add_edge("draft_report", END)
     return builder.compile(checkpointer=checkpointer)

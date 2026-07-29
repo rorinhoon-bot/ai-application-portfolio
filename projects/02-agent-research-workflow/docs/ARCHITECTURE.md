@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.4
+- 版本：v0.5
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行和两轮证据评估切片已实现；写作、审校和导出尚未实现
+- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估和安全草稿切片已实现；审校、最终报告确认和导出尚未实现
 
 ## 1. 架构目标
 
@@ -126,6 +126,24 @@ flowchart TD
 - 第二轮仍不足写入安全错误 `evidence-insufficient`，稳定停在 `FAILED`，不生成报告或制品。
 - `graph_version` 在该路径固定为 `evidence-assessment-v1`；旧工具切片保持 `tool-execution-v1`。
 
+### 3.4 当前安全草稿切片
+
+```mermaid
+flowchart TD
+    A["assess_evidence"] -->|EVIDENCE_SUFFICIENT| B["draft_report"]
+    A -->|FAILED| F["END"]
+    B -->|valid proposal| C["DRAFTED"]
+    B -->|invalid claim, evidence, candidate, or dimension| F
+    C --> D["END"]
+```
+
+- `draft-proposal-v1` 只含结构化摘要、声明、推荐、限制和 evidence ID。
+- `EvidenceCitationBinder` 验证固定声明、人工确认范围和本次 evidence ID，再从已验证来源目录绑定来源标题、版本、章节和 SHA-256。
+- `report-draft-v1` 是 checkpoint 业务状态，不是人工批准的最终报告，也不是已导出制品。
+- 非法草稿提案记录 `invalid-draft-proposal` 后稳定失败；证据不足路径不会调用写作者。
+- 当前写作者和金标准匹配器都是确定性运行时夹具，不访问模型或网络，不进入 checkpoint。
+- 新路径使用 `draft-report-v1` 图版本；当前终态为 `DRAFTED`，尚未进入审校和最终人工暂停。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -163,7 +181,8 @@ flowchart TD
    - 工具：`source_snapshot_id`、`pending_tool_call`、`last_tool_result`、`tool_call_budget`。
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
    - 证据评估：`evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment`。
-   - 后续占位：安全 `errors`、报告 revision/hash、`artifact_id`、`idempotency_key`。
+   - 草稿：`report_draft`、报告 revision/hash；引用只保存已验证来源元数据。
+   - 后续占位：安全 `errors`、`artifact_id`、`idempotency_key`。
 2. 运行时依赖：
    - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
    - 这些对象由运行环境创建或注入，不是业务状态。
@@ -216,8 +235,10 @@ flowchart TD
 ### `draft_report`
 
 - 只基于状态中的已验证证据写作。
-- 模型只引用 `evidence_id`；程序绑定来源标题、版本、URL、章节和摘录。
+- 写作者只引用 `evidence_id`；程序绑定来源 ID、标题、版本、章节和来源 SHA-256。
 - 只有 `EVIDENCE_SUFFICIENT` 才能进入后续写作；证据不足路径不得生成草稿。
+- 当前确定性夹具要求声明精确匹配固定金标准；这证明引用和范围边界，不替代未来语义审校。
+- 当前成功只到 `DRAFTED`，不允许导出。
 
 ### `review_report`
 
@@ -326,6 +347,7 @@ Tool Calling 执行流程：
 | 参数、权限、404 或内容哈希错误 | 失败或重新规划 | 不自动重试相同调用 |
 | 第一轮证据不足 | `plan_research` | 只允许第 2 个检索轮次 |
 | 第二轮证据不足 | `FAILED` | 稳定终态，不生成报告或制品 |
+| 草稿声明、推荐、候选、维度或 evidence ID 越界 | `FAILED` | `invalid-draft-proposal`，不生成草稿 |
 | 审校需修改 | `draft_report` | 最多 2 轮自动修改 |
 | 人工退回 | `draft_report` | 最多 2 次 |
 | 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |
