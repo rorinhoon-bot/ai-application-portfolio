@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：冻结已验证的只读工具合同、确定性假工具、有限重试和安全停止路径。
-- 当前阶段：`受控 Tool Calling 最小切片已完成`
+- 当前唯一目标：冻结确定性证据充分性评估、最多 2 个检索轮次和证据不足稳定停止路径。
+- 当前阶段：`证据充分性评估最小切片已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -58,10 +58,19 @@
   - 使用 `workflow-v1` 的 `transient-search-recovers` 和 `invalid-tool-arguments` 验证当前工具切片；不修改固定案例或金标准。
   - 新增 27 项工具合同、假执行器和工具图测试；P2 全部普通测试结果 `60 passed in 2.12s`。
   - 当前阶段无真实模型、真实工具、网络、费用或写操作；没有实现证据评估、写作、审校或导出。
+  - 新增 `evidence-policy-v1` 和 `evidence-assessment-v1`；证据要求绑定一个或多个可接受 evidence ID 组合，未知字段、重复集合、未知 evidence ID 和非法轮次状态被拒绝。
+  - 实现确定性证据评估器；同一来源快照、策略、evidence ID 和轮次得到相同结果，不调用模型或网络。
+  - 可接受证据组合为空时，明确表示固定快照无法证明该要求；系统不能用相近资料、常识或模型推断补齐。
+  - `runtime-state-v1` 新增策略 ID、证据缺口和最后评估结果；新路径使用 `evidence-assessment-v1` 图版本，旧工具路径保持 `tool-execution-v1`。
+  - 新增显式证据图：`plan_research → execute_tools → assess_evidence`；第一轮有缺口才补检索一次，第一轮充分停在 `EVIDENCE_SUFFICIENT`，第二轮仍不足以 `evidence-insufficient` 停在 `FAILED`。
+  - 使用固定案例 `missing-offline-proof` 和 `conflicting-cost-evidence` 验证两轮后稳定失败；使用 `privacy-durable-selection` 验证第一轮充分即停止；未修改 `workflow-v1` 或金标准。
+  - SQLite checkpoint 关闭重开后恢复最终证据评估一致；评估器、假工具执行器和完整敏感响应不进入 checkpoint。
+  - 新增 12 项证据合同、状态版本和证据图测试；P2 全部普通测试结果 `72 passed`。
+  - 环境检查、`compileall`、`pip check`、`git diff --check` 和敏感信息扫描通过；无真实模型、网络、费用、写工具、报告或制品。
 - 下一步：
-  - 下一阶段实现确定性证据充分性评估和最多 2 个检索轮次。
-  - 使用 `workflow-v1` 两个证据不足案例验证补检索一次和稳定停止。
-  - 不提前实现模型写作、审校、最终人工确认或导出。
+  - 下一阶段先设计证据到声明的绑定合同和最小报告草稿状态。
+  - 使用确定性假写作者验证“只引用已验证 evidence ID”和“证据不足不能进入写作”。
+  - 不提前实现真实模型、审校循环、最终人工确认或导出。
 - 阻塞：
   - 无。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

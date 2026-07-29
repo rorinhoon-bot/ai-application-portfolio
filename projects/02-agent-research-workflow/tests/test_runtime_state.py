@@ -57,6 +57,9 @@ def test_runtime_state_has_explicit_checkpoint_business_fields() -> None:
         "review_rounds",
         "human_revision_count",
         "evidence_ids",
+        "evidence_policy_id",
+        "evidence_gaps",
+        "last_evidence_assessment",
         "errors",
         "report_revision",
         "report_hash",
@@ -78,6 +81,61 @@ def test_runtime_state_rejects_another_source_snapshot() -> None:
     payload["source_snapshot_id"] = "f" * 64
 
     with pytest.raises(ValidationError, match="source_snapshot_id"):
+        RuntimeState.model_validate(payload)
+
+
+def test_runtime_state_rejects_evidence_status_with_old_graph_version() -> None:
+    payload = _state_payload()
+    payload.update(
+        {
+            "status": "EVIDENCE_PENDING_ASSESSMENT",
+            "current_node": "assess_evidence",
+            "retrieval_rounds": 1,
+            "evidence_policy_id": "test-evidence-policy",
+            "pending_tool_call": {
+                "schema_version": "tool-call-v1",
+                "call_id": "test-search",
+                "tool_name": "search_sources",
+                "arguments": {
+                    "schema_version": "search-sources-args-v1",
+                    "query": "test evidence",
+                    "candidate_ids": ["atlasflow"],
+                    "source_types": ["overview"],
+                    "top_k": 1,
+                },
+            },
+            "confirmed_requirements": _request().model_dump(mode="json"),
+            "plan_id": "a" * 64,
+        }
+    )
+
+    with pytest.raises(ValidationError, match="graph version"):
+        RuntimeState.model_validate(payload)
+
+
+def test_runtime_state_rejects_assessment_disguised_as_new_state() -> None:
+    payload = _state_payload()
+    payload.update(
+        {
+            "retrieval_rounds": 2,
+            "evidence_ids": [
+                "cedarflow-overview-v1#deployment-model",
+            ],
+            "evidence_policy_id": "offline-proof-policy",
+            "evidence_gaps": ["complete-offline-proof"],
+            "last_evidence_assessment": {
+                "policy_id": "offline-proof-policy",
+                "status": "INSUFFICIENT",
+                "retrieval_round": 2,
+                "gap_requirement_ids": ["complete-offline-proof"],
+                "evidence_ids": [
+                    "cedarflow-overview-v1#deployment-model",
+                ],
+            },
+        }
+    )
+
+    with pytest.raises(ValidationError, match="assessment status mismatch"):
         RuntimeState.model_validate(payload)
 
 

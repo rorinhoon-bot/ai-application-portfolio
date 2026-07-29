@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.3
+- 版本：v0.4
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认和受控假工具执行切片已实现；证据评估、写作、审校和导出尚未实现
+- 实现状态：最小状态、需求确认、受控假工具执行和两轮证据评估切片已实现；写作、审校和导出尚未实现
 
 ## 1. 架构目标
 
@@ -51,9 +51,8 @@ flowchart TD
     F -->|不可重试或耗尽| Y["FAILED"]
     G -->|证据充足| H["draft_report"]
     G -->|可补检索且未达上限| E
-    G -->|证据不足且达上限| I["draft_limited_report"]
+    G -->|证据不足且达上限| Y
     H --> J["review_report"]
-    I --> J
     J -->|通过| K["confirm_report"]
     J -->|需修改且未达上限| H
     J -->|严重安全问题| Y
@@ -107,6 +106,26 @@ flowchart TD
 - `execute_tools` 先做业务作用域校验，再调用内存假执行器。
 - 当前成功只表示证据 ID 已安全进入状态，不表示报告完成。
 
+### 3.3 当前证据评估切片
+
+```mermaid
+flowchart TD
+    A["plan_research: frozen call for current round"] --> B["execute_tools"]
+    B -->|success| C["assess_evidence"]
+    B -->|retryable| D["retry_tool"]
+    D --> B
+    B -->|deterministic error or budget exhausted| F["FAILED"]
+    C -->|all frozen requirements satisfied| E["EVIDENCE_SUFFICIENT"]
+    C -->|round 1 has gaps| A
+    C -->|round 2 has gaps| F
+```
+
+- `evidence-policy-v1` 固定要求和可接受 evidence ID 组合；评估是本地集合判断，不调用模型。
+- 第一轮有缺口只允许补检索一次；`retrieval_rounds` 最大为 2。
+- 可接受组合为空表示固定快照中没有明确证明；评估器不能使用相近资料或常识补猜。
+- 第二轮仍不足写入安全错误 `evidence-insufficient`，稳定停在 `FAILED`，不生成报告或制品。
+- `graph_version` 在该路径固定为 `evidence-assessment-v1`；旧工具切片保持 `tool-execution-v1`。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -143,7 +162,8 @@ flowchart TD
    - 需求：`raw_request`、`confirmed_requirements`、人工确认 revision 和请求哈希。
    - 工具：`source_snapshot_id`、`pending_tool_call`、`last_tool_result`、`tool_call_budget`。
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
-   - 后续占位：`evidence_ids`、安全 `errors`、报告 revision/hash、`artifact_id`、`idempotency_key`。
+   - 证据评估：`evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment`。
+   - 后续占位：安全 `errors`、报告 revision/hash、`artifact_id`、`idempotency_key`。
 2. 运行时依赖：
    - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
    - 这些对象由运行环境创建或注入，不是业务状态。
@@ -188,15 +208,16 @@ flowchart TD
 
 ### `assess_evidence`
 
-- 检查每个候选和关键维度是否有来源、是否存在冲突、是否只剩弱证据。
+- 当前使用冻结规则检查每项要求是否有一个完整的可接受 evidence ID 组合。
 - 默认最多 2 个检索轮次，含第一次检索。
-- 达上限仍不足时进入“有限结论报告”，明确不能下强结论；不能伪装成成功检索。
+- 达上限仍不足时进入稳定 `FAILED`，明确不能下强结论；不能伪装成成功检索。
+- 当前不调用模型，不做语义推断或矛盾消解；这些能力必须另建版本化合同和评估。
 
-### `draft_report` / `draft_limited_report`
+### `draft_report`
 
 - 只基于状态中的已验证证据写作。
 - 模型只引用 `evidence_id`；程序绑定来源标题、版本、URL、章节和摘录。
-- 有限报告必须把证据缺口放入执行摘要和结论。
+- 只有 `EVIDENCE_SUFFICIENT` 才能进入后续写作；证据不足路径不得生成草稿。
 
 ### `review_report`
 
@@ -303,7 +324,8 @@ Tool Calling 执行流程：
 | 人工修改需求 | `validate_request` | 每次生成新 approval revision |
 | 瞬时工具错误 | 重试当前工具 | 初次加 2 次重试，共 3 次尝试 |
 | 参数、权限、404 或内容哈希错误 | 失败或重新规划 | 不自动重试相同调用 |
-| 证据不足 | `plan_research` | 总计最多 2 个检索轮次 |
+| 第一轮证据不足 | `plan_research` | 只允许第 2 个检索轮次 |
+| 第二轮证据不足 | `FAILED` | 稳定终态，不生成报告或制品 |
 | 审校需修改 | `draft_report` | 最多 2 轮自动修改 |
 | 人工退回 | `draft_report` | 最多 2 次 |
 | 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |
@@ -322,7 +344,7 @@ Tool Calling 执行流程：
 - 模型重试不得静默增加候选、资料范围或输出权限。
 - 每次失败写稳定错误码、安全摘要、节点和尝试次数；不保存密钥或完整供应商响应。
 
-当前工具图已实现前三条停止分类和 3 次硬上限。普通测试不真实 sleep；attempt 直接选择固定脚本结果。
+当前工具图已实现前三条停止分类和 3 次硬上限。证据图另有 2 个检索轮次硬上限。普通测试不真实 sleep；attempt 直接选择固定脚本结果。
 
 ## 9. Human-in-the-loop
 

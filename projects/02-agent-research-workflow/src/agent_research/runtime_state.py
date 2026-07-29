@@ -10,6 +10,10 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, field_validator, model_validator
 
+from agent_research.evidence_assessment import (
+    EvidenceAssessment,
+    EvidenceAssessmentStatus,
+)
 from agent_research.models import (
     EvidenceId,
     HumanActionKind,
@@ -51,6 +55,9 @@ class RuntimeStatus(StrEnum):
     TOOL_READY = "TOOL_READY"
     TOOL_RETRY = "TOOL_RETRY"
     EVIDENCE_READY = "EVIDENCE_READY"
+    EVIDENCE_PENDING_ASSESSMENT = "EVIDENCE_PENDING_ASSESSMENT"
+    EVIDENCE_NEEDS_MORE = "EVIDENCE_NEEDS_MORE"
+    EVIDENCE_SUFFICIENT = "EVIDENCE_SUFFICIENT"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -63,6 +70,7 @@ class RuntimeNode(StrEnum):
     PLAN_RESEARCH = "plan_research"
     EXECUTE_TOOLS = "execute_tools"
     RETRY_TOOL = "retry_tool"
+    ASSESS_EVIDENCE = "assess_evidence"
     END = "end"
 
 
@@ -91,7 +99,11 @@ class RuntimeState(StrictModel):
     """Complete business state persisted by LangGraph checkpoints."""
 
     schema_version: Literal["runtime-state-v1"] = "runtime-state-v1"
-    graph_version: Literal["requirements-confirmation-v1"] = (
+    graph_version: Literal[
+        "requirements-confirmation-v1",
+        "tool-execution-v1",
+        "evidence-assessment-v1",
+    ] = (
         "requirements-confirmation-v1"
     )
     run_id: Identifier
@@ -128,6 +140,12 @@ class RuntimeState(StrictModel):
         Field(ge=0, le=MAX_HUMAN_REVISIONS),
     ] = 0
     evidence_ids: Annotated[tuple[EvidenceId, ...], Field(max_length=128)] = ()
+    evidence_policy_id: Identifier | None = None
+    evidence_gaps: Annotated[
+        tuple[Identifier, ...],
+        Field(max_length=16),
+    ] = ()
+    last_evidence_assessment: EvidenceAssessment | None = None
     errors: Annotated[tuple[SafeStateError, ...], Field(max_length=20)] = ()
     report_revision: Annotated[
         int,
@@ -195,6 +213,9 @@ class RuntimeState(StrictModel):
             RuntimeStatus.TOOL_READY,
             RuntimeStatus.TOOL_RETRY,
             RuntimeStatus.EVIDENCE_READY,
+            RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT,
+            RuntimeStatus.EVIDENCE_NEEDS_MORE,
+            RuntimeStatus.EVIDENCE_SUFFICIENT,
         }
         if self.status in tool_statuses:
             if self.pending_tool_call is None:
@@ -230,6 +251,10 @@ class RuntimeState(StrictModel):
                 )
 
         if self.status is RuntimeStatus.EVIDENCE_READY:
+            if self.graph_version != "tool-execution-v1":
+                raise ValueError(
+                    "EVIDENCE_READY requires tool-execution graph version"
+                )
             if self.current_node is not RuntimeNode.END:
                 raise ValueError("EVIDENCE_READY must stop at end")
             if (
@@ -241,6 +266,71 @@ class RuntimeState(StrictModel):
                 self.evidence_ids
             ):
                 raise ValueError("successful evidence must enter runtime state")
+
+        assessment_statuses = {
+            RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT,
+            RuntimeStatus.EVIDENCE_NEEDS_MORE,
+            RuntimeStatus.EVIDENCE_SUFFICIENT,
+        }
+        if self.status in assessment_statuses:
+            if self.graph_version != "evidence-assessment-v1":
+                raise ValueError(
+                    "evidence status requires evidence-assessment graph version"
+                )
+            if self.evidence_policy_id is None:
+                raise ValueError("evidence assessment requires policy ID")
+            if self.retrieval_rounds < 1:
+                raise ValueError("evidence assessment requires retrieval")
+
+        if self.status is RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT:
+            if self.current_node is not RuntimeNode.ASSESS_EVIDENCE:
+                raise ValueError(
+                    "pending evidence assessment must enter assess_evidence"
+                )
+
+        if self.last_evidence_assessment is not None:
+            assessment = self.last_evidence_assessment
+            if assessment.policy_id != self.evidence_policy_id:
+                raise ValueError("evidence assessment policy ID mismatch")
+            if assessment.source_snapshot_id != self.source_snapshot_id:
+                raise ValueError("evidence assessment snapshot mismatch")
+            if assessment.retrieval_round != self.retrieval_rounds:
+                raise ValueError("evidence assessment round mismatch")
+            if assessment.evidence_ids != self.evidence_ids:
+                raise ValueError("evidence assessment IDs mismatch")
+            if assessment.gap_requirement_ids != self.evidence_gaps:
+                raise ValueError("evidence assessment gaps mismatch")
+            expected_runtime_status = {
+                EvidenceAssessmentStatus.NEEDS_MORE_EVIDENCE: (
+                    RuntimeStatus.EVIDENCE_NEEDS_MORE
+                ),
+                EvidenceAssessmentStatus.SUFFICIENT: (
+                    RuntimeStatus.EVIDENCE_SUFFICIENT
+                ),
+                EvidenceAssessmentStatus.INSUFFICIENT: RuntimeStatus.FAILED,
+            }[assessment.status]
+            if self.status is not expected_runtime_status:
+                raise ValueError("evidence assessment status mismatch")
+
+        if self.status is RuntimeStatus.EVIDENCE_NEEDS_MORE:
+            if self.current_node is not RuntimeNode.PLAN_RESEARCH:
+                raise ValueError("evidence gaps must route to plan_research")
+            if (
+                self.last_evidence_assessment is None
+                or self.last_evidence_assessment.status
+                is not EvidenceAssessmentStatus.NEEDS_MORE_EVIDENCE
+            ):
+                raise ValueError("evidence gaps require needs-more assessment")
+
+        if self.status is RuntimeStatus.EVIDENCE_SUFFICIENT:
+            if self.current_node is not RuntimeNode.END:
+                raise ValueError("sufficient evidence must stop at end")
+            if (
+                self.last_evidence_assessment is None
+                or self.last_evidence_assessment.status
+                is not EvidenceAssessmentStatus.SUFFICIENT
+            ):
+                raise ValueError("sufficient state requires sufficient assessment")
 
         if self.status in {
             RuntimeStatus.REJECTED,

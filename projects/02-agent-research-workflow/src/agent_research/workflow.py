@@ -10,6 +10,11 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
+from agent_research.evidence_assessment import (
+    DeterministicEvidenceAssessor,
+    EvidenceAssessmentStatus,
+    MAX_RETRIEVAL_ROUNDS,
+)
 from agent_research.fake_tools import DeterministicFakeToolExecutor
 from agent_research.models import (
     HumanActionKind,
@@ -232,6 +237,7 @@ def plan_tool_call(
     )
     return _validated_update(
         state,
+        graph_version="tool-execution-v1",
         status=RuntimeStatus.TOOL_READY.value,
         current_node=RuntimeNode.EXECUTE_TOOLS.value,
         plan_id=plan_id,
@@ -242,15 +248,52 @@ def plan_tool_call(
     )
 
 
+def plan_evidence_round(
+    state: RuntimeState,
+    *,
+    tool_calls: tuple[ToolCall, ...],
+    assessor: DeterministicEvidenceAssessor,
+) -> dict[str, object]:
+    """Persist the next frozen call without exceeding two retrieval rounds."""
+
+    if state.confirmation_request_hash is None:
+        raise ValueError("PLAN_REQUIRES_CONFIRMED_REQUEST_HASH")
+    if state.retrieval_rounds >= MAX_RETRIEVAL_ROUNDS:
+        raise ValueError("RETRIEVAL_ROUND_LIMIT_REACHED")
+
+    next_round = state.retrieval_rounds + 1
+    tool_call = tool_calls[next_round - 1]
+    plan_id = hashlib.sha256(
+        (
+            f"{state.run_id}:{state.confirmation_request_hash}:"
+            f"{assessor.policy.policy_id}:evidence-assessment-v1"
+        ).encode("utf-8")
+    ).hexdigest()
+    return _validated_update(
+        state,
+        graph_version="evidence-assessment-v1",
+        status=RuntimeStatus.TOOL_READY.value,
+        current_node=RuntimeNode.EXECUTE_TOOLS.value,
+        plan_id=plan_id,
+        pending_tool_call=tool_call.model_dump(mode="json"),
+        last_tool_result=None,
+        retrieval_rounds=next_round,
+        evidence_policy_id=assessor.policy.policy_id,
+        evidence_gaps=[],
+        last_evidence_assessment=None,
+    )
+
+
 def _safe_error(
     *,
     code: str,
     summary: str,
     retryable: bool,
+    node: RuntimeNode = RuntimeNode.EXECUTE_TOOLS,
 ) -> dict[str, object]:
     return SafeStateError(
         code=code,
-        node=RuntimeNode.EXECUTE_TOOLS,
+        node=node,
         safe_summary=summary,
         retryable=retryable,
     ).model_dump(mode="json")
@@ -260,6 +303,7 @@ def execute_tools(
     state: RuntimeState,
     *,
     executor: DeterministicFakeToolExecutor,
+    continue_to_assessment: bool = False,
 ) -> dict[str, object]:
     """Execute one allowlisted call with persisted attempt and stop rules."""
 
@@ -287,8 +331,16 @@ def execute_tools(
         return _validated_update(
             state,
             **common,
-            status=RuntimeStatus.EVIDENCE_READY.value,
-            current_node=RuntimeNode.END.value,
+            status=(
+                RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT.value
+                if continue_to_assessment
+                else RuntimeStatus.EVIDENCE_READY.value
+            ),
+            current_node=(
+                RuntimeNode.ASSESS_EVIDENCE.value
+                if continue_to_assessment
+                else RuntimeNode.END.value
+            ),
             evidence_ids=evidence_ids,
         )
 
@@ -355,6 +407,58 @@ def retry_tool(state: RuntimeState) -> dict[str, object]:
     )
 
 
+def assess_evidence(
+    state: RuntimeState,
+    *,
+    assessor: DeterministicEvidenceAssessor,
+) -> dict[str, object]:
+    """Evaluate frozen evidence and either stop or request the final round."""
+
+    if state.evidence_policy_id != assessor.policy.policy_id:
+        raise ValueError("EVIDENCE_POLICY_ID_MISMATCH")
+    assessment = assessor.assess(
+        evidence_ids=state.evidence_ids,
+        retrieval_round=state.retrieval_rounds,
+    )
+    common: dict[str, object] = {
+        "last_evidence_assessment": assessment.model_dump(mode="json"),
+        "evidence_gaps": assessment.gap_requirement_ids,
+    }
+
+    if assessment.status is EvidenceAssessmentStatus.SUFFICIENT:
+        return _validated_update(
+            state,
+            **common,
+            status=RuntimeStatus.EVIDENCE_SUFFICIENT.value,
+            current_node=RuntimeNode.END.value,
+        )
+
+    if assessment.status is EvidenceAssessmentStatus.NEEDS_MORE_EVIDENCE:
+        return _validated_update(
+            state,
+            **common,
+            status=RuntimeStatus.EVIDENCE_NEEDS_MORE.value,
+            current_node=RuntimeNode.PLAN_RESEARCH.value,
+        )
+
+    errors = (
+        *state.errors,
+        _safe_error(
+            code="evidence-insufficient",
+            summary="fixed evidence remains insufficient after final retrieval",
+            retryable=False,
+            node=RuntimeNode.ASSESS_EVIDENCE,
+        ),
+    )
+    return _validated_update(
+        state,
+        **common,
+        status=RuntimeStatus.FAILED.value,
+        current_node=RuntimeNode.END.value,
+        errors=errors,
+    )
+
+
 def _route_after_tool(
     state: RuntimeState,
 ) -> Literal["success", "retry", "failed"]:
@@ -365,6 +469,31 @@ def _route_after_tool(
     if state.status is RuntimeStatus.FAILED:
         return "failed"
     raise ValueError("TOOL_EXECUTION_INVALID_ROUTE")
+
+
+def _route_after_evidence_tool(
+    state: RuntimeState,
+) -> Literal["assess", "retry", "failed"]:
+    if state.status is RuntimeStatus.EVIDENCE_PENDING_ASSESSMENT:
+        return "assess"
+    if state.status is RuntimeStatus.TOOL_RETRY:
+        return "retry"
+    if state.status is RuntimeStatus.FAILED:
+        return "failed"
+    raise ValueError("EVIDENCE_TOOL_INVALID_ROUTE")
+
+
+def _route_after_assessment(
+    state: RuntimeState,
+) -> Literal["retrieve", "stop"]:
+    if state.status is RuntimeStatus.EVIDENCE_NEEDS_MORE:
+        return "retrieve"
+    if state.status in {
+        RuntimeStatus.EVIDENCE_SUFFICIENT,
+        RuntimeStatus.FAILED,
+    }:
+        return "stop"
+    raise ValueError("EVIDENCE_ASSESSMENT_INVALID_ROUTE")
 
 
 def _requirements_builder(plan_node: object) -> StateGraph:
@@ -430,4 +559,58 @@ def build_tool_execution_graph(
         },
     )
     builder.add_edge("retry_tool", "execute_tools")
+    return builder.compile(checkpointer=checkpointer)
+
+
+def build_evidence_assessment_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+):
+    """Compile the bounded two-round evidence assessment slice."""
+
+    if len(tool_calls) != MAX_RETRIEVAL_ROUNDS:
+        raise ValueError("EVIDENCE_GRAPH_REQUIRES_TWO_FROZEN_TOOL_CALLS")
+
+    builder = _requirements_builder(
+        partial(
+            plan_evidence_round,
+            tool_calls=tool_calls,
+            assessor=assessor,
+        )
+    )
+    builder.add_node(
+        "execute_tools",
+        partial(
+            execute_tools,
+            executor=executor,
+            continue_to_assessment=True,
+        ),
+    )
+    builder.add_node("retry_tool", retry_tool)
+    builder.add_node(
+        "assess_evidence",
+        partial(assess_evidence, assessor=assessor),
+    )
+    builder.add_edge("plan_research", "execute_tools")
+    builder.add_conditional_edges(
+        "execute_tools",
+        _route_after_evidence_tool,
+        {
+            "assess": "assess_evidence",
+            "retry": "retry_tool",
+            "failed": END,
+        },
+    )
+    builder.add_edge("retry_tool", "execute_tools")
+    builder.add_conditional_edges(
+        "assess_evidence",
+        _route_after_assessment,
+        {
+            "retrieve": "plan_research",
+            "stop": END,
+        },
+    )
     return builder.compile(checkpointer=checkpointer)
