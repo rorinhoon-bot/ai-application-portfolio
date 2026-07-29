@@ -32,6 +32,13 @@ from agent_research.report_approval import (
     ReportDecision,
     ReportPause,
 )
+from agent_research.report_export import (
+    ExportConflictError,
+    ExportPathError,
+    ExportRequest,
+    ExportWriteError,
+    SafeMarkdownExporter,
+)
 from agent_research.report_review import (
     DeterministicDraftReviser,
     DeterministicReportReviewer,
@@ -737,7 +744,11 @@ def _validate_report_decision_binding(
         raise HumanDecisionError("REPORT_DECISION_STALE_REPORT_HASH")
 
 
-def await_human_report(state: RuntimeState) -> dict[str, object]:
+def await_human_report(
+    state: RuntimeState,
+    *,
+    continue_to_export: bool = False,
+) -> dict[str, object]:
     """Pause at the final report gate and apply one bound human action."""
 
     if (
@@ -764,8 +775,16 @@ def await_human_report(state: RuntimeState) -> dict[str, object]:
     if decision.action is HumanActionKind.APPROVE:
         return _validated_update(
             state,
-            status=RuntimeStatus.REPORT_APPROVED.value,
-            current_node=RuntimeNode.END.value,
+            status=(
+                RuntimeStatus.EXPORT_READY.value
+                if continue_to_export
+                else RuntimeStatus.REPORT_APPROVED.value
+            ),
+            current_node=(
+                RuntimeNode.EXPORT_REPORT.value
+                if continue_to_export
+                else RuntimeNode.END.value
+            ),
             last_report_action=HumanActionKind.APPROVE.value,
             approved_report_revision=state.report_revision,
             approved_report_hash=state.report_hash,
@@ -876,6 +895,73 @@ def apply_human_report_revision(
     )
 
 
+def export_report(
+    state: RuntimeState,
+    *,
+    exporter: SafeMarkdownExporter,
+) -> dict[str, object]:
+    """Publish only the currently approved report through a safe adapter."""
+
+    if state.status not in {
+        RuntimeStatus.EXPORT_READY,
+        RuntimeStatus.COMPLETED,
+    }:
+        raise ValueError("EXPORT_REQUIRES_APPROVED_REPORT")
+    if (
+        state.report_draft is None
+        or state.approved_report_revision != state.report_revision
+        or state.approved_report_hash != state.report_hash
+    ):
+        raise ValueError("EXPORT_APPROVAL_BINDING_MISMATCH")
+
+    request = ExportRequest(
+        run_id=state.run_id,
+        thread_id=state.thread_id,
+        source_snapshot_id=state.source_snapshot_id,
+        approved_report_revision=state.approved_report_revision,
+        approved_report_hash=state.approved_report_hash,
+        report=state.report_draft,
+    )
+    try:
+        result = exporter.export(request)
+    except ExportConflictError:
+        code = "export-artifact-conflict"
+        summary = "artifact ID already exists with different content"
+    except ExportPathError:
+        code = "export-path-rejected"
+        summary = "export root or target failed path safety checks"
+    except ExportWriteError:
+        code = "export-write-failed"
+        summary = "safe atomic artifact publication failed"
+    else:
+        artifact = result.artifact
+        return _validated_update(
+            state,
+            status=RuntimeStatus.COMPLETED.value,
+            current_node=RuntimeNode.END.value,
+            artifact_id=artifact.artifact_id,
+            idempotency_key=artifact.idempotency_key,
+            artifact_record=artifact.model_dump(mode="json"),
+            last_export_outcome=result.outcome.value,
+        )
+
+    errors = (
+        *state.errors,
+        _safe_error(
+            code=code,
+            summary=summary,
+            retryable=False,
+            node=RuntimeNode.EXPORT_REPORT,
+        ),
+    )
+    return _validated_update(
+        state,
+        status=RuntimeStatus.FAILED.value,
+        current_node=RuntimeNode.END.value,
+        errors=errors,
+    )
+
+
 def _route_after_tool(
     state: RuntimeState,
 ) -> Literal["success", "retry", "failed"]:
@@ -946,9 +1032,11 @@ def _route_after_revision(
 
 def _route_after_report_human(
     state: RuntimeState,
-) -> Literal["revise", "terminal"]:
+) -> Literal["revise", "export", "terminal"]:
     if state.status is RuntimeStatus.REPORT_REVISION_REQUESTED:
         return "revise"
+    if state.status is RuntimeStatus.EXPORT_READY:
+        return "export"
     if state.status in {
         RuntimeStatus.REPORT_APPROVED,
         RuntimeStatus.REPORT_REJECTED,
@@ -1202,9 +1290,8 @@ def build_report_review_graph(
     return builder.compile(checkpointer=checkpointer)
 
 
-def build_report_confirmation_graph(
+def _report_confirmation_builder(
     *,
-    checkpointer: BaseCheckpointSaver,
     tool_calls: tuple[ToolCall, ToolCall],
     executor: DeterministicFakeToolExecutor,
     assessor: DeterministicEvidenceAssessor,
@@ -1213,8 +1300,13 @@ def build_report_confirmation_graph(
     reviewer: DeterministicReportReviewer,
     reviser: DeterministicDraftReviser,
     human_reviser: DeterministicHumanReportReviser,
-):
-    """Compile the reviewed-report human gate without export."""
+    graph_version: Literal[
+        "report-confirmation-v1",
+        "report-export-v1",
+    ],
+    exporter: SafeMarkdownExporter | None = None,
+) -> StateGraph:
+    """Build the report human gate with an optional export boundary."""
 
     builder = _evidence_builder(
         tool_calls=tool_calls,
@@ -1229,7 +1321,7 @@ def build_report_confirmation_graph(
             binder=binder,
             continue_to_review=True,
             review_policy_id=reviewer.policy.policy_id,
-            report_graph_version="report-confirmation-v1",
+            report_graph_version=graph_version,
         ),
     )
     builder.add_node(
@@ -1245,7 +1337,13 @@ def build_report_confirmation_graph(
         partial(revise_report, reviser=reviser, binder=binder),
     )
     builder.add_node("confirm_report", confirm_report)
-    builder.add_node("await_human_report", await_human_report)
+    builder.add_node(
+        "await_human_report",
+        partial(
+            await_human_report,
+            continue_to_export=exporter is not None,
+        ),
+    )
     builder.add_node(
         "apply_human_report_revision",
         partial(
@@ -1294,6 +1392,7 @@ def build_report_confirmation_graph(
         _route_after_report_human,
         {
             "revise": "apply_human_report_revision",
+            "export": "export_report" if exporter is not None else END,
             "terminal": END,
         },
     )
@@ -1305,4 +1404,74 @@ def build_report_confirmation_graph(
             "stop": END,
         },
     )
+    if exporter is not None:
+        builder.add_node(
+            "export_report",
+            partial(export_report, exporter=exporter),
+        )
+        builder.add_edge("export_report", END)
+    return builder
+
+
+def build_report_confirmation_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+    reviewer: DeterministicReportReviewer,
+    reviser: DeterministicDraftReviser,
+    human_reviser: DeterministicHumanReportReviser,
+):
+    """Compile the reviewed-report human gate without export."""
+
+    builder = _report_confirmation_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+        writer=writer,
+        binder=binder,
+        reviewer=reviewer,
+        reviser=reviser,
+        human_reviser=human_reviser,
+        graph_version="report-confirmation-v1",
+    )
     return builder.compile(checkpointer=checkpointer)
+
+
+def build_report_export_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+    reviewer: DeterministicReportReviewer,
+    reviser: DeterministicDraftReviser,
+    human_reviser: DeterministicHumanReportReviser,
+    exporter: SafeMarkdownExporter,
+    interrupt_before_export: bool = False,
+):
+    """Compile the approved-report safe Markdown export slice."""
+
+    builder = _report_confirmation_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+        writer=writer,
+        binder=binder,
+        reviewer=reviewer,
+        reviser=reviser,
+        human_reviser=human_reviser,
+        graph_version="report-export-v1",
+        exporter=exporter,
+    )
+    return builder.compile(
+        checkpointer=checkpointer,
+        interrupt_before=(
+            ["export_report"] if interrupt_before_export else None
+        ),
+    )

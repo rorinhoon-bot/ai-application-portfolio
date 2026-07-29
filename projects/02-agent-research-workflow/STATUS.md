@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：实现最终报告 Human-in-the-loop 暂停，并把人工决定绑定到暂停 revision、报告 revision 与内容 hash。
-- 当前阶段：`最终报告确认最小切片已完成`
+- 当前唯一目标：实现安全、幂等的本地 Markdown 导出，并验证 checkpoint 恢复后只产生一个制品。
+- 当前阶段：`安全幂等 Markdown 导出最小切片已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -96,10 +96,20 @@
   - 使用固定案例 `report-revision-approved` 验证退回、重写、重新审校、旧批准失效和第二次批准；未修改 `workflow-v1` 或金标准。
   - SQLite checkpoint 关闭重开后可在第二次报告暂停恢复并批准；writer、reviewer、reviser、binder、密钥形态文本和完整敏感响应不进入 checkpoint。
   - 新增 8 项最终报告合同、暂停、绑定、返修上限、终态和恢复测试；P2 全部普通测试结果 `104 passed in 8.23s`。
+  - 新增 `export-request-v1`、`artifact-record-v1` 和 `export-result-v1`；制品身份绑定 `run_id`、批准报告 revision/hash 与固定 Markdown 格式。
+  - 实现确定性 UTF-8 Markdown 渲染；转义报告文本中的 HTML 和 Markdown 控制字符，不执行命令、路径或链接。
+  - 实现 `SafeMarkdownExporter`；根目录由运行时注入且父目录必须已存在，文件名固定为 `<artifact_id>.md`，拒绝相对根、路径穿越、符号链接、junction/reparse point 和非普通文件目标。
+  - 发布流程先写同目录临时文件并 `fsync`，再用不覆盖的原子硬链接建立最终文件；失败后不保留临时制品。
+  - 同一制品和完整字节重复导出返回 `UNCHANGED`；同 ID 不同字节以 `export-artifact-conflict` 失败，旧文件不变。
+  - 新增 `EXPORT_READY`、`export_report`、`COMPLETED` 和 `report-export-v1`；旧报告确认图仍在批准后停于 `REPORT_APPROVED`。
+  - 使用固定案例 `checkpoint-resume-export` 模拟“文件已发布、checkpoint 未提交”崩溃窗口；关闭重开 SQLite 后重放得到 `UNCHANGED`，最终制品数为 1。
+  - 未批准或人工拒绝路径调用导出器次数为 0；冲突、路径拒绝和写失败只保存稳定安全错误，不回显原始异常。
+  - checkpoint 只保存制品 ID、幂等键、相对路径、内容哈希、大小和报告绑定；导出根目录、临时路径、文件句柄和导出器不进入状态。
+  - 新增 12 项导出合同、路径、渲染、原子发布、冲突、恢复和幂等测试；P2 全部普通测试结果 `116 passed in 9.88s`。
 - 下一步：
-  - 下一阶段设计安全、幂等的本地 Markdown 导出最小切片。
-  - 使用 `checkpoint-resume-export` 固定案例验证恢复、重复导出和单制品约束。
-  - 不提前接入真实模型、真实资料或公开部署。
+  - 下一阶段建立统一 `workflow-v1` 离线评估运行器和首个量化工作流基线。
+  - 汇总 12 个固定案例的路由、停止、重试、人工介入、引用和制品指标；不修改金标准迎合结果。
+  - 不提前接入真实模型、真实资料、公开部署或多智能体。
 - 阻塞：
   - 无。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

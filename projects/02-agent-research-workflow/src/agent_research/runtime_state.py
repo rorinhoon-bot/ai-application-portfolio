@@ -28,6 +28,13 @@ from agent_research.report_drafting import (
     ReportDraft,
     hash_report_draft,
 )
+from agent_research.report_export import (
+    ArtifactRecord,
+    ExportOutcome,
+    ExportRequest,
+    compute_artifact_id,
+    render_markdown,
+)
 from agent_research.report_approval import (
     MAX_HUMAN_REPORT_REVISIONS,
     MAX_REPORT_CONFIRMATION_REVISIONS,
@@ -79,6 +86,8 @@ class RuntimeStatus(StrEnum):
     REPORT_APPROVED = "REPORT_APPROVED"
     REPORT_REJECTED = "REPORT_REJECTED"
     REPORT_CANCELLED = "REPORT_CANCELLED"
+    EXPORT_READY = "EXPORT_READY"
+    COMPLETED = "COMPLETED"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -98,6 +107,7 @@ class RuntimeNode(StrEnum):
     CONFIRM_REPORT = "confirm_report"
     AWAIT_HUMAN_REPORT = "await_human_report"
     APPLY_HUMAN_REPORT_REVISION = "apply_human_report_revision"
+    EXPORT_REPORT = "export_report"
     END = "end"
 
 
@@ -133,6 +143,7 @@ class RuntimeState(StrictModel):
         "draft-report-v1",
         "report-review-v1",
         "report-confirmation-v1",
+        "report-export-v1",
     ] = (
         "requirements-confirmation-v1"
     )
@@ -198,6 +209,8 @@ class RuntimeState(StrictModel):
     plan_id: Sha256 | None = None
     artifact_id: Sha256 | None = None
     idempotency_key: Sha256 | None = None
+    artifact_record: ArtifactRecord | None = None
+    last_export_outcome: ExportOutcome | None = None
 
     @field_validator("raw_request", "confirmed_requirements")
     @classmethod
@@ -237,7 +250,10 @@ class RuntimeState(StrictModel):
             raise ValueError("last_report_action contains unsupported action")
         if (
             self.report_confirmation_revision > 0
-            and self.graph_version != "report-confirmation-v1"
+            and self.graph_version not in {
+                "report-confirmation-v1",
+                "report-export-v1",
+            }
         ):
             raise ValueError(
                 "report confirmation revision requires confirmation graph"
@@ -287,6 +303,8 @@ class RuntimeState(StrictModel):
             RuntimeStatus.REPORT_APPROVED,
             RuntimeStatus.REPORT_REJECTED,
             RuntimeStatus.REPORT_CANCELLED,
+            RuntimeStatus.EXPORT_READY,
+            RuntimeStatus.COMPLETED,
         }
         if self.status in tool_statuses:
             if self.pending_tool_call is None:
@@ -388,6 +406,8 @@ class RuntimeState(StrictModel):
                         RuntimeStatus.REPORT_APPROVED,
                         RuntimeStatus.REPORT_REJECTED,
                         RuntimeStatus.REPORT_CANCELLED,
+                        RuntimeStatus.EXPORT_READY,
+                        RuntimeStatus.COMPLETED,
                         RuntimeStatus.FAILED,
                     }
                 ),
@@ -438,11 +458,14 @@ class RuntimeState(StrictModel):
             RuntimeStatus.REPORT_APPROVED,
             RuntimeStatus.REPORT_REJECTED,
             RuntimeStatus.REPORT_CANCELLED,
+            RuntimeStatus.EXPORT_READY,
+            RuntimeStatus.COMPLETED,
         }
         if self.status in review_statuses:
             if self.graph_version not in {
                 "report-review-v1",
                 "report-confirmation-v1",
+                "report-export-v1",
             }:
                 raise ValueError(
                     "review status requires a report graph version"
@@ -479,6 +502,8 @@ class RuntimeState(StrictModel):
                     RuntimeStatus.REPORT_APPROVED,
                     RuntimeStatus.REPORT_REJECTED,
                     RuntimeStatus.REPORT_CANCELLED,
+                    RuntimeStatus.EXPORT_READY,
+                    RuntimeStatus.COMPLETED,
                     RuntimeStatus.FAILED,
                 },
                 ReviewOutcome.REVISE: {RuntimeStatus.REVIEW_REVISE},
@@ -490,7 +515,13 @@ class RuntimeState(StrictModel):
                 result.outcome is ReviewOutcome.PASS
                 and self.status is RuntimeStatus.FAILED
                 and not any(
-                    error.code == "human-revision-limit-exhausted"
+                    error.code
+                    in {
+                        "human-revision-limit-exhausted",
+                        "export-artifact-conflict",
+                        "export-path-rejected",
+                        "export-write-failed",
+                    }
                     for error in self.errors
                 )
             ):
@@ -512,7 +543,10 @@ class RuntimeState(StrictModel):
                 raise ValueError("REVIEWED requires passing review")
 
         if self.status is RuntimeStatus.REPORT_CONFIRMATION_READY:
-            if self.graph_version != "report-confirmation-v1":
+            if self.graph_version not in {
+                "report-confirmation-v1",
+                "report-export-v1",
+            }:
                 raise ValueError(
                     "report confirmation requires confirmation graph version"
                 )
@@ -529,7 +563,10 @@ class RuntimeState(StrictModel):
                 )
 
         if self.status is RuntimeStatus.REPORT_NEEDS_HUMAN:
-            if self.graph_version != "report-confirmation-v1":
+            if self.graph_version not in {
+                "report-confirmation-v1",
+                "report-export-v1",
+            }:
                 raise ValueError(
                     "report human wait requires confirmation graph version"
                 )
@@ -550,7 +587,10 @@ class RuntimeState(StrictModel):
                 )
 
         if self.status is RuntimeStatus.REPORT_REVISION_REQUESTED:
-            if self.graph_version != "report-confirmation-v1":
+            if self.graph_version not in {
+                "report-confirmation-v1",
+                "report-export-v1",
+            }:
                 raise ValueError(
                     "human revision requires confirmation graph version"
                 )
@@ -602,7 +642,10 @@ class RuntimeState(StrictModel):
             RuntimeStatus.REPORT_CANCELLED: HumanActionKind.CANCEL,
         }
         if self.status in terminal_report_actions:
-            if self.graph_version != "report-confirmation-v1":
+            if self.graph_version not in {
+                "report-confirmation-v1",
+                "report-export-v1",
+            }:
                 raise ValueError(
                     "terminal report decision requires confirmation graph"
                 )
@@ -619,6 +662,50 @@ class RuntimeState(StrictModel):
                     "terminal report decision requires reviewed confirmation"
                 )
 
+        if self.status is RuntimeStatus.EXPORT_READY:
+            if self.graph_version != "report-export-v1":
+                raise ValueError("EXPORT_READY requires report-export graph")
+            if self.current_node is not RuntimeNode.EXPORT_REPORT:
+                raise ValueError("EXPORT_READY must enter export_report")
+            if (
+                self.last_report_action is not HumanActionKind.APPROVE
+                or self.approved_report_revision != self.report_revision
+                or self.approved_report_hash != self.report_hash
+            ):
+                raise ValueError(
+                    "EXPORT_READY requires current approved report binding"
+                )
+            if (
+                self.report_confirmation_revision < 1
+                or self.last_review_result is None
+                or self.last_review_result.outcome is not ReviewOutcome.PASS
+            ):
+                raise ValueError(
+                    "EXPORT_READY requires reviewed human confirmation"
+                )
+
+        if self.status is RuntimeStatus.COMPLETED:
+            if self.graph_version != "report-export-v1":
+                raise ValueError("COMPLETED requires report-export graph")
+            if self.current_node is not RuntimeNode.END:
+                raise ValueError("COMPLETED must stop at end")
+            if (
+                self.last_report_action is not HumanActionKind.APPROVE
+                or self.approved_report_revision != self.report_revision
+                or self.approved_report_hash != self.report_hash
+            ):
+                raise ValueError(
+                    "COMPLETED requires current approved report binding"
+                )
+            if (
+                self.report_confirmation_revision < 1
+                or self.last_review_result is None
+                or self.last_review_result.outcome is not ReviewOutcome.PASS
+            ):
+                raise ValueError(
+                    "COMPLETED requires reviewed human confirmation"
+                )
+
         if self.report_draft is not None:
             draft = self.report_draft
             report_statuses = {
@@ -632,6 +719,8 @@ class RuntimeState(StrictModel):
                 RuntimeStatus.REPORT_APPROVED,
                 RuntimeStatus.REPORT_REJECTED,
                 RuntimeStatus.REPORT_CANCELLED,
+                RuntimeStatus.EXPORT_READY,
+                RuntimeStatus.COMPLETED,
                 RuntimeStatus.FAILED,
             }
             if self.status not in report_statuses:
@@ -661,6 +750,7 @@ class RuntimeState(StrictModel):
             RuntimeStatus.REPORT_APPROVED,
             RuntimeStatus.REPORT_REJECTED,
             RuntimeStatus.REPORT_CANCELLED,
+            RuntimeStatus.COMPLETED,
             RuntimeStatus.FAILED,
         } and self.current_node is not RuntimeNode.END:
             raise ValueError("terminal state must use the end node")
@@ -673,7 +763,28 @@ class RuntimeState(StrictModel):
             raise ValueError(
                 "approved report revision and hash must be stored together"
             )
-        if all(approval_parts) and self.status is not RuntimeStatus.REPORT_APPROVED:
+        approval_statuses = {
+            RuntimeStatus.REPORT_APPROVED,
+            RuntimeStatus.EXPORT_READY,
+            RuntimeStatus.COMPLETED,
+        }
+        export_failure_with_approval = (
+            self.status is RuntimeStatus.FAILED
+            and any(
+                error.code
+                in {
+                    "export-artifact-conflict",
+                    "export-path-rejected",
+                    "export-write-failed",
+                }
+                for error in self.errors
+            )
+        )
+        if (
+            all(approval_parts)
+            and self.status not in approval_statuses
+            and not export_failure_with_approval
+        ):
             raise ValueError("approved report binding requires approved status")
 
         report_parts = (
@@ -685,10 +796,54 @@ class RuntimeState(StrictModel):
             raise ValueError(
                 "report draft, revision, and hash must be stored together"
             )
-        if (
-            self.artifact_id is not None or self.idempotency_key is not None
-        ) and self.report_hash is None:
-            raise ValueError("artifact fields require report_hash")
+        artifact_parts = (
+            self.artifact_id is not None,
+            self.idempotency_key is not None,
+            self.artifact_record is not None,
+            self.last_export_outcome is not None,
+        )
+        if any(artifact_parts) and not all(artifact_parts):
+            raise ValueError("artifact fields must be stored together")
+        if all(artifact_parts):
+            if self.status is not RuntimeStatus.COMPLETED:
+                raise ValueError("artifact fields require COMPLETED status")
+            record = self.artifact_record
+            if record is None:  # guarded by artifact_parts
+                raise ValueError("artifact record missing")
+            if (
+                record.artifact_id != self.artifact_id
+                or record.idempotency_key != self.idempotency_key
+                or record.report_revision != self.report_revision
+                or record.report_hash != self.report_hash
+                or record.source_snapshot_id != self.source_snapshot_id
+            ):
+                raise ValueError("artifact record does not match runtime state")
+            if (
+                self.report_draft is None
+                or self.approved_report_revision is None
+                or self.approved_report_hash is None
+            ):
+                raise ValueError("artifact record requires approved report")
+            export_request = ExportRequest(
+                run_id=self.run_id,
+                thread_id=self.thread_id,
+                source_snapshot_id=self.source_snapshot_id,
+                approved_report_revision=self.approved_report_revision,
+                approved_report_hash=self.approved_report_hash,
+                report=self.report_draft,
+            )
+            rendered = render_markdown(export_request)
+            if (
+                record.artifact_id != compute_artifact_id(export_request)
+                or record.content_sha256
+                != hashlib.sha256(rendered).hexdigest()
+                or record.size_bytes != len(rendered)
+            ):
+                raise ValueError(
+                    "artifact record does not match deterministic export"
+                )
+        elif self.status is RuntimeStatus.COMPLETED:
+            raise ValueError("COMPLETED requires artifact record")
         return self
 
 

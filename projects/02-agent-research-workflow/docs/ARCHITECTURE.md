@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.7
+- 版本：v0.8
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校和最终报告确认切片已实现；导出尚未实现
+- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校、最终报告确认和幂等 Markdown 导出切片已实现
 
 ## 1. 架构目标
 
@@ -187,6 +187,27 @@ flowchart TD
 - `approve` 只持久化当前批准 revision/hash 并进入 `REPORT_APPROVED`；`artifact_id` 和 `idempotency_key` 保持空，不执行导出。
 - 人工修改器、reviewer、binder 和 SQLite 连接仍是运行时依赖，不进入 checkpoint。
 
+### 3.7 当前安全幂等导出切片
+
+```mermaid
+flowchart TD
+    A["REPORT_NEEDS_HUMAN"] -->|bound approve| B["EXPORT_READY"]
+    B --> C["export_report"]
+    C -->|new file published| D["COMPLETED / CREATED"]
+    C -->|same artifact and bytes| E["COMPLETED / UNCHANGED"]
+    C -->|same ID, different bytes| F["FAILED"]
+    C -->|unsafe path or write failure| F
+```
+
+- 新路径使用 `report-export-v1`。旧 `report-confirmation-v1` 仍在批准后停于 `REPORT_APPROVED`，行为不变。
+- `artifact_id` 和 `idempotency_key` 绑定 `run_id`、批准报告 revision/hash 和固定 `markdown` 格式。
+- 运行时注入 allowlist 根目录；其父目录必须已存在，导出器最多创建一级目录。模型、报告和人工决定都不能提供路径。最终相对路径固定为 `<artifact_id>.md`。
+- 路径检查拒绝相对根、`..`、符号链接、junction/reparse point 和非普通文件目标。
+- 渲染器只输出确定性 UTF-8 Markdown；不可信文本转义 HTML 与 Markdown 控制字符，不执行报告中的命令或链接。
+- 发布先写同目录临时文件、刷新并 `fsync`，再用硬链接原子建立最终文件；不使用会覆盖现有目标的替换操作。
+- 同一文件同字节返回 `UNCHANGED`；同 ID 不同字节记录 `export-artifact-conflict` 并失败，原文件不变。
+- checkpoint 只保存 `ArtifactRecord` 和导出结果；根目录、文件句柄、临时路径和 `SafeMarkdownExporter` 是运行时依赖。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -225,7 +246,8 @@ flowchart TD
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
    - 证据评估：`evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment`。
    - 草稿、审校与批准：`report_draft`、报告 revision/hash、`review_policy_id`、`last_review_result`、`report_confirmation_revision`、`last_report_action`、批准 revision/hash；引用只保存已验证来源元数据。
-   - 后续占位：安全 `errors`、`artifact_id`、`idempotency_key`。
+   - 制品：`artifact_id`、`idempotency_key`、`artifact_record`、`last_export_outcome`；只保存相对文件名、哈希、大小和批准报告绑定。
+   - 安全错误：稳定 `errors`，不保存原始文件系统异常。
 2. 运行时依赖：
    - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
    - 这些对象由运行环境创建或注入，不是业务状态。
@@ -303,8 +325,9 @@ flowchart TD
 
 - 不是模型可调用工具。
 - 只接受状态中已批准的 revision 和内容哈希。
-- 程序从 `artifact_id` 派生 allowlist 根目录下的安全路径。
-- 临时文件完整写入并校验后原子替换；不执行报告内命令或链接。
+- 程序从批准绑定计算 `artifact_id`，再派生 allowlist 根目录下的固定文件名。
+- 临时文件完整写入、`fsync` 后使用原子硬链接发布；目标存在时永不覆盖。
+- 相同内容返回 `UNCHANGED`；冲突、路径拒绝和写失败进入带安全错误码的稳定 `FAILED`。
 
 ## 6. Tool Calling
 
@@ -399,6 +422,9 @@ Tool Calling 执行流程：
 | 第 3 次人工退回 | `FAILED` | `human-revision-limit-exhausted` |
 | 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |
 | 最终报告人工取消或拒绝 | `REPORT_CANCELLED` / `REPORT_REJECTED` | 稳定终态 |
+| 已批准报告待导出 | `export_report` | 只允许程序派生的 Markdown 制品 |
+| 同一制品已经存在且字节一致 | `COMPLETED` | `UNCHANGED`，不新增文件 |
+| 同一制品 ID 已存在但字节不同 | `FAILED` | `export-artifact-conflict`，不覆盖 |
 | 安全违规、冲突写入、重试耗尽 | `FAILED` | 终态 |
 | 已批准制品导出成功 | `COMPLETED` | 终态 |
 
@@ -472,10 +498,11 @@ artifact_id = hash(run_id + approved_revision + approved_content_hash + format)
 ```
 
 - 输出文件名由程序生成。
-- 同一 `artifact_id` 已存在且内容哈希相同：返回 `UNCHANGED`。
+- 同一 `artifact_id` 已存在且完整字节相同：返回 `UNCHANGED`。
 - 同一 `artifact_id` 已存在但内容不同：返回冲突并失败，不覆盖。
-- 写入过程使用同目录临时文件和原子替换。
+- 写入过程使用同目录临时文件、`fsync` 和不覆盖的原子硬链接发布。
 - 未批准、批准已过期或哈希不匹配：拒绝写入。
+- 文件系统不支持同卷硬链接：安全失败，不降级为覆盖写入。
 
 ## 12. 安全边界
 
@@ -536,7 +563,7 @@ P2 独立 `.venv`、精确依赖和原创固定资料已安装或创建并验证
 - 不新增依赖。
 - 不下载真实资料，不调用真实模型或外部工具。
 - `langsmith` 只作为必要传递包存在；tracing 保持关闭。
-- 不实现开放 HTTP、任意文件、shell、SQL、部署或写操作。
+- 不实现开放 HTTP、任意文件、shell、SQL 或部署；唯一写边界是批准后的 allowlist Markdown 制品目录。
 - 后续真实模型、真实资料和费用仍需独立提案与批准。
 
 ## 16. 后续可选扩展
