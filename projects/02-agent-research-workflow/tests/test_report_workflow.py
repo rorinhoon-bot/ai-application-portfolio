@@ -29,6 +29,10 @@ from agent_research.report_drafting import (
     EvidenceCitationBinder,
     hash_report_draft,
 )
+from agent_research.report_approval import (
+    DeterministicHumanReportReviser,
+    ReportDecision,
+)
 from agent_research.report_review import (
     DeterministicDraftReviser,
     DeterministicReportReviewer,
@@ -42,9 +46,12 @@ from agent_research.tool_contracts import (
     ToolName,
 )
 from agent_research.workflow import (
+    _validate_report_decision_binding,
     build_draft_report_graph,
+    build_report_confirmation_graph,
     build_report_review_graph,
     create_initial_state,
+    HumanDecisionError,
     workflow_config,
 )
 
@@ -277,6 +284,125 @@ def _review_policy() -> ReviewPolicy:
         required_candidate_ids=("atlasflow",),
         required_dimension_ids=("privacy", "reliability"),
         forbidden_statements=_bundle().gold.forbidden_claims,
+    )
+
+
+def _revision_evidence() -> tuple[str, str]:
+    return (
+        "atlasflow-overview-v1#deployment-model",
+        "atlasflow-security-cost-v1#operations-limit",
+    )
+
+
+def _revision_proposal(
+    summary: str = "AtlasFlow fits local control needs.",
+) -> DraftProposal:
+    return DraftProposal(
+        writer_id="deterministic-writer-v1",
+        executive_summary=summary,
+        claims=tuple(
+            DraftClaim.model_validate(claim.model_dump(mode="json"))
+            for claim in _gold_claims("atlas-ops-cost")
+        ),
+        recommendation_candidate_id="atlasflow",
+        limitations=(
+            "The fixed evidence does not compare every control capability.",
+        ),
+    )
+
+
+def _revision_binder() -> EvidenceCitationBinder:
+    return EvidenceCitationBinder(
+        sources=_bundle().sources,
+        policy=DraftPolicy(
+            policy_id="revision-draft-policy",
+            allowed_claims=_gold_claims("atlas-ops-cost"),
+            allowed_recommendations=("atlasflow",),
+        ),
+    )
+
+
+def _revision_assessor() -> DeterministicEvidenceAssessor:
+    return DeterministicEvidenceAssessor(
+        sources=_bundle().sources,
+        policy=EvidencePolicy(
+            policy_id="revision-evidence-policy",
+            requirements=tuple(
+                EvidenceRequirement(
+                    requirement_id=f"revision-proof-{index}",
+                    description=f"Required revision proof {index}.",
+                    acceptable_evidence_sets=((evidence_id,),),
+                )
+                for index, evidence_id in enumerate(
+                    _revision_evidence(),
+                    start=1,
+                )
+            ),
+        ),
+    )
+
+
+def _revision_calls(case: WorkflowCase) -> tuple[ToolCall, ToolCall]:
+    first = _search_call(
+        call_id="revision-search",
+        case=case,
+        query="AtlasFlow local deployment operations cost",
+        source_types=("overview", "security-and-cost"),
+        top_k=2,
+    )
+    return (
+        first,
+        first.model_copy(update={"call_id": "unused-revision-search"}),
+    )
+
+
+def _revision_review_policy() -> ReviewPolicy:
+    return ReviewPolicy(
+        policy_id="revision-review-policy",
+        required_candidate_ids=("atlasflow",),
+        required_dimension_ids=("operations",),
+        forbidden_statements=_bundle().gold.forbidden_claims,
+    )
+
+
+def _report_decision(
+    state: RuntimeState,
+    action: HumanActionKind,
+) -> dict[str, object]:
+    return {
+        "schema_version": "report-decision-v1",
+        "run_id": state.run_id,
+        "thread_id": state.thread_id,
+        "expected_confirmation_revision": (
+            state.report_confirmation_revision
+        ),
+        "expected_report_revision": state.report_revision,
+        "expected_report_hash": state.report_hash,
+        "action": action.value,
+    }
+
+
+def _build_revision_confirmation_graph(
+    *,
+    saver: SqliteSaver,
+    human_reviser: DeterministicHumanReportReviser,
+    reviewer: DeterministicReportReviewer | None = None,
+):
+    case = _case("report-revision-approved")
+    return build_report_confirmation_graph(
+        checkpointer=saver,
+        tool_calls=_revision_calls(case),
+        executor=DeterministicFakeToolExecutor(
+            sources=_bundle().sources,
+            outcomes=case.tool_outcomes,
+        ),
+        assessor=_revision_assessor(),
+        writer=_writer(_revision_proposal()),
+        binder=_revision_binder(),
+        reviewer=reviewer
+        or DeterministicReportReviewer(_revision_review_policy()),
+        reviser=DeterministicDraftReviser((_revision_proposal(),)),
+        human_reviser=human_reviser,
     )
 
 
@@ -581,3 +707,387 @@ def test_checkpoint_restores_reviewed_report_without_runtime_reviewers(
     assert restored == final
     assert restored_reviewer.review_count == 0
     assert restored_reviser.revision_count == 0
+
+
+def test_report_decision_contract_rejects_unsupported_and_unknown_fields() -> None:
+    payload = {
+        "run_id": "run-report-contract",
+        "thread_id": "thread-report-contract",
+        "expected_confirmation_revision": 1,
+        "expected_report_revision": 1,
+        "expected_report_hash": "a" * 64,
+        "action": HumanActionKind.EDIT.value,
+    }
+    with pytest.raises(ValidationError, match="unsupported report action"):
+        ReportDecision.model_validate(payload)
+
+    payload["action"] = HumanActionKind.APPROVE.value
+    payload["authorization"] = "must-not-enter-contract"
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        ReportDecision.model_validate(payload)
+
+
+def test_reviewed_report_pauses_and_bound_approval_stops_without_export(
+    tmp_path: Path,
+) -> None:
+    case = _case("report-revision-approved")
+    config = workflow_config("thread-report-approve")
+    human_reviser = DeterministicHumanReportReviser(
+        (_revision_proposal("Human revision one."),)
+    )
+    with SqliteSaver.from_conn_string(
+        str(tmp_path / "report-approve.sqlite3")
+    ) as saver:
+        graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=human_reviser,
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id="run-report-approve",
+                thread_id="thread-report-approve",
+                request=case.input,
+            ),
+            config,
+        )
+        requirements_wait = _snapshot(graph, config)
+        interrupted = graph.invoke(
+            Command(resume=_approval(requirements_wait)),
+            config,
+        )
+        report_wait = _snapshot(graph, config)
+
+        assert report_wait.status is RuntimeStatus.REPORT_NEEDS_HUMAN
+        assert report_wait.graph_version == "report-confirmation-v1"
+        assert report_wait.report_confirmation_revision == 1
+        assert report_wait.report_revision == 1
+        assert report_wait.last_review_result is not None
+        assert report_wait.last_review_result.outcome is ReviewOutcome.PASS
+        pause = interrupted["__interrupt__"][0].value
+        assert pause["confirmation_revision"] == 1
+        assert pause["report_revision"] == report_wait.report_revision
+        assert pause["report_hash"] == report_wait.report_hash
+        assert pause["report"]["revision"] == report_wait.report_revision
+
+        graph.invoke(
+            Command(
+                resume=_report_decision(
+                    report_wait,
+                    HumanActionKind.APPROVE,
+                )
+            ),
+            config,
+        )
+        final = _snapshot(graph, config)
+
+    assert final.status is RuntimeStatus.REPORT_APPROVED
+    assert final.approved_report_revision == final.report_revision
+    assert final.approved_report_hash == final.report_hash
+    assert final.artifact_id is None
+    assert final.idempotency_key is None
+    assert human_reviser.revision_count == 0
+
+    tampered = final.model_dump(mode="json")
+    tampered["approved_report_hash"] = "f" * 64
+    with pytest.raises(
+        ValidationError,
+        match="report approval must bind current revision and hash",
+    ):
+        RuntimeState.model_validate(tampered)
+
+    unreviewed = final.model_dump(mode="json")
+    unreviewed["last_review_result"] = None
+    with pytest.raises(
+        ValidationError,
+        match="REPORT_APPROVED requires reviewed human confirmation",
+    ):
+        RuntimeState.model_validate(unreviewed)
+
+
+def test_change_request_creates_new_revision_and_invalidates_old_approval(
+    tmp_path: Path,
+) -> None:
+    case = _case("report-revision-approved")
+    config = workflow_config("thread-report-revision")
+    human_reviser = DeterministicHumanReportReviser(
+        (_revision_proposal("Rewritten after human request."),)
+    )
+    reviewer = DeterministicReportReviewer(_revision_review_policy())
+    with SqliteSaver.from_conn_string(
+        str(tmp_path / "report-revision.sqlite3")
+    ) as saver:
+        graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=human_reviser,
+            reviewer=reviewer,
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id="run-report-revision",
+                thread_id="thread-report-revision",
+                request=case.input,
+            ),
+            config,
+        )
+        requirements_wait = _snapshot(graph, config)
+        graph.invoke(
+            Command(resume=_approval(requirements_wait)),
+            config,
+        )
+        first_wait = _snapshot(graph, config)
+        stale_approval = _report_decision(
+            first_wait,
+            HumanActionKind.APPROVE,
+        )
+
+        graph.invoke(
+            Command(
+                resume=_report_decision(
+                    first_wait,
+                    HumanActionKind.REQUEST_CHANGES,
+                )
+            ),
+            config,
+        )
+        second_wait = _snapshot(graph, config)
+
+        assert second_wait.status is RuntimeStatus.REPORT_NEEDS_HUMAN
+        assert second_wait.report_confirmation_revision == 2
+        assert second_wait.report_revision == 2
+        assert second_wait.report_hash != first_wait.report_hash
+        assert second_wait.human_revision_count == 1
+        assert second_wait.review_rounds == 0
+        assert human_reviser.revision_count == 1
+        assert reviewer.review_count == 2
+
+        stale_revision = ReportDecision.model_validate(
+            _report_decision(second_wait, HumanActionKind.APPROVE)
+        ).model_copy(
+            update={"expected_report_revision": first_wait.report_revision}
+        )
+        with pytest.raises(
+            HumanDecisionError,
+            match="REPORT_DECISION_STALE_REPORT_REVISION",
+        ):
+            _validate_report_decision_binding(second_wait, stale_revision)
+
+        stale_hash = ReportDecision.model_validate(
+            _report_decision(second_wait, HumanActionKind.APPROVE)
+        ).model_copy(update={"expected_report_hash": first_wait.report_hash})
+        with pytest.raises(
+            HumanDecisionError,
+            match="REPORT_DECISION_STALE_REPORT_HASH",
+        ):
+            _validate_report_decision_binding(second_wait, stale_hash)
+
+        wrong_run = ReportDecision.model_validate(
+            _report_decision(second_wait, HumanActionKind.APPROVE)
+        ).model_copy(update={"run_id": "run-wrong-binding"})
+        with pytest.raises(
+            HumanDecisionError,
+            match="REPORT_DECISION_RUN_ID_MISMATCH",
+        ):
+            _validate_report_decision_binding(second_wait, wrong_run)
+
+        wrong_thread = ReportDecision.model_validate(
+            _report_decision(second_wait, HumanActionKind.APPROVE)
+        ).model_copy(update={"thread_id": "thread-wrong-binding"})
+        with pytest.raises(
+            HumanDecisionError,
+            match="REPORT_DECISION_THREAD_ID_MISMATCH",
+        ):
+            _validate_report_decision_binding(second_wait, wrong_thread)
+
+        with pytest.raises(
+            HumanDecisionError,
+            match="REPORT_DECISION_STALE_CONFIRMATION_REVISION",
+        ):
+            graph.invoke(Command(resume=stale_approval), config)
+
+
+@pytest.mark.parametrize(
+    ("action", "expected_status"),
+    (
+        (HumanActionKind.REJECT, RuntimeStatus.REPORT_REJECTED),
+        (HumanActionKind.CANCEL, RuntimeStatus.REPORT_CANCELLED),
+    ),
+)
+def test_report_reject_or_cancel_is_a_stable_terminal(
+    tmp_path: Path,
+    action: HumanActionKind,
+    expected_status: RuntimeStatus,
+) -> None:
+    case = _case("report-revision-approved")
+    thread_id = f"thread-report-{action.value}"
+    config = workflow_config(thread_id)
+    with SqliteSaver.from_conn_string(
+        str(tmp_path / f"report-{action.value}.sqlite3")
+    ) as saver:
+        graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=DeterministicHumanReportReviser(
+                (_revision_proposal(),)
+            ),
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id=f"run-report-{action.value}",
+                thread_id=thread_id,
+                request=case.input,
+            ),
+            config,
+        )
+        requirements_wait = _snapshot(graph, config)
+        graph.invoke(Command(resume=_approval(requirements_wait)), config)
+        report_wait = _snapshot(graph, config)
+        graph.invoke(
+            Command(resume=_report_decision(report_wait, action)),
+            config,
+        )
+        final = _snapshot(graph, config)
+
+        assert final.status is expected_status
+        assert graph.get_state(config).next == ()
+        assert final.artifact_id is None
+
+
+def test_third_human_change_request_hits_fixed_limit(
+    tmp_path: Path,
+) -> None:
+    case = _case("report-revision-approved")
+    config = workflow_config("thread-human-limit")
+    human_reviser = DeterministicHumanReportReviser(
+        (
+            _revision_proposal("First human-requested revision."),
+            _revision_proposal("Second human-requested revision."),
+        )
+    )
+    with SqliteSaver.from_conn_string(
+        str(tmp_path / "human-limit.sqlite3")
+    ) as saver:
+        graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=human_reviser,
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id="run-human-limit",
+                thread_id="thread-human-limit",
+                request=case.input,
+            ),
+            config,
+        )
+        waiting = _snapshot(graph, config)
+        graph.invoke(Command(resume=_approval(waiting)), config)
+
+        for _ in range(3):
+            waiting = _snapshot(graph, config)
+            graph.invoke(
+                Command(
+                    resume=_report_decision(
+                        waiting,
+                        HumanActionKind.REQUEST_CHANGES,
+                    )
+                ),
+                config,
+            )
+
+        final = _snapshot(graph, config)
+
+    assert final.status is RuntimeStatus.FAILED
+    assert final.human_revision_count == 2
+    assert final.report_confirmation_revision == 3
+    assert final.errors[-1].code == "human-revision-limit-exhausted"
+    assert final.artifact_id is None
+    assert human_reviser.revision_count == 2
+
+
+def test_report_pause_recovers_with_fresh_runtime_objects_and_no_secrets(
+    tmp_path: Path,
+) -> None:
+    case = _case("report-revision-approved")
+    checkpoint = tmp_path / "report-recovery.sqlite3"
+    config = workflow_config("thread-report-recovery")
+    first_reviser = DeterministicHumanReportReviser(
+        (_revision_proposal("Recovered report revision."),)
+    )
+    with SqliteSaver.from_conn_string(str(checkpoint)) as saver:
+        graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=first_reviser,
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id="run-report-recovery",
+                thread_id="thread-report-recovery",
+                request=case.input,
+            ),
+            config,
+        )
+        waiting = _snapshot(graph, config)
+        graph.invoke(Command(resume=_approval(waiting)), config)
+        first_report_wait = _snapshot(graph, config)
+        graph.invoke(
+            Command(
+                resume=_report_decision(
+                    first_report_wait,
+                    HumanActionKind.REQUEST_CHANGES,
+                )
+            ),
+            config,
+        )
+        second_report_wait = _snapshot(graph, config)
+
+    raw = checkpoint.read_bytes().lower()
+    for forbidden in (
+        b"deterministichumanreportreviser",
+        b"authorization: bearer",
+        b"api_key=",
+        b"cookie:",
+        b"private-vendor-response-body",
+    ):
+        assert forbidden not in raw
+
+    fresh_reviser = DeterministicHumanReportReviser(
+        (_revision_proposal("Recovered report revision."),)
+    )
+    fresh_reviewer = DeterministicReportReviewer(_revision_review_policy())
+    with SqliteSaver.from_conn_string(str(checkpoint)) as saver:
+        restored_graph = _build_revision_confirmation_graph(
+            saver=saver,
+            human_reviser=fresh_reviser,
+            reviewer=fresh_reviewer,
+        )
+        restored = _snapshot(restored_graph, config)
+        assert restored == second_report_wait
+        restored_graph.invoke(
+            Command(
+                resume=_report_decision(
+                    restored,
+                    HumanActionKind.APPROVE,
+                )
+            ),
+            config,
+        )
+        final = _snapshot(restored_graph, config)
+
+    assert final.status is RuntimeStatus.REPORT_APPROVED
+    assert fresh_reviser.revision_count == 0
+    assert fresh_reviewer.review_count == 0
+
+
+def test_report_confirmation_state_rejects_unknown_and_bounded_values() -> None:
+    case = _case("report-revision-approved")
+    state = create_initial_state(
+        run_id="run-state-bounds",
+        thread_id="thread-state-bounds",
+        request=case.input,
+    )
+    state["report_confirmation_revision"] = 33
+    with pytest.raises(ValidationError, match="less than or equal to 32"):
+        RuntimeState.model_validate(state)
+
+    state["report_confirmation_revision"] = 0
+    state["unknown_checkpoint_object"] = {"api_key": "forbidden"}
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        RuntimeState.model_validate(state)

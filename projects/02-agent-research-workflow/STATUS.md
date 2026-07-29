@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：冻结确定性报告审校合同、发现项和最多 2 轮自动修改路径。
-- 当前阶段：`有限报告审校最小切片已完成`
+- 当前唯一目标：实现最终报告 Human-in-the-loop 暂停，并把人工决定绑定到暂停 revision、报告 revision 与内容 hash。
+- 当前阶段：`最终报告确认最小切片已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -87,10 +87,19 @@
   - 审校发现项只保存稳定错误码和安全摘要；秘密形态摘要被拒绝，不回显固定禁止断言。
   - SQLite checkpoint 关闭重开后 `REVIEWED` 状态一致；reviewer、reviser、binder 和完整敏感响应不进入 checkpoint。
   - 新增 12 项审校合同、覆盖检查、有限循环、状态绑定和恢复测试；P2 全部普通测试结果 `96 passed in 6.18s`。
+  - 新增 `report-pause-v1` 和 `report-decision-v1`；人工决定绑定 `run_id`、`thread_id`、报告确认 revision、报告 revision 与内容哈希。
+  - 新增 `report-confirmation-v1` 显式路径：审校通过后先持久化等待状态，再由 `await_human_report` 暂停。
+  - 人工批准只进入 `REPORT_APPROVED`，并保存当前批准 revision/hash；`artifact_id` 和幂等键保持空，不提前导出。
+  - 人工退回使用确定性修改器生成新报告 revision，清除旧审校结果、重置本轮自动审校计数、重新审校并形成新暂停；旧批准失效。
+  - 人工返修最多成功 2 次；第 3 次退回以 `human-revision-limit-exhausted` 稳定进入 `FAILED`。
+  - 人工拒绝和取消分别进入 `REPORT_REJECTED` 与 `REPORT_CANCELLED` 稳定终态。
+  - 使用固定案例 `report-revision-approved` 验证退回、重写、重新审校、旧批准失效和第二次批准；未修改 `workflow-v1` 或金标准。
+  - SQLite checkpoint 关闭重开后可在第二次报告暂停恢复并批准；writer、reviewer、reviser、binder、密钥形态文本和完整敏感响应不进入 checkpoint。
+  - 新增 8 项最终报告合同、暂停、绑定、返修上限、终态和恢复测试；P2 全部普通测试结果 `104 passed in 8.23s`。
 - 下一步：
-  - 下一阶段实现最终报告 Human-in-the-loop 暂停、revision/hash 绑定和批准过期检查。
-  - 使用 `report-revision-approved` 固定案例验证人工退回、重写、重新审校和第二次批准。
-  - 不提前实现真实模型或最终文件导出。
+  - 下一阶段设计安全、幂等的本地 Markdown 导出最小切片。
+  - 使用 `checkpoint-resume-export` 固定案例验证恢复、重复导出和单制品约束。
+  - 不提前接入真实模型、真实资料或公开部署。
 - 阻塞：
   - 无。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

@@ -26,6 +26,12 @@ from agent_research.report_drafting import (
     EvidenceCitationBinder,
     hash_report_draft,
 )
+from agent_research.report_approval import (
+    DeterministicHumanReportReviser,
+    MAX_HUMAN_REPORT_REVISIONS,
+    ReportDecision,
+    ReportPause,
+)
 from agent_research.report_review import (
     DeterministicDraftReviser,
     DeterministicReportReviewer,
@@ -477,6 +483,10 @@ def draft_report(
     binder: EvidenceCitationBinder,
     continue_to_review: bool = False,
     review_policy_id: str | None = None,
+    report_graph_version: Literal[
+        "report-review-v1",
+        "report-confirmation-v1",
+    ] = "report-review-v1",
 ) -> dict[str, object]:
     """Create one structured draft only after sufficient evidence."""
 
@@ -516,7 +526,7 @@ def draft_report(
         return _validated_update(
             state,
             graph_version=(
-                "report-review-v1"
+                report_graph_version
                 if continue_to_review
                 else "draft-report-v1"
             ),
@@ -527,7 +537,7 @@ def draft_report(
     return _validated_update(
         state,
         graph_version=(
-            "report-review-v1" if continue_to_review else "draft-report-v1"
+            report_graph_version if continue_to_review else "draft-report-v1"
         ),
         status=(
             RuntimeStatus.REVIEW_READY.value
@@ -550,6 +560,7 @@ def review_report(
     state: RuntimeState,
     *,
     reviewer: DeterministicReportReviewer,
+    continue_to_report_confirmation: bool = False,
 ) -> dict[str, object]:
     """Review current draft and route by persisted revision budget."""
 
@@ -594,8 +605,16 @@ def review_report(
         return _validated_update(
             state,
             **common,
-            status=RuntimeStatus.REVIEWED.value,
-            current_node=RuntimeNode.END.value,
+            status=(
+                RuntimeStatus.REPORT_CONFIRMATION_READY.value
+                if continue_to_report_confirmation
+                else RuntimeStatus.REVIEWED.value
+            ),
+            current_node=(
+                RuntimeNode.CONFIRM_REPORT.value
+                if continue_to_report_confirmation
+                else RuntimeNode.END.value
+            ),
         )
     if result.outcome is ReviewOutcome.REVISE:
         return _validated_update(
@@ -682,6 +701,181 @@ def revise_report(
     )
 
 
+def confirm_report(state: RuntimeState) -> dict[str, object]:
+    """Persist a new report confirmation revision before interrupting."""
+
+    if state.status is not RuntimeStatus.REPORT_CONFIRMATION_READY:
+        raise ValueError("REPORT_CONFIRMATION_REQUIRES_REVIEWED_REPORT")
+    return _validated_update(
+        state,
+        status=RuntimeStatus.REPORT_NEEDS_HUMAN.value,
+        current_node=RuntimeNode.AWAIT_HUMAN_REPORT.value,
+        report_confirmation_revision=(
+            state.report_confirmation_revision + 1
+        ),
+    )
+
+
+def _validate_report_decision_binding(
+    state: RuntimeState,
+    decision: ReportDecision,
+) -> None:
+    if decision.run_id != state.run_id:
+        raise HumanDecisionError("REPORT_DECISION_RUN_ID_MISMATCH")
+    if decision.thread_id != state.thread_id:
+        raise HumanDecisionError("REPORT_DECISION_THREAD_ID_MISMATCH")
+    if (
+        decision.expected_confirmation_revision
+        != state.report_confirmation_revision
+    ):
+        raise HumanDecisionError(
+            "REPORT_DECISION_STALE_CONFIRMATION_REVISION"
+        )
+    if decision.expected_report_revision != state.report_revision:
+        raise HumanDecisionError("REPORT_DECISION_STALE_REPORT_REVISION")
+    if decision.expected_report_hash != state.report_hash:
+        raise HumanDecisionError("REPORT_DECISION_STALE_REPORT_HASH")
+
+
+def await_human_report(state: RuntimeState) -> dict[str, object]:
+    """Pause at the final report gate and apply one bound human action."""
+
+    if (
+        state.report_draft is None
+        or state.report_hash is None
+        or state.last_review_result is None
+        or state.last_review_result.outcome is not ReviewOutcome.PASS
+    ):
+        raise HumanDecisionError("REPORT_DECISION_MISSING_REVIEWED_REPORT")
+
+    pause = ReportPause(
+        run_id=state.run_id,
+        thread_id=state.thread_id,
+        confirmation_revision=state.report_confirmation_revision,
+        report_revision=state.report_revision,
+        report_hash=state.report_hash,
+        report=state.report_draft,
+        review_result=state.last_review_result,
+    )
+    raw_decision = interrupt(pause.model_dump(mode="json"))
+    decision = ReportDecision.model_validate(raw_decision)
+    _validate_report_decision_binding(state, decision)
+
+    if decision.action is HumanActionKind.APPROVE:
+        return _validated_update(
+            state,
+            status=RuntimeStatus.REPORT_APPROVED.value,
+            current_node=RuntimeNode.END.value,
+            last_report_action=HumanActionKind.APPROVE.value,
+            approved_report_revision=state.report_revision,
+            approved_report_hash=state.report_hash,
+        )
+
+    if decision.action is HumanActionKind.REQUEST_CHANGES:
+        if state.human_revision_count >= MAX_HUMAN_REPORT_REVISIONS:
+            errors = (
+                *state.errors,
+                _safe_error(
+                    code="human-revision-limit-exhausted",
+                    summary=(
+                        "report changes exceed the fixed human revision limit"
+                    ),
+                    retryable=False,
+                    node=RuntimeNode.AWAIT_HUMAN_REPORT,
+                ),
+            )
+            return _validated_update(
+                state,
+                status=RuntimeStatus.FAILED.value,
+                current_node=RuntimeNode.END.value,
+                last_report_action=HumanActionKind.REQUEST_CHANGES.value,
+                errors=errors,
+            )
+        return _validated_update(
+            state,
+            status=RuntimeStatus.REPORT_REVISION_REQUESTED.value,
+            current_node=RuntimeNode.APPLY_HUMAN_REPORT_REVISION.value,
+            last_report_action=HumanActionKind.REQUEST_CHANGES.value,
+            approved_report_revision=None,
+            approved_report_hash=None,
+        )
+
+    if decision.action is HumanActionKind.REJECT:
+        return _validated_update(
+            state,
+            status=RuntimeStatus.REPORT_REJECTED.value,
+            current_node=RuntimeNode.END.value,
+            last_report_action=HumanActionKind.REJECT.value,
+        )
+
+    return _validated_update(
+        state,
+        status=RuntimeStatus.REPORT_CANCELLED.value,
+        current_node=RuntimeNode.END.value,
+        last_report_action=HumanActionKind.CANCEL.value,
+    )
+
+
+def apply_human_report_revision(
+    state: RuntimeState,
+    *,
+    reviser: DeterministicHumanReportReviser,
+    binder: EvidenceCitationBinder,
+) -> dict[str, object]:
+    """Create one bound replacement after a human change request."""
+
+    if state.status is not RuntimeStatus.REPORT_REVISION_REQUESTED:
+        raise ValueError("HUMAN_REVISION_REQUIRES_CHANGE_REQUEST")
+    if state.confirmed_requirements is None:
+        raise ValueError("HUMAN_REVISION_REQUIRES_CONFIRMED_REQUIREMENTS")
+
+    next_human_revision = state.human_revision_count + 1
+    try:
+        if (
+            state.report_draft is None
+            or state.report_draft.draft_policy_id != binder.policy.policy_id
+        ):
+            raise ValueError("HUMAN_REVISION_DRAFT_POLICY_ID_MISMATCH")
+        proposal = reviser.revise(
+            next_human_revision=next_human_revision,
+        )
+        draft = binder.bind(
+            proposal=proposal,
+            confirmed_requirements=state.confirmed_requirements,
+            available_evidence_ids=state.evidence_ids,
+            revision=state.report_revision + 1,
+        )
+    except ValueError:
+        errors = (
+            *state.errors,
+            _safe_error(
+                code="invalid-human-revised-draft",
+                summary="human-requested draft failed evidence or scope checks",
+                retryable=False,
+                node=RuntimeNode.APPLY_HUMAN_REPORT_REVISION,
+            ),
+        )
+        return _validated_update(
+            state,
+            status=RuntimeStatus.FAILED.value,
+            current_node=RuntimeNode.END.value,
+            last_review_result=None,
+            errors=errors,
+        )
+
+    return _validated_update(
+        state,
+        status=RuntimeStatus.REVIEW_READY.value,
+        current_node=RuntimeNode.REVIEW_REPORT.value,
+        report_draft=draft.model_dump(mode="json"),
+        report_revision=draft.revision,
+        report_hash=hash_report_draft(draft),
+        human_revision_count=next_human_revision,
+        review_rounds=0,
+        last_review_result=None,
+    )
+
+
 def _route_after_tool(
     state: RuntimeState,
 ) -> Literal["success", "retry", "failed"]:
@@ -730,9 +924,11 @@ def _route_after_draft(
 
 def _route_after_review(
     state: RuntimeState,
-) -> Literal["revise", "stop"]:
+) -> Literal["revise", "confirm", "stop"]:
     if state.status is RuntimeStatus.REVIEW_REVISE:
         return "revise"
+    if state.status is RuntimeStatus.REPORT_CONFIRMATION_READY:
+        return "confirm"
     if state.status in {RuntimeStatus.REVIEWED, RuntimeStatus.FAILED}:
         return "stop"
     raise ValueError("REVIEW_INVALID_ROUTE")
@@ -746,6 +942,21 @@ def _route_after_revision(
     if state.status is RuntimeStatus.FAILED:
         return "stop"
     raise ValueError("REVISION_INVALID_ROUTE")
+
+
+def _route_after_report_human(
+    state: RuntimeState,
+) -> Literal["revise", "terminal"]:
+    if state.status is RuntimeStatus.REPORT_REVISION_REQUESTED:
+        return "revise"
+    if state.status in {
+        RuntimeStatus.REPORT_APPROVED,
+        RuntimeStatus.REPORT_REJECTED,
+        RuntimeStatus.REPORT_CANCELLED,
+        RuntimeStatus.FAILED,
+    }:
+        return "terminal"
+    raise ValueError("REPORT_HUMAN_INVALID_ROUTE")
 
 
 def _requirements_builder(plan_node: object) -> StateGraph:
@@ -976,11 +1187,118 @@ def build_report_review_graph(
         _route_after_review,
         {
             "revise": "revise_report",
+            "confirm": END,
             "stop": END,
         },
     )
     builder.add_conditional_edges(
         "revise_report",
+        _route_after_revision,
+        {
+            "review": "review_report",
+            "stop": END,
+        },
+    )
+    return builder.compile(checkpointer=checkpointer)
+
+
+def build_report_confirmation_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+    reviewer: DeterministicReportReviewer,
+    reviser: DeterministicDraftReviser,
+    human_reviser: DeterministicHumanReportReviser,
+):
+    """Compile the reviewed-report human gate without export."""
+
+    builder = _evidence_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+    )
+    builder.add_node(
+        "draft_report",
+        partial(
+            draft_report,
+            writer=writer,
+            binder=binder,
+            continue_to_review=True,
+            review_policy_id=reviewer.policy.policy_id,
+            report_graph_version="report-confirmation-v1",
+        ),
+    )
+    builder.add_node(
+        "review_report",
+        partial(
+            review_report,
+            reviewer=reviewer,
+            continue_to_report_confirmation=True,
+        ),
+    )
+    builder.add_node(
+        "revise_report",
+        partial(revise_report, reviser=reviser, binder=binder),
+    )
+    builder.add_node("confirm_report", confirm_report)
+    builder.add_node("await_human_report", await_human_report)
+    builder.add_node(
+        "apply_human_report_revision",
+        partial(
+            apply_human_report_revision,
+            reviser=human_reviser,
+            binder=binder,
+        ),
+    )
+    builder.add_conditional_edges(
+        "assess_evidence",
+        _route_after_assessment,
+        {
+            "retrieve": "plan_research",
+            "sufficient": "draft_report",
+            "failed": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "draft_report",
+        _route_after_draft,
+        {
+            "review": "review_report",
+            "stop": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "review_report",
+        _route_after_review,
+        {
+            "revise": "revise_report",
+            "confirm": "confirm_report",
+            "stop": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "revise_report",
+        _route_after_revision,
+        {
+            "review": "review_report",
+            "stop": END,
+        },
+    )
+    builder.add_edge("confirm_report", "await_human_report")
+    builder.add_conditional_edges(
+        "await_human_report",
+        _route_after_report_human,
+        {
+            "revise": "apply_human_report_revision",
+            "terminal": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "apply_human_report_revision",
         _route_after_revision,
         {
             "review": "review_report",

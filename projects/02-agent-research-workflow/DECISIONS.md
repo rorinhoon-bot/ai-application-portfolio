@@ -214,3 +214,14 @@
 - 恢复：checkpoint 保存 `review_policy_id`、绑定报告 revision/hash 的发现项和结果；审校器与修改器按持久化轮次工作，不依赖内存游标。
 - 安全：恢复时 reviewer 必须匹配 `review_policy_id`，binder 必须匹配原 `draft_policy_id`；错误策略不能静默替换。
 - 边界：当前审校是确定性夹具，不是模型语义评审；`REVIEWED` 仍不是人工批准，不允许导出。
+
+## D-025：最终报告决定绑定暂停 revision、报告 revision 和内容哈希
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：固定 `report-pause-v1`、`report-decision-v1` 和 `report-confirmation-v1`；人工决定必须同时匹配 `run_id`、`thread_id`、报告确认 revision、报告 revision 和 `report_hash`。
+- 原因：报告内容版本与“第几次展示给人工”是不同事实。只绑定内容哈希无法区分同内容的重新确认，只绑定 revision 又不能发现内容篡改。
+- 路由：批准进入 `REPORT_APPROVED`；退回进入确定性人工返修、重新审校和新暂停；拒绝、取消进入各自稳定终态。
+- 预算：`human_revision_count` 最多为 2；人工返修成功后自动审校预算重置，但两类循环各自有硬上限，不能无限循环。
+- 恢复：checkpoint 保存报告暂停 revision、人工动作和批准 revision/hash；人工修改器按持久化返修次数选择脚本，不依赖内存游标。
+- 安全：旧暂停、旧报告 revision 或旧 hash 的决定全部拒绝；批准仍不生成 `artifact_id`，导出继续保留独立副作用边界。

@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.6
+- 版本：v0.7
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿和有限审校切片已实现；最终报告确认和导出尚未实现
+- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校和最终报告确认切片已实现；导出尚未实现
 
 ## 1. 架构目标
 
@@ -165,6 +165,28 @@ flowchart TD
 - reviewer、reviser 和 binder 是运行时依赖；checkpoint 只保存规范草稿、策略 ID、轮次、发现项和安全结果。
 - 当前不调用模型，不进入最终报告 Human-in-the-loop，不生成制品。
 
+### 3.6 当前最终报告确认切片
+
+```mermaid
+flowchart TD
+    A["review_report PASS"] --> B["confirm_report"]
+    B --> C["await_human_report interrupt"]
+    C -->|approve with current bindings| D["REPORT_APPROVED"]
+    C -->|request-changes and count < 2| E["apply_human_report_revision"]
+    E --> F["review_report"]
+    F -->|PASS| B
+    C -->|reject| G["REPORT_REJECTED"]
+    C -->|cancel| H["REPORT_CANCELLED"]
+    C -->|third request-changes| I["FAILED"]
+```
+
+- 新路径使用 `report-confirmation-v1` 图版本；`confirm_report` 先持久化 `REPORT_NEEDS_HUMAN` 和新的 `report_confirmation_revision`，再由 `await_human_report` 调用 `interrupt()`。
+- `report_revision` 表示内容版本；`report_confirmation_revision` 表示第几次向人工展示。返修成功时前者增加，重新展示时后者增加。
+- `report-decision-v1` 必须同时匹配 `run_id`、`thread_id`、`report_confirmation_revision`、`report_revision` 和 `report_hash`。任一旧绑定都拒绝。
+- `request-changes` 使用独立的 `human_revision_count`，最多成功返修 2 次；每次人工返修后 `review_rounds` 重置为 0，再执行有限自动审校。
+- `approve` 只持久化当前批准 revision/hash 并进入 `REPORT_APPROVED`；`artifact_id` 和 `idempotency_key` 保持空，不执行导出。
+- 人工修改器、reviewer、binder 和 SQLite 连接仍是运行时依赖，不进入 checkpoint。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -202,7 +224,7 @@ flowchart TD
    - 工具：`source_snapshot_id`、`pending_tool_call`、`last_tool_result`、`tool_call_budget`。
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
    - 证据评估：`evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment`。
-   - 草稿与审校：`report_draft`、报告 revision/hash、`review_policy_id`、`last_review_result`、`review_rounds`；引用只保存已验证来源元数据。
+   - 草稿、审校与批准：`report_draft`、报告 revision/hash、`review_policy_id`、`last_review_result`、`report_confirmation_revision`、`last_report_action`、批准 revision/hash；引用只保存已验证来源元数据。
    - 后续占位：安全 `errors`、`artifact_id`、`idempotency_key`。
 2. 运行时依赖：
    - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
@@ -272,9 +294,10 @@ flowchart TD
 
 ### `confirm_report`
 
-- 暂停并显示报告、证据缺口、审校警告、调用次数和已知费用。
-- 只接受 `approve`、`request_changes`、`reject`。
-- 人工退回最多 2 次。批准动作绑定具体 `draft_revision` 和内容哈希，旧批准不能授权新内容。
+- 当前最小实现持久化新的报告确认 revision，再暂停并显示结构化报告及已通过的审校结果。
+- 只接受 `approve`、`request-changes`、`reject`、`cancel`。
+- 人工退回最多 2 次。决定绑定运行身份、暂停 revision、报告 revision 和内容哈希，旧批准不能授权新内容。
+- 批准只进入 `REPORT_APPROVED`；导出仍是后续独立副作用边界。
 
 ### `export_report`
 
@@ -372,9 +395,10 @@ Tool Calling 执行流程：
 | 审校发现且修改预算剩余 | `revise_report` | 最多成功生成 2 个新 revision |
 | 第 2 次修改后仍有审校发现 | `FAILED` | `review-limit-exhausted` |
 | 审校需修改 | `draft_report` | 最多 2 轮自动修改 |
-| 人工退回 | `draft_report` | 最多 2 次 |
+| 人工退回 | `apply_human_report_revision` | 最多成功返修 2 次；重新审校并再次暂停 |
+| 第 3 次人工退回 | `FAILED` | `human-revision-limit-exhausted` |
 | 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |
-| 人工取消或拒绝 | `CANCELLED` | 终态 |
+| 最终报告人工取消或拒绝 | `REPORT_CANCELLED` / `REPORT_REJECTED` | 稳定终态 |
 | 安全违规、冲突写入、重试耗尽 | `FAILED` | 终态 |
 | 已批准制品导出成功 | `COMPLETED` | 终态 |
 
@@ -411,7 +435,7 @@ Tool Calling 执行流程：
 - 证据缺口、冲突和审校警告。
 - 运行耗时、调用次数、重试次数、token 和已知费用。
 
-只有对当前内容哈希的 `approve` 能进入导出。恢复请求若 `run_id`、checkpoint 版本或批准哈希不匹配，安全失败。
+当前只有同时匹配 `run_id`、`thread_id`、暂停 revision、报告 revision 和内容哈希的 `approve` 能进入 `REPORT_APPROVED`。它仍不进入导出。SQLite 关闭重开后可恢复同一暂停；旧决定或错绑决定安全失败。
 
 ## 10. 状态持久化
 
