@@ -263,3 +263,14 @@
 - usage：当前确定性夹具没有模型调用，因此模型调用、input/output token 和已知费用固定为 0；未来真实模型 usage 需要新版本合同和独立费用批准。
 - 持久化：observer、clock 和事件列表不进入 SQLite checkpoint。业务恢复不依赖可观测性；进程崩溃前未外送的事件不会被当前实现恢复。
 - 结果：成功样例稳定生成 13 个节点事件、2 次正常中断、2 次人工批准和 13,000,000 ns 确定性主动执行耗时；原 `workflow-v1` 基线保持逐字节一致。
+
+## D-029：作品演示固定三条代表路径，不开放任意输入
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：`offline-demo-v1` 固定执行 `missing-candidates`、`privacy-durable-selection` 和 `missing-offline-proof`，分别展示正常人工暂停、批准后成功导出、证据不足稳定停止。
+- 入口：`scripts/run_demo.py` 默认打印简体中文终端简报；`--json` 打印严格 manifest；`--check` 重跑真实图并逐字节比对 manifest、Markdown 报告和运行摘要。入口不接受任意案例 ID 或输出路径。
+- 制品：manifest 绑定来源快照、实际路径、有限计数、报告 artifact/hash/revision、报告文件 SHA-256 和运行摘要哈希；Markdown 报告由现有安全导出器生成。
+- 安全：checkpoint、临时导出和 SQLite 只写系统临时目录；manifest 不保存临时路径、报告正文副本、密钥、鉴权头、Cookie、完整响应或原始异常。
+- 原因：求职演示需要短、稳定、可复核，同时不能为了展示绕过人工确认、工具校验、失败停止或文件安全边界。
+- 限制：三个案例只证明原创确定性夹具的工作流行为；不证明真实模型语义质量，也不是现实技术选型建议。

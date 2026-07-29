@@ -1,0 +1,89 @@
+{
+  "bundle_hash": "a3557f57643783502099d1fec0dae83758334996d425ade713ca0020dff63b19",
+  "interrupted_node_count": 2,
+  "known_cost_microunits": 0,
+  "model_api_used": false,
+  "network_used": false,
+  "node_event_count": 13,
+  "report_artifact_id": "3cb6e874c988bd2795164fbde10e882e1093a536bb0a01d40f180cd097f24dd0",
+  "report_content_sha256": "79ad866a91bcd78908d3265dcda54405fda40e86f501e0c617722c9841eba03b",
+  "report_file": "3cb6e874c988bd2795164fbde10e882e1093a536bb0a01d40f180cd097f24dd0.md",
+  "report_hash": "f7f572affb1b9f2776a9576ddd02627db3c10e4b5a9b63392ad19f3deb8984d3",
+  "report_revision": 1,
+  "run_summary_file": "evals/results/privacy-durable-run-summary.json",
+  "run_summary_hash": "28cd954ae66d86ed1fd65884764b9db919f81a1bfb01d03444b08efa98212f03",
+  "scenario_count": 3,
+  "scenarios": [
+    {
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "pause-human"
+      ],
+      "actual_status": "NEEDS_HUMAN",
+      "artifact_count": 0,
+      "case_id": "missing-candidates",
+      "human_revision_count": 0,
+      "passed": true,
+      "purpose": "requirements-pause",
+      "recommendation": null,
+      "report_claim_count": 0,
+      "retrieval_rounds": 0,
+      "schema_version": "demo-scenario-v1",
+      "tool_attempts": 0,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "synthesize-evidence",
+        "draft-report",
+        "review-report",
+        "confirm-report",
+        "export-report",
+        "done"
+      ],
+      "actual_status": "COMPLETED",
+      "artifact_count": 1,
+      "case_id": "privacy-durable-selection",
+      "human_revision_count": 0,
+      "passed": true,
+      "purpose": "successful-export",
+      "recommendation": "atlasflow",
+      "report_claim_count": 2,
+      "retrieval_rounds": 1,
+      "schema_version": "demo-scenario-v1",
+      "tool_attempts": 1,
+      "unsupported_claim_count": 0
+    },
+    {
+      "actual_path": [
+        "validate-request",
+        "confirm-requirements",
+        "plan-research",
+        "retrieve-evidence",
+        "assess-evidence",
+        "retrieve-evidence",
+        "assess-evidence",
+        "fail"
+      ],
+      "actual_status": "FAILED",
+      "artifact_count": 0,
+      "case_id": "missing-offline-proof",
+      "human_revision_count": 0,
+      "passed": true,
+      "purpose": "evidence-stop",
+      "recommendation": null,
+      "report_claim_count": 0,
+      "retrieval_rounds": 2,
+      "schema_version": "demo-scenario-v1",
+      "tool_attempts": 2,
+      "unsupported_claim_count": 0
+    }
+  ],
+  "schema_version": "offline-demo-v1",
+  "source_snapshot_id": "0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c"
+}

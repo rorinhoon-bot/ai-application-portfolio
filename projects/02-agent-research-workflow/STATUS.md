@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：实现确定性可观测性和机器可读运行摘要最小切片。
-- 当前阶段：`运行时节点事件与机器可读摘要已完成`
+- 当前唯一目标：建立可重复的离线演示入口和首批求职展示制品。
+- 当前阶段：`固定三路径离线演示已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -123,10 +123,16 @@
   - observer、clock、事件列表、临时路径、节点输入输出、Prompt、正文、完整响应和原始异常不进入 checkpoint 或提交样例。
   - 新增 `privacy-durable-run-summary.json` 和只读 `run_observability_demo.py --check`；固定成功案例为 13 个节点事件、2 次正常中断、2 次人工批准、1 次工具尝试。
   - 覆盖成功、人工返修、瞬时工具重试、证据不足、需求暂停、身份错绑、异常脱敏、checkpoint 排除和确定性重放；新增 9 项测试，P2 全部普通测试结果 `132 passed`。
+  - 新增 `offline-demo-v1` 严格 manifest；固定展示 `missing-candidates` 需求暂停、`privacy-durable-selection` 成功导出和 `missing-offline-proof` 两轮证据不足停止。
+  - 演示真实执行 LangGraph、SQLite checkpoint、确定性假工具、两个人工批准和安全 Markdown 导出；不从预期结果伪造实际路径。
+  - manifest 绑定来源快照、三条实际路径、有限循环计数、报告 artifact/hash/revision、报告文件 SHA-256 和 `run-summary-v1` 哈希。
+  - 新增 `scripts/run_demo.py`；默认输出简体中文终端简报，`--json` 输出 manifest，`--check` 逐字节检查 manifest、Markdown 报告和运行摘要；不接受任意案例 ID 或输出路径。
+  - 新增 `demo/README.md`、固定 manifest 和人工批准后的内容寻址 Markdown 报告；运行 checkpoint、导出和临时路径只存在于系统临时目录。
+  - 覆盖三路径、确定性重放、未知字段/哈希/顺序篡改、严格 msgpack、提交文件一致性和敏感信息排除；新增 6 项测试，P2 全部普通测试结果 `138 passed`。
 - 下一步：
-  - 下一阶段建立可重复的离线演示入口和首批求职展示材料。
-  - 使用固定案例展示需求暂停、成功导出、失败停止和运行摘要；不接真实模型或网络。
-  - 先生成安全 demo 制品、命令和说明，再准备截图/演示材料与项目复盘。
+  - 下一阶段制作首张演示截图、简化工作流展示图和五分钟项目讲解提纲。
+  - 截图必须来自已验证离线命令；展示图与代码、路径和指标保持一致。
+  - 随后完成 `RETROSPECTIVE.md` 与 `LLH_Study.md`，再按 `PROJECT_STANDARDS.md` 做完成审计。
   - 不提前接入真实模型、真实资料、公开部署或多智能体。
 - 阻塞：
   - 无。
