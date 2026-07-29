@@ -1,0 +1,116 @@
+{
+  "schema_version": "source-manifest-v1",
+  "snapshot_id": "0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c",
+  "sources": [
+    {
+      "source_id": "atlasflow-overview-v1",
+      "candidate_id": "atlasflow",
+      "title": "AtlasFlow 产品概览",
+      "version": "1.0.0",
+      "source_type": "overview",
+      "relative_path": "atlasflow/overview.md",
+      "size_bytes": 883,
+      "sha256": "1f7006f5a315f7e2ad18af3333114299b4b5e692568bb0d4b4f8c21b2fba6ee6",
+      "synthetic": true
+    },
+    {
+      "source_id": "atlasflow-reliability-v1",
+      "candidate_id": "atlasflow",
+      "title": "AtlasFlow 可靠性说明",
+      "version": "1.0.0",
+      "source_type": "reliability",
+      "relative_path": "atlasflow/reliability.md",
+      "size_bytes": 805,
+      "sha256": "f6d86ccbda90c5c1ebd159be58bcb52027e8380dfe2c5784e64db105ac6aeab1",
+      "synthetic": true
+    },
+    {
+      "source_id": "atlasflow-security-cost-v1",
+      "candidate_id": "atlasflow",
+      "title": "AtlasFlow 安全与成本说明",
+      "version": "1.0.0",
+      "source_type": "security-and-cost",
+      "relative_path": "atlasflow/security-and-cost.md",
+      "size_bytes": 756,
+      "sha256": "9236be3492ccc092918016dff8c5e74ffaa4aa984b08a2f682fb4a6df2bbfc4d",
+      "synthetic": true
+    },
+    {
+      "source_id": "beaconflow-overview-v1",
+      "candidate_id": "beaconflow",
+      "title": "BeaconFlow 产品概览",
+      "version": "1.0.0",
+      "source_type": "overview",
+      "relative_path": "beaconflow/overview.md",
+      "size_bytes": 751,
+      "sha256": "ab39f2c55336e0c1fcaaa47b04b275451a70d256e7129a5d6e97be9467ea86f4",
+      "synthetic": true
+    },
+    {
+      "source_id": "beaconflow-reliability-v1",
+      "candidate_id": "beaconflow",
+      "title": "BeaconFlow 可靠性说明",
+      "version": "1.0.0",
+      "source_type": "reliability",
+      "relative_path": "beaconflow/reliability.md",
+      "size_bytes": 720,
+      "sha256": "60cbd36a63bc2f43e485c291b6535a0910a50e947bd2124203ed9c364e22c0a3",
+      "synthetic": true
+    },
+    {
+      "source_id": "beaconflow-security-cost-v1",
+      "candidate_id": "beaconflow",
+      "title": "BeaconFlow 安全与成本说明",
+      "version": "1.0.0",
+      "source_type": "security-and-cost",
+      "relative_path": "beaconflow/security-and-cost.md",
+      "size_bytes": 768,
+      "sha256": "822e98e41a6d5d7e7a3e9ed6a772e4ed3e33c10f7d46494b1d326d206918f043",
+      "synthetic": true
+    },
+    {
+      "source_id": "cedarflow-overview-v1",
+      "candidate_id": "cedarflow",
+      "title": "CedarFlow 产品概览",
+      "version": "1.0.0",
+      "source_type": "overview",
+      "relative_path": "cedarflow/overview.md",
+      "size_bytes": 687,
+      "sha256": "64540a9bf7c09909b1700952deef81b9b64daed2a40382a711d246d2bd6e580c",
+      "synthetic": true
+    },
+    {
+      "source_id": "cedarflow-reliability-v1",
+      "candidate_id": "cedarflow",
+      "title": "CedarFlow 可靠性说明",
+      "version": "1.0.0",
+      "source_type": "reliability",
+      "relative_path": "cedarflow/reliability.md",
+      "size_bytes": 717,
+      "sha256": "e01c79a174a401128b5e54f601cfaef37c5a135b7c5662ed716f5c5c28f22b19",
+      "synthetic": true
+    },
+    {
+      "source_id": "cedarflow-security-cost-v1",
+      "candidate_id": "cedarflow",
+      "title": "CedarFlow 安全与成本说明",
+      "version": "1.0.0",
+      "source_type": "security-and-cost",
+      "relative_path": "cedarflow/security-and-cost.md",
+      "size_bytes": 819,
+      "sha256": "b14176ef9f7abc43edc3af8453f3e443a2f5473b5e3dcd787eca0e2fbc707f42",
+      "synthetic": true
+    },
+    {
+      "source_id": "procurement-constraints-v1",
+      "candidate_id": null,
+      "title": "采购约束",
+      "version": "1.0.0",
+      "source_type": "constraints",
+      "relative_path": "shared/procurement-constraints.md",
+      "size_bytes": 719,
+      "sha256": "a127485f0e7c23d9ed635e1114a5aa6f8e41c9d0c2d0c930e818c5f054386a1c",
+      "synthetic": true
+    }
+  ]
+}

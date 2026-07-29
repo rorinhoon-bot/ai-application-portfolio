@@ -1,0 +1,16 @@
+[project]
+name = "agent-research-workflow"
+version = "0.1.0"
+description = "A LangGraph workflow for evidence-backed AI technology selection reports."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "langgraph==1.2.9",
+    "langgraph-checkpoint-sqlite==3.1.0",
+    "pydantic==2.13.4",
+    "pydantic-settings==2.14.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]

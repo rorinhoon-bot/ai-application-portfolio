@@ -1,0 +1,621 @@
+{
+  "schema_version": "workflow-evaluation-v1",
+  "source_snapshot_id": "0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c",
+  "cases": [
+    {
+      "case_id": "privacy-durable-selection",
+      "category": "success",
+      "description": "隐私与中断恢复是硬约束，应推荐可本地持久化的 AtlasFlow。",
+      "input": {
+        "research_question": "三种方案中，哪种适合处理内部资料且必须支持中断恢复？",
+        "audience": "AI 应用开发负责人",
+        "constraints": ["资料不得离开本地环境", "进程重启后必须恢复", "最终报告须人工确认"],
+        "candidates": ["atlasflow", "beaconflow", "cedarflow"],
+        "dimensions": [
+          {"dimension_id": "privacy", "weight_percent": 40},
+          {"dimension_id": "reliability", "weight_percent": 40},
+          {"dimension_id": "cost", "weight_percent": 20}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "privacy-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-security-cost-v1#data-boundary",
+            "atlasflow-reliability-v1#checkpointing",
+            "procurement-constraints-v1#privacy-policy"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "atlasflow-security-cost-v1#data-boundary",
+          "atlasflow-reliability-v1#checkpointing",
+          "procurement-constraints-v1#privacy-policy"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["atlasflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "low-cost-short-task",
+      "category": "success",
+      "description": "短期、低风险、最低启动成本场景可推荐 BeaconFlow。",
+      "input": {
+        "research_question": "一次性内部原型应选择哪个最低成本方案？",
+        "audience": "小型原型团队",
+        "constraints": ["任务在一次进程内结束", "不处理敏感数据", "优先最低启动成本"],
+        "candidates": ["atlasflow", "beaconflow", "cedarflow"],
+        "dimensions": [
+          {"dimension_id": "cost", "weight_percent": 60},
+          {"dimension_id": "simplicity", "weight_percent": 30},
+          {"dimension_id": "reliability", "weight_percent": 10}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "cost-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "beaconflow-security-cost-v1#cost-profile",
+            "beaconflow-overview-v1#deployment-model",
+            "beaconflow-reliability-v1#recovery-limit"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "beaconflow-security-cost-v1#cost-profile",
+          "beaconflow-reliability-v1#recovery-limit"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["beaconflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "managed-observability",
+      "category": "success",
+      "description": "团队接受外部托管和持续费用时，可推荐托管能力更强的 CedarFlow。",
+      "input": {
+        "research_question": "接受托管服务的团队如何优先获得低运维与可观测性？",
+        "audience": "平台工程团队",
+        "constraints": ["允许资料发送到已审批供应商", "接受持续订阅费用", "要求托管恢复"],
+        "candidates": ["atlasflow", "beaconflow", "cedarflow"],
+        "dimensions": [
+          {"dimension_id": "operations", "weight_percent": 45},
+          {"dimension_id": "reliability", "weight_percent": 35},
+          {"dimension_id": "cost", "weight_percent": 20}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "managed-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "cedarflow-overview-v1#deployment-model",
+            "cedarflow-reliability-v1#checkpointing",
+            "cedarflow-security-cost-v1#cost-profile"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "cedarflow-overview-v1#deployment-model",
+          "cedarflow-reliability-v1#checkpointing",
+          "cedarflow-security-cost-v1#cost-profile"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["cedarflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "balanced-local-control",
+      "category": "success",
+      "description": "兼顾本地控制、显式图和人工审批时应推荐 AtlasFlow。",
+      "input": {
+        "research_question": "哪个方案兼顾本地控制、可解释工作流与人工审批？",
+        "audience": "技术选型委员会",
+        "constraints": ["优先本地部署", "必须展示显式状态图", "外部写操作须人工批准"],
+        "candidates": ["atlasflow", "beaconflow", "cedarflow"],
+        "dimensions": [
+          {"dimension_id": "control", "weight_percent": 40},
+          {"dimension_id": "explainability", "weight_percent": 35},
+          {"dimension_id": "approval", "weight_percent": 25}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "control-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-overview-v1#deployment-model",
+            "atlasflow-overview-v1#workflow-control",
+            "atlasflow-overview-v1#human-approval"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "atlasflow-overview-v1#deployment-model",
+          "atlasflow-overview-v1#workflow-control",
+          "atlasflow-overview-v1#human-approval"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["atlasflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "missing-candidates",
+      "category": "requirements-incomplete",
+      "description": "候选方案为空时暂停，等待用户补充，不能自行猜测。",
+      "input": {
+        "research_question": "帮我选择一个研究工作流方案。",
+        "audience": "开发团队",
+        "constraints": ["必须可恢复"],
+        "candidates": [],
+        "dimensions": [
+          {"dimension_id": "reliability", "weight_percent": 100}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [],
+      "human_actions": [],
+      "expected": {
+        "required_path": ["validate-request", "confirm-requirements", "pause-human"],
+        "status": "NEEDS_HUMAN",
+        "max_tool_attempts": 0,
+        "required_evidence_ids": [],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": [],
+        "artifact_count": 0
+      }
+    },
+    {
+      "case_id": "missing-dimensions",
+      "category": "requirements-incomplete",
+      "description": "评价维度为空时暂停，等待用户确认评价标准。",
+      "input": {
+        "research_question": "比较 AtlasFlow 与 BeaconFlow。",
+        "audience": "开发团队",
+        "constraints": ["结论必须有证据"],
+        "candidates": ["atlasflow", "beaconflow"],
+        "dimensions": [],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [],
+      "human_actions": [],
+      "expected": {
+        "required_path": ["validate-request", "confirm-requirements", "pause-human"],
+        "status": "NEEDS_HUMAN",
+        "max_tool_attempts": 0,
+        "required_evidence_ids": [],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": [],
+        "artifact_count": 0
+      }
+    },
+    {
+      "case_id": "missing-offline-proof",
+      "category": "evidence-insufficient",
+      "description": "资料不能证明 CedarFlow 可完全离线运行时，停止并报告证据不足。",
+      "input": {
+        "research_question": "CedarFlow 是否能在完全断网环境运行？",
+        "audience": "安全团队",
+        "constraints": ["必须完全离线", "不得推断资料未说明的能力"],
+        "candidates": ["cedarflow"],
+        "dimensions": [
+          {"dimension_id": "privacy", "weight_percent": 60},
+          {"dimension_id": "availability", "weight_percent": 40}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "offline-search-one",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": ["cedarflow-overview-v1#deployment-model"],
+          "error_code": null
+        },
+        {
+          "call_id": "offline-search-two",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": ["cedarflow-security-cost-v1#data-boundary"],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "assess-evidence",
+          "retrieve-evidence",
+          "assess-evidence",
+          "fail"
+        ],
+        "status": "FAILED",
+        "max_tool_attempts": 2,
+        "required_evidence_ids": ["cedarflow-overview-v1#deployment-model"],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": [],
+        "artifact_count": 0
+      }
+    },
+    {
+      "case_id": "conflicting-cost-evidence",
+      "category": "evidence-insufficient",
+      "description": "资料只给成本结构、未给统一价格时，不伪造绝对最低价结论。",
+      "input": {
+        "research_question": "哪个方案在所有规模下都绝对最便宜？",
+        "audience": "采购团队",
+        "constraints": ["必须证明所有规模下的成本结论", "不得编造价格"],
+        "candidates": ["atlasflow", "beaconflow", "cedarflow"],
+        "dimensions": [
+          {"dimension_id": "cost", "weight_percent": 100}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "cost-compare-one",
+          "tool_name": "calculate_comparison",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-security-cost-v1#cost-profile",
+            "beaconflow-security-cost-v1#cost-profile",
+            "cedarflow-security-cost-v1#cost-profile"
+          ],
+          "error_code": null
+        },
+        {
+          "call_id": "cost-compare-two",
+          "tool_name": "calculate_comparison",
+          "outcome": "success",
+          "evidence_ids": ["procurement-constraints-v1#cost-policy"],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "assess-evidence",
+          "retrieve-evidence",
+          "assess-evidence",
+          "fail"
+        ],
+        "status": "FAILED",
+        "max_tool_attempts": 2,
+        "required_evidence_ids": [
+          "atlasflow-security-cost-v1#cost-profile",
+          "beaconflow-security-cost-v1#cost-profile",
+          "cedarflow-security-cost-v1#cost-profile"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": [],
+        "artifact_count": 0
+      }
+    },
+    {
+      "case_id": "transient-search-recovers",
+      "category": "tool-failure",
+      "description": "首次检索超时后允许一次重试，第二次成功则继续完成。",
+      "input": {
+        "research_question": "比较 AtlasFlow 和 BeaconFlow 的恢复能力。",
+        "audience": "后端开发团队",
+        "constraints": ["检索最多尝试两次", "报告必须引用恢复证据"],
+        "candidates": ["atlasflow", "beaconflow"],
+        "dimensions": [
+          {"dimension_id": "reliability", "weight_percent": 100}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "retry-search-one",
+          "tool_name": "search_sources",
+          "outcome": "transient-error",
+          "evidence_ids": [],
+          "error_code": "source-timeout"
+        },
+        {
+          "call_id": "retry-search-two",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-reliability-v1#checkpointing",
+            "beaconflow-reliability-v1#checkpointing"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "retry-tool",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 2,
+        "required_evidence_ids": [
+          "atlasflow-reliability-v1#checkpointing",
+          "beaconflow-reliability-v1#checkpointing"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["atlasflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "invalid-tool-arguments",
+      "category": "tool-failure",
+      "description": "工具参数非法属于确定性错误，不重试、不执行副作用。",
+      "input": {
+        "research_question": "读取 AtlasFlow 的可靠性资料。",
+        "audience": "开发团队",
+        "constraints": ["非法路径必须拒绝", "确定性错误不得重试"],
+        "candidates": ["atlasflow"],
+        "dimensions": [
+          {"dimension_id": "reliability", "weight_percent": 100}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "invalid-read",
+          "tool_name": "read_source",
+          "outcome": "deterministic-error",
+          "evidence_ids": [],
+          "error_code": "invalid-arguments"
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "fail"
+        ],
+        "status": "FAILED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": [],
+        "artifact_count": 0
+      }
+    },
+    {
+      "case_id": "report-revision-approved",
+      "category": "human-revision",
+      "description": "用户要求补充限制后重新写作和审校，第二次确认才导出。",
+      "input": {
+        "research_question": "为本地研究工作流选择方案并说明主要限制。",
+        "audience": "架构评审会",
+        "constraints": ["本地部署优先", "必须明确运维代价"],
+        "candidates": ["atlasflow", "beaconflow"],
+        "dimensions": [
+          {"dimension_id": "control", "weight_percent": 50},
+          {"dimension_id": "operations", "weight_percent": 50}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "revision-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-overview-v1#deployment-model",
+            "atlasflow-security-cost-v1#operations-limit"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "request-changes"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "atlasflow-overview-v1#deployment-model",
+          "atlasflow-security-cost-v1#operations-limit"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["atlasflow"],
+        "artifact_count": 1
+      }
+    },
+    {
+      "case_id": "checkpoint-resume-export",
+      "category": "recovery-idempotency",
+      "description": "最终确认后中断并恢复，使用同一幂等键只能生成一个报告制品。",
+      "input": {
+        "research_question": "恢复中断的 AtlasFlow 选型报告并完成导出。",
+        "audience": "评估人员",
+        "constraints": ["从检查点恢复", "重复导出不得产生第二份制品"],
+        "candidates": ["atlasflow", "beaconflow"],
+        "dimensions": [
+          {"dimension_id": "reliability", "weight_percent": 60},
+          {"dimension_id": "idempotency", "weight_percent": 40}
+        ],
+        "source_policy_id": "synthetic-v1"
+      },
+      "tool_outcomes": [
+        {
+          "call_id": "resume-search",
+          "tool_name": "search_sources",
+          "outcome": "success",
+          "evidence_ids": [
+            "atlasflow-reliability-v1#checkpointing",
+            "atlasflow-reliability-v1#idempotency"
+          ],
+          "error_code": null
+        }
+      ],
+      "human_actions": [
+        {"gate": "requirements", "action": "approve"},
+        {"gate": "report", "action": "approve"}
+      ],
+      "expected": {
+        "required_path": [
+          "validate-request",
+          "confirm-requirements",
+          "plan-research",
+          "retrieve-evidence",
+          "synthesize-evidence",
+          "draft-report",
+          "review-report",
+          "confirm-report",
+          "resume-checkpoint",
+          "export-report",
+          "export-report",
+          "done"
+        ],
+        "status": "COMPLETED",
+        "max_tool_attempts": 1,
+        "required_evidence_ids": [
+          "atlasflow-reliability-v1#checkpointing",
+          "atlasflow-reliability-v1#idempotency"
+        ],
+        "forbidden_evidence_ids": [],
+        "allowed_recommendations": ["atlasflow"],
+        "artifact_count": 1
+      }
+    }
+  ]
+}

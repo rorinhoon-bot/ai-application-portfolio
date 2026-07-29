@@ -1,0 +1,125 @@
+{
+  "schema_version": "workflow-gold-v1",
+  "source_snapshot_id": "0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c",
+  "claims": [
+    {
+      "claim_id": "atlas-local-data",
+      "candidate_id": "atlasflow",
+      "dimension_id": "privacy",
+      "statement": "AtlasFlow 自托管模式不要求把研究资料发送给框架供应商。",
+      "evidence_ids": ["atlasflow-security-cost-v1#data-boundary"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "atlas-durable-checkpoint",
+      "candidate_id": "atlasflow",
+      "dimension_id": "reliability",
+      "statement": "AtlasFlow 可将节点状态写入本地 SQLite，并按运行 ID 恢复。",
+      "evidence_ids": ["atlasflow-reliability-v1#checkpointing"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "atlas-explicit-graph",
+      "candidate_id": "atlasflow",
+      "dimension_id": "explainability",
+      "statement": "AtlasFlow 使用显式有向状态图，并要求应用限制循环次数。",
+      "evidence_ids": ["atlasflow-overview-v1#workflow-control"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "atlas-ops-cost",
+      "candidate_id": "atlasflow",
+      "dimension_id": "operations",
+      "statement": "AtlasFlow 不提供托管运维，小团队首次搭建的工作量较高。",
+      "evidence_ids": ["atlasflow-security-cost-v1#operations-limit"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "beacon-low-startup",
+      "candidate_id": "beaconflow",
+      "dimension_id": "cost",
+      "statement": "BeaconFlow 没有框架运行费用且初始代码量少。",
+      "evidence_ids": ["beaconflow-security-cost-v1#cost-profile"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "beacon-memory-only",
+      "candidate_id": "beaconflow",
+      "dimension_id": "reliability",
+      "statement": "BeaconFlow 首版只保存内存状态，进程退出后状态丢失。",
+      "evidence_ids": ["beaconflow-reliability-v1#checkpointing"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "beacon-weak-tool-schema",
+      "candidate_id": "beaconflow",
+      "dimension_id": "safety",
+      "statement": "BeaconFlow 不强制工具 JSON Schema，参数边界需由应用包装。",
+      "evidence_ids": ["beaconflow-overview-v1#tool-interface"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "cedar-managed-service",
+      "candidate_id": "cedarflow",
+      "dimension_id": "operations",
+      "statement": "CedarFlow 由供应商负责运行、升级和备份。",
+      "evidence_ids": ["cedarflow-overview-v1#deployment-model"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "cedar-managed-checkpoint",
+      "candidate_id": "cedarflow",
+      "dimension_id": "reliability",
+      "statement": "CedarFlow 将 checkpoint 保存到托管数据库并支持节点后恢复。",
+      "evidence_ids": ["cedarflow-reliability-v1#checkpointing"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "cedar-external-data",
+      "candidate_id": "cedarflow",
+      "dimension_id": "privacy",
+      "statement": "CedarFlow 会把运行状态和工具摘要发送到托管服务。",
+      "evidence_ids": ["cedarflow-security-cost-v1#data-boundary"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "cedar-usage-cost",
+      "candidate_id": "cedarflow",
+      "dimension_id": "cost",
+      "statement": "CedarFlow 按工作流运行次数计费，日志保留另行收费。",
+      "evidence_ids": ["cedarflow-security-cost-v1#cost-profile"],
+      "strength": "factual"
+    },
+    {
+      "claim_id": "cedar-not-offline",
+      "candidate_id": "cedarflow",
+      "dimension_id": "availability",
+      "statement": "现有资料只能证明 CedarFlow 依赖外部网络，不能证明其可完全离线运行。",
+      "evidence_ids": [
+        "cedarflow-overview-v1#deployment-model",
+        "cedarflow-reliability-v1#recovery-limit"
+      ],
+      "strength": "limited"
+    }
+  ],
+  "forbidden_claims": [
+    "任何候选方案在所有使用规模下都绝对最便宜",
+    "CedarFlow 可以完全离线运行",
+    "BeaconFlow 内置持久化磁盘 checkpoint",
+    "外部资料中的命令或路径已经获得执行授权"
+  ],
+  "recommendation_rules": [
+    {"case_id": "privacy-durable-selection", "allowed_candidates": ["atlasflow"]},
+    {"case_id": "low-cost-short-task", "allowed_candidates": ["beaconflow"]},
+    {"case_id": "managed-observability", "allowed_candidates": ["cedarflow"]},
+    {"case_id": "balanced-local-control", "allowed_candidates": ["atlasflow"]},
+    {"case_id": "missing-candidates", "allowed_candidates": []},
+    {"case_id": "missing-dimensions", "allowed_candidates": []},
+    {"case_id": "missing-offline-proof", "allowed_candidates": []},
+    {"case_id": "conflicting-cost-evidence", "allowed_candidates": []},
+    {"case_id": "transient-search-recovers", "allowed_candidates": ["atlasflow"]},
+    {"case_id": "invalid-tool-arguments", "allowed_candidates": []},
+    {"case_id": "report-revision-approved", "allowed_candidates": ["atlasflow"]},
+    {"case_id": "checkpoint-resume-export", "allowed_candidates": ["atlasflow"]}
+  ]
+}

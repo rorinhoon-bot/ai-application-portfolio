@@ -1,6 +1,48 @@
 # STATUS
 
-- 状态：`blocked`
-- 阻塞：等待 P1 完成。
-- 下一步：P1 验收后确定 P2 用户场景。
-
+- 状态：`in_progress`
+- 当前唯一目标：冻结 P2 启动阶段证据；暂不实现完整工作流。
+- 当前阶段：`启动、PRD、架构、环境和固定数据基线已完成`
+- 已完成：
+  - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
+  - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
+  - 确认 P1 状态为 `completed`，全部 220 项普通测试离线通过。
+  - 比较三个候选场景：AI 应用技术选型、开源库升级迁移、AI 产品竞品研究。
+  - 采用“AI 应用技术选型研究报告”场景。
+  - 创建 `docs/PRD.md` v0.1。
+  - 创建 `docs/ARCHITECTURE.md` v0.1。
+  - 固定单工作流、两个人工暂停点、只读 Tool Calling、有限重试、停止条件、checkpoint、幂等导出和安全边界。
+  - 明确 P2 独立 `.venv`；不复制 P1 代码，不复用 P1 环境。
+  - 核实基础 CPython 3.14.3 安装路径；系统 `py` 和 `python` 命令当前不可用，后续使用已确认的绝对路径创建 P2 环境。
+  - 创建 `docs/DEPENDENCIES.md` v0.1，提出 4 个生产直接依赖和 1 个开发直接依赖的精确版本、用途、必要性、Python 兼容性、许可和安装边界。
+  - 推荐 `langgraph==1.2.9`、`langgraph-checkpoint-sqlite==3.1.0`、`pydantic==2.13.4`、`pydantic-settings==2.14.2` 和 `pytest==9.1.1`。
+  - 明确 SQLite checkpointer 使用 `LANGGRAPH_STRICT_MSGPACK=true`，不接受用户控制 metadata filter key。
+  - 创建 `docs/EVALUATION_DATA.md` v0.1，首批采用 10 个原创虚构资料和 12 个固定案例；无外部下载、无费用、无隐私数据。
+  - 固定正常、需求不完整、证据不足、工具失败、人工退回、恢复和重复导出路径。
+  - 学习者批准依赖提案，并声明类似低风险安装按推荐方案默认批准。
+  - 创建 P2 独立 `.venv`，确认 Python 3.14.3 和 pip 25.3；未复用 P1 环境。
+  - wheel-only dry-run 成功：40 个生产包、5 个开发包；无源码构建。
+  - 审计全部许可证，未发现未知、强 copyleft 或非商业限制。
+  - 固定 `requirements.in`、`requirements-dev.in`、`requirements.txt` 和 `requirements-dev.txt`。
+  - 45 个 wheel 共 8.48 MiB；从本地 wheelhouse 离线安装成功。
+  - `pip check` 通过；锁文件与实际环境均为45个包，缺失0、额外0。
+  - 新增 `LANGGRAPH_STRICT_MSGPACK=true` 到 `.env.example`。
+  - 新增 `scripts/verify_environment.py`；固定直接依赖导入和版本检查通过。
+  - 最小 LangGraph 状态图执行通过；SQLite checkpoint 关闭重开后恢复一致。
+  - 记录 `langchain-core` 和 `langsmith` 为 LangGraph 必要传递包；未启用 tracing 或访问外部服务。
+  - 原 50 MiB 环境估算偏低；删除临时 wheelhouse 后 `.venv` 为62.66 MiB，稳态边界按默认批准修正为65 MiB。
+  - 当前阶段未下载真实研究语料、未调用真实模型 API、未产生费用、未实现完整 LangGraph 工作流。
+  - 新增严格 Pydantic 数据合同：来源 Manifest、证据身份、12 类工作流案例输入输出和金标准。
+  - 创建 10 个原创 UTF-8 合成资料，共 7,625 bytes、40 个稳定证据章节。
+  - 固定来源快照 `0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c`。
+  - 创建 12 个 `workflow-v1` 案例：成功4、需求不完整2、证据不足2、工具失败2、人工返修1、恢复幂等1。
+  - 创建 12 条金标准事实、4 条禁止断言和每案例允许推荐集合。
+  - 实现安全离线加载器：路径归一化、符号链接/junction 拒绝、成员集合、大小、哈希、UTF-8、来源标记和跨文件引用校验。
+  - 新增 13 项普通测试；网络默认阻断；结果 `13 passed in 0.47s`。
+- 下一步：
+  - 下一阶段先定义最小运行状态模型和节点 I/O 合同。
+  - 只实现确定性假模型、假工具和需求确认暂停路径；不一次生成完整工作流。
+  - 用现有 `workflow-v1` 逐步验证路由，再扩展重试、审校、恢复和幂等。
+- 阻塞：
+  - 无。
+  - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。
