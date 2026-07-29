@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：冻结证据到声明绑定合同、最小报告草稿状态和确定性假写作路径。
-- 当前阶段：`安全报告草稿最小切片已完成`
+- 当前唯一目标：冻结确定性报告审校合同、发现项和最多 2 轮自动修改路径。
+- 当前阶段：`有限报告审校最小切片已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -77,10 +77,20 @@
   - `privacy-durable-selection` 固定成功案例生成 revision 1 结构化草稿；未执行审校、最终人工确认或导出，`artifact_id` 保持空。
   - SQLite checkpoint 关闭重开后草稿恢复一致；写作者、绑定器、来源索引和完整敏感响应不进入 checkpoint。
   - 新增 12 项草稿合同、引用绑定、路由和恢复测试；P2 全部普通测试结果 `84 passed in 4.35s`。
+  - 新增 `review-policy-v1` 和 `review-result-v1`；审校结果绑定策略 ID、来源快照、报告 revision/hash 和持久化修改轮次。
+  - 实现确定性报告审校器；检查声明与引用集合、策略要求的候选/维度覆盖及固定禁止断言，不调用模型。
+  - 实现确定性修改器；按持久化 `review_rounds` 选择脚本结果，不依赖内存游标，checkpoint 恢复后不会跳过修改。
+  - `review_rounds` 定义为已成功生成的新草稿 revision 数；初始审校不占预算，最多修改 2 次、审校 3 次。
+  - 新增显式 `review_report` 与 `revise_report` 节点和 `report-review-v1` 图版本。
+  - 干净草稿直接进入 `REVIEWED`；禁止断言可在一次修改后通过；两次修改仍失败以 `review-limit-exhausted` 进入稳定 `FAILED`。
+  - 恢复时 reviewer 必须匹配持久化 `review_policy_id`，binder 必须匹配原 `draft_policy_id`；策略不能静默替换。
+  - 审校发现项只保存稳定错误码和安全摘要；秘密形态摘要被拒绝，不回显固定禁止断言。
+  - SQLite checkpoint 关闭重开后 `REVIEWED` 状态一致；reviewer、reviser、binder 和完整敏感响应不进入 checkpoint。
+  - 新增 12 项审校合同、覆盖检查、有限循环、状态绑定和恢复测试；P2 全部普通测试结果 `96 passed in 6.18s`。
 - 下一步：
-  - 下一阶段设计确定性报告审校合同、发现项和最多 2 轮自动修改路径。
-  - 验证引用完整性、候选与维度覆盖、禁止断言和修改上限。
-  - 不提前实现真实模型、最终报告 Human-in-the-loop 或导出。
+  - 下一阶段实现最终报告 Human-in-the-loop 暂停、revision/hash 绑定和批准过期检查。
+  - 使用 `report-revision-approved` 固定案例验证人工退回、重写、重新审校和第二次批准。
+  - 不提前实现真实模型或最终文件导出。
 - 阻塞：
   - 无。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

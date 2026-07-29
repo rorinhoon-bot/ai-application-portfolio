@@ -202,3 +202,15 @@
 - 哈希：`report_hash` 绑定规范草稿内容，但排除 revision；相同内容跨 revision 保持相同哈希，revision 另行绑定人工决定。
 - 限制：金标准精确匹配只用于离线确定性夹具，不能证明任意模型声明语义正确；真实模型仍需结构化输出校验、审校和最终人工确认。
 - 边界：当前不实现真实模型、审校循环、最终报告暂停或导出。
+
+## D-024：审校修改预算只计算成功的新草稿 revision
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：固定 `review-policy-v1`、`review-result-v1` 和 `report-review-v1`；初始草稿先审校，发现问题后最多自动生成 2 个新 revision。
+- 计数：`review_rounds` 表示已成功完成的自动修改次数，不表示审校器调用次数；因此上限路径最多审校 3 次、修改 2 次。
+- 检查：确定性审校覆盖声明与引用集合一致、策略要求的候选/维度覆盖、固定禁止断言。
+- 路由：无发现项进入 `REVIEWED`；仍有预算进入 `revise_report`；第 2 次修改后仍有发现项以 `review-limit-exhausted` 进入稳定 `FAILED`。
+- 恢复：checkpoint 保存 `review_policy_id`、绑定报告 revision/hash 的发现项和结果；审校器与修改器按持久化轮次工作，不依赖内存游标。
+- 安全：恢复时 reviewer 必须匹配 `review_policy_id`，binder 必须匹配原 `draft_policy_id`；错误策略不能静默替换。
+- 边界：当前审校是确定性夹具，不是模型语义评审；`REVIEWED` 仍不是人工批准，不允许导出。

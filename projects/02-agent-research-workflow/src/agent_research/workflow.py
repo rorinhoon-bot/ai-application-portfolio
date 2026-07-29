@@ -26,6 +26,12 @@ from agent_research.report_drafting import (
     EvidenceCitationBinder,
     hash_report_draft,
 )
+from agent_research.report_review import (
+    DeterministicDraftReviser,
+    DeterministicReportReviewer,
+    MAX_REVIEW_ROUNDS,
+    ReviewOutcome,
+)
 from agent_research.runtime_state import (
     MissingRequirement,
     RequirementsDecision,
@@ -469,6 +475,8 @@ def draft_report(
     *,
     writer: DeterministicFakeWriter,
     binder: EvidenceCitationBinder,
+    continue_to_review: bool = False,
+    review_policy_id: str | None = None,
 ) -> dict[str, object]:
     """Create one structured draft only after sufficient evidence."""
 
@@ -484,6 +492,8 @@ def draft_report(
         raise ValueError("DRAFT_REQUIRES_SUFFICIENT_ASSESSMENT")
     if binder.policy.source_snapshot_id != state.source_snapshot_id:
         raise ValueError("DRAFT_POLICY_SNAPSHOT_MISMATCH")
+    if continue_to_review and review_policy_id is None:
+        raise ValueError("DRAFT_REVIEW_REQUIRES_POLICY_ID")
 
     proposal = writer.write()
     try:
@@ -505,19 +515,170 @@ def draft_report(
         )
         return _validated_update(
             state,
-            graph_version="draft-report-v1",
+            graph_version=(
+                "report-review-v1"
+                if continue_to_review
+                else "draft-report-v1"
+            ),
             status=RuntimeStatus.FAILED.value,
             current_node=RuntimeNode.END.value,
             errors=errors,
         )
     return _validated_update(
         state,
-        graph_version="draft-report-v1",
-        status=RuntimeStatus.DRAFTED.value,
-        current_node=RuntimeNode.END.value,
+        graph_version=(
+            "report-review-v1" if continue_to_review else "draft-report-v1"
+        ),
+        status=(
+            RuntimeStatus.REVIEW_READY.value
+            if continue_to_review
+            else RuntimeStatus.DRAFTED.value
+        ),
+        current_node=(
+            RuntimeNode.REVIEW_REPORT.value
+            if continue_to_review
+            else RuntimeNode.END.value
+        ),
         report_draft=draft.model_dump(mode="json"),
         report_revision=draft.revision,
         report_hash=hash_report_draft(draft),
+        review_policy_id=review_policy_id,
+    )
+
+
+def review_report(
+    state: RuntimeState,
+    *,
+    reviewer: DeterministicReportReviewer,
+) -> dict[str, object]:
+    """Review current draft and route by persisted revision budget."""
+
+    if state.status is not RuntimeStatus.REVIEW_READY:
+        raise ValueError("REVIEW_REQUIRES_READY_DRAFT")
+    if state.report_draft is None or state.confirmed_requirements is None:
+        raise ValueError("REVIEW_REQUIRES_DRAFT_AND_REQUIREMENTS")
+
+    try:
+        if (
+            state.review_policy_id != reviewer.policy.policy_id
+            or reviewer.policy.source_snapshot_id != state.source_snapshot_id
+        ):
+            raise ValueError("REVIEW_POLICY_ID_OR_SNAPSHOT_MISMATCH")
+        result = reviewer.review(
+            draft=state.report_draft,
+            confirmed_requirements=state.confirmed_requirements,
+            review_round=state.review_rounds,
+        )
+    except ValueError:
+        errors = (
+            *state.errors,
+            _safe_error(
+                code="invalid-review-policy",
+                summary="review policy exceeds approved research scope",
+                retryable=False,
+                node=RuntimeNode.REVIEW_REPORT,
+            ),
+        )
+        return _validated_update(
+            state,
+            status=RuntimeStatus.FAILED.value,
+            current_node=RuntimeNode.END.value,
+            last_review_result=None,
+            errors=errors,
+        )
+
+    common: dict[str, object] = {
+        "last_review_result": result.model_dump(mode="json"),
+    }
+    if result.outcome is ReviewOutcome.PASS:
+        return _validated_update(
+            state,
+            **common,
+            status=RuntimeStatus.REVIEWED.value,
+            current_node=RuntimeNode.END.value,
+        )
+    if result.outcome is ReviewOutcome.REVISE:
+        return _validated_update(
+            state,
+            **common,
+            status=RuntimeStatus.REVIEW_REVISE.value,
+            current_node=RuntimeNode.REVISE_REPORT.value,
+        )
+
+    errors = (
+        *state.errors,
+        _safe_error(
+            code="review-limit-exhausted",
+            summary="report still has review findings after revision limit",
+            retryable=False,
+            node=RuntimeNode.REVIEW_REPORT,
+        ),
+    )
+    return _validated_update(
+        state,
+        **common,
+        status=RuntimeStatus.FAILED.value,
+        current_node=RuntimeNode.END.value,
+        errors=errors,
+    )
+
+
+def revise_report(
+    state: RuntimeState,
+    *,
+    reviser: DeterministicDraftReviser,
+    binder: EvidenceCitationBinder,
+) -> dict[str, object]:
+    """Create the next bound draft revision within the hard limit."""
+
+    if state.status is not RuntimeStatus.REVIEW_REVISE:
+        raise ValueError("REVISION_REQUIRES_REVIEW_FINDINGS")
+    if state.confirmed_requirements is None:
+        raise ValueError("REVISION_REQUIRES_CONFIRMED_REQUIREMENTS")
+    if state.review_rounds >= MAX_REVIEW_ROUNDS:
+        raise ValueError("REVISION_LIMIT_REACHED")
+
+    next_round = state.review_rounds + 1
+    try:
+        if (
+            state.report_draft is None
+            or state.report_draft.draft_policy_id != binder.policy.policy_id
+        ):
+            raise ValueError("REVISION_DRAFT_POLICY_ID_MISMATCH")
+        proposal = reviser.revise(next_review_round=next_round)
+        draft = binder.bind(
+            proposal=proposal,
+            confirmed_requirements=state.confirmed_requirements,
+            available_evidence_ids=state.evidence_ids,
+            revision=state.report_revision + 1,
+        )
+    except ValueError:
+        errors = (
+            *state.errors,
+            _safe_error(
+                code="invalid-revised-draft",
+                summary="revised draft failed evidence or scope checks",
+                retryable=False,
+                node=RuntimeNode.REVISE_REPORT,
+            ),
+        )
+        return _validated_update(
+            state,
+            status=RuntimeStatus.FAILED.value,
+            current_node=RuntimeNode.END.value,
+            last_review_result=None,
+            errors=errors,
+        )
+
+    return _validated_update(
+        state,
+        status=RuntimeStatus.REVIEW_READY.value,
+        current_node=RuntimeNode.REVIEW_REPORT.value,
+        report_draft=draft.model_dump(mode="json"),
+        report_revision=draft.revision,
+        report_hash=hash_report_draft(draft),
+        review_rounds=next_round,
+        last_review_result=None,
     )
 
 
@@ -555,6 +716,36 @@ def _route_after_assessment(
     if state.status is RuntimeStatus.FAILED:
         return "failed"
     raise ValueError("EVIDENCE_ASSESSMENT_INVALID_ROUTE")
+
+
+def _route_after_draft(
+    state: RuntimeState,
+) -> Literal["review", "stop"]:
+    if state.status is RuntimeStatus.REVIEW_READY:
+        return "review"
+    if state.status in {RuntimeStatus.DRAFTED, RuntimeStatus.FAILED}:
+        return "stop"
+    raise ValueError("DRAFT_INVALID_ROUTE")
+
+
+def _route_after_review(
+    state: RuntimeState,
+) -> Literal["revise", "stop"]:
+    if state.status is RuntimeStatus.REVIEW_REVISE:
+        return "revise"
+    if state.status in {RuntimeStatus.REVIEWED, RuntimeStatus.FAILED}:
+        return "stop"
+    raise ValueError("REVIEW_INVALID_ROUTE")
+
+
+def _route_after_revision(
+    state: RuntimeState,
+) -> Literal["review", "stop"]:
+    if state.status is RuntimeStatus.REVIEW_READY:
+        return "review"
+    if state.status is RuntimeStatus.FAILED:
+        return "stop"
+    raise ValueError("REVISION_INVALID_ROUTE")
 
 
 def _requirements_builder(plan_node: object) -> StateGraph:
@@ -724,4 +915,76 @@ def build_draft_report_graph(
         },
     )
     builder.add_edge("draft_report", END)
+    return builder.compile(checkpointer=checkpointer)
+
+
+def build_report_review_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_calls: tuple[ToolCall, ToolCall],
+    executor: DeterministicFakeToolExecutor,
+    assessor: DeterministicEvidenceAssessor,
+    writer: DeterministicFakeWriter,
+    binder: EvidenceCitationBinder,
+    reviewer: DeterministicReportReviewer,
+    reviser: DeterministicDraftReviser,
+):
+    """Compile evidence, drafting, and at most two automatic revisions."""
+
+    builder = _evidence_builder(
+        tool_calls=tool_calls,
+        executor=executor,
+        assessor=assessor,
+    )
+    builder.add_node(
+        "draft_report",
+        partial(
+            draft_report,
+            writer=writer,
+            binder=binder,
+            continue_to_review=True,
+            review_policy_id=reviewer.policy.policy_id,
+        ),
+    )
+    builder.add_node(
+        "review_report",
+        partial(review_report, reviewer=reviewer),
+    )
+    builder.add_node(
+        "revise_report",
+        partial(revise_report, reviser=reviser, binder=binder),
+    )
+    builder.add_conditional_edges(
+        "assess_evidence",
+        _route_after_assessment,
+        {
+            "retrieve": "plan_research",
+            "sufficient": "draft_report",
+            "failed": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "draft_report",
+        _route_after_draft,
+        {
+            "review": "review_report",
+            "stop": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "review_report",
+        _route_after_review,
+        {
+            "revise": "revise_report",
+            "stop": END,
+        },
+    )
+    builder.add_conditional_edges(
+        "revise_report",
+        _route_after_revision,
+        {
+            "review": "review_report",
+            "stop": END,
+        },
+    )
     return builder.compile(checkpointer=checkpointer)

@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.5
+- 版本：v0.6
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估和安全草稿切片已实现；审校、最终报告确认和导出尚未实现
+- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿和有限审校切片已实现；最终报告确认和导出尚未实现
 
 ## 1. 架构目标
 
@@ -144,6 +144,27 @@ flowchart TD
 - 当前写作者和金标准匹配器都是确定性运行时夹具，不访问模型或网络，不进入 checkpoint。
 - 新路径使用 `draft-report-v1` 图版本；当前终态为 `DRAFTED`，尚未进入审校和最终人工暂停。
 
+### 3.5 当前有限审校切片
+
+```mermaid
+flowchart TD
+    A["draft_report"] --> B["review_report"]
+    B -->|PASS| C["REVIEWED"]
+    B -->|REVISE and review_rounds < 2| D["revise_report"]
+    D -->|valid new revision| B
+    D -->|invalid revision| F["FAILED"]
+    B -->|findings remain after round 2| F
+    C --> E["END"]
+    F --> E
+```
+
+- `review-policy-v1` 固定候选覆盖、维度覆盖和禁止断言检查。
+- `review-result-v1` 绑定 `review_policy_id`、来源快照、报告 revision/hash 和当前修改轮次。
+- `review_rounds` 只在新草稿成功绑定后增加；初始检查不占修改预算。
+- 无发现项停在 `REVIEWED`；最多修改 2 次，仍不通过则记录 `review-limit-exhausted` 并失败。
+- reviewer、reviser 和 binder 是运行时依赖；checkpoint 只保存规范草稿、策略 ID、轮次、发现项和安全结果。
+- 当前不调用模型，不进入最终报告 Human-in-the-loop，不生成制品。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -181,7 +202,7 @@ flowchart TD
    - 工具：`source_snapshot_id`、`pending_tool_call`、`last_tool_result`、`tool_call_budget`。
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
    - 证据评估：`evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment`。
-   - 草稿：`report_draft`、报告 revision/hash；引用只保存已验证来源元数据。
+   - 草稿与审校：`report_draft`、报告 revision/hash、`review_policy_id`、`last_review_result`、`review_rounds`；引用只保存已验证来源元数据。
    - 后续占位：安全 `errors`、`artifact_id`、`idempotency_key`。
 2. 运行时依赖：
    - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
@@ -244,10 +265,10 @@ flowchart TD
 
 审校包含两层：
 
-1. 确定性检查：结构完整、候选覆盖、引用 ID、来源范围、禁止字段、结论与评分一致。
-2. 模型审校：检查比较公平性、证据与表述强度、矛盾、遗漏和可读性。
+1. 当前已实现：确定性检查引用集合、策略要求的候选/维度覆盖和禁止断言。
+2. 尚未实现：模型审校比较公平性、证据与表述强度、矛盾、遗漏和可读性。
 
-默认最多 2 轮自动修改。严重安全问题立即失败；修改上限后仍有非严重问题时，带警告进入人工确认。
+默认最多 2 次自动修改。初始审校不计修改次数；修改上限后仍有发现项则稳定失败。当前通过只到 `REVIEWED`。
 
 ### `confirm_report`
 
@@ -348,6 +369,8 @@ Tool Calling 执行流程：
 | 第一轮证据不足 | `plan_research` | 只允许第 2 个检索轮次 |
 | 第二轮证据不足 | `FAILED` | 稳定终态，不生成报告或制品 |
 | 草稿声明、推荐、候选、维度或 evidence ID 越界 | `FAILED` | `invalid-draft-proposal`，不生成草稿 |
+| 审校发现且修改预算剩余 | `revise_report` | 最多成功生成 2 个新 revision |
+| 第 2 次修改后仍有审校发现 | `FAILED` | `review-limit-exhausted` |
 | 审校需修改 | `draft_report` | 最多 2 轮自动修改 |
 | 人工退回 | `draft_report` | 最多 2 次 |
 | 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |

@@ -28,6 +28,11 @@ from agent_research.report_drafting import (
     ReportDraft,
     hash_report_draft,
 )
+from agent_research.report_review import (
+    MAX_REVIEW_ROUNDS,
+    ReviewOutcome,
+    ReviewResult,
+)
 from agent_research.tool_contracts import (
     MAX_TOOL_ATTEMPTS,
     SOURCE_SNAPSHOT_V1,
@@ -40,7 +45,6 @@ from agent_research.tool_contracts import (
 
 MAX_CONFIRMATION_REVISIONS = 32
 MAX_RETRIEVAL_ROUNDS = 2
-MAX_REVIEW_ROUNDS = 2
 MAX_HUMAN_REVISIONS = 2
 _SENSITIVE_VALUE_PATTERN = re.compile(
     r"(?i)(authorization\s*:|cookie\s*:|set-cookie\s*:|"
@@ -62,6 +66,9 @@ class RuntimeStatus(StrEnum):
     EVIDENCE_NEEDS_MORE = "EVIDENCE_NEEDS_MORE"
     EVIDENCE_SUFFICIENT = "EVIDENCE_SUFFICIENT"
     DRAFTED = "DRAFTED"
+    REVIEW_READY = "REVIEW_READY"
+    REVIEW_REVISE = "REVIEW_REVISE"
+    REVIEWED = "REVIEWED"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -76,6 +83,8 @@ class RuntimeNode(StrEnum):
     RETRY_TOOL = "retry_tool"
     ASSESS_EVIDENCE = "assess_evidence"
     DRAFT_REPORT = "draft_report"
+    REVIEW_REPORT = "review_report"
+    REVISE_REPORT = "revise_report"
     END = "end"
 
 
@@ -109,6 +118,7 @@ class RuntimeState(StrictModel):
         "tool-execution-v1",
         "evidence-assessment-v1",
         "draft-report-v1",
+        "report-review-v1",
     ] = (
         "requirements-confirmation-v1"
     )
@@ -159,6 +169,8 @@ class RuntimeState(StrictModel):
     ] = 0
     report_hash: Sha256 | None = None
     report_draft: ReportDraft | None = None
+    review_policy_id: Identifier | None = None
+    last_review_result: ReviewResult | None = None
     plan_id: Sha256 | None = None
     artifact_id: Sha256 | None = None
     idempotency_key: Sha256 | None = None
@@ -224,6 +236,9 @@ class RuntimeState(StrictModel):
             RuntimeStatus.EVIDENCE_NEEDS_MORE,
             RuntimeStatus.EVIDENCE_SUFFICIENT,
             RuntimeStatus.DRAFTED,
+            RuntimeStatus.REVIEW_READY,
+            RuntimeStatus.REVIEW_REVISE,
+            RuntimeStatus.REVIEWED,
         }
         if self.status in tool_statuses:
             if self.pending_tool_call is None:
@@ -316,6 +331,9 @@ class RuntimeState(StrictModel):
                     {
                         RuntimeStatus.EVIDENCE_SUFFICIENT,
                         RuntimeStatus.DRAFTED,
+                        RuntimeStatus.REVIEW_READY,
+                        RuntimeStatus.REVIEW_REVISE,
+                        RuntimeStatus.REVIEWED,
                         RuntimeStatus.FAILED,
                     }
                 ),
@@ -356,10 +374,71 @@ class RuntimeState(StrictModel):
             if self.confirmed_requirements is None:
                 raise ValueError("DRAFTED requires confirmed requirements")
 
+        review_statuses = {
+            RuntimeStatus.REVIEW_READY,
+            RuntimeStatus.REVIEW_REVISE,
+            RuntimeStatus.REVIEWED,
+        }
+        if self.status in review_statuses:
+            if self.graph_version != "report-review-v1":
+                raise ValueError(
+                    "review status requires report-review graph version"
+                )
+            if self.report_draft is None:
+                raise ValueError("review status requires report_draft")
+            if self.review_policy_id is None:
+                raise ValueError("review status requires review_policy_id")
+
+        if self.status is RuntimeStatus.REVIEW_READY:
+            if self.current_node is not RuntimeNode.REVIEW_REPORT:
+                raise ValueError("REVIEW_READY must enter review_report")
+            if self.last_review_result is not None:
+                raise ValueError("REVIEW_READY must not keep stale review result")
+
+        if self.last_review_result is not None:
+            result = self.last_review_result
+            if result.policy_id != self.review_policy_id:
+                raise ValueError("review result policy ID mismatch")
+            if result.source_snapshot_id != self.source_snapshot_id:
+                raise ValueError("review result snapshot mismatch")
+            if result.report_revision != self.report_revision:
+                raise ValueError("review result revision mismatch")
+            if result.report_hash != self.report_hash:
+                raise ValueError("review result hash mismatch")
+            if result.review_round != self.review_rounds:
+                raise ValueError("review result round mismatch")
+            expected_review_status = {
+                ReviewOutcome.PASS: RuntimeStatus.REVIEWED,
+                ReviewOutcome.REVISE: RuntimeStatus.REVIEW_REVISE,
+                ReviewOutcome.FAIL: RuntimeStatus.FAILED,
+            }[result.outcome]
+            if self.status is not expected_review_status:
+                raise ValueError("review result status mismatch")
+
+        if self.status is RuntimeStatus.REVIEW_REVISE:
+            if self.current_node is not RuntimeNode.REVISE_REPORT:
+                raise ValueError("REVIEW_REVISE must enter revise_report")
+
+        if self.status is RuntimeStatus.REVIEWED:
+            if self.current_node is not RuntimeNode.END:
+                raise ValueError("REVIEWED must stop at end")
+            if (
+                self.last_review_result is None
+                or self.last_review_result.outcome is not ReviewOutcome.PASS
+            ):
+                raise ValueError("REVIEWED requires passing review")
+
         if self.report_draft is not None:
             draft = self.report_draft
-            if self.status is not RuntimeStatus.DRAFTED:
-                raise ValueError("report_draft requires DRAFTED status")
+            report_statuses = {
+                RuntimeStatus.DRAFTED,
+                RuntimeStatus.REVIEW_READY,
+                RuntimeStatus.REVIEW_REVISE,
+                RuntimeStatus.REVIEWED,
+                RuntimeStatus.FAILED,
+            }
+            if self.status not in report_statuses:
+                raise ValueError("report_draft requires report workflow status")
             if draft.source_snapshot_id != self.source_snapshot_id:
                 raise ValueError("report draft snapshot mismatch")
             if draft.revision != self.report_revision:

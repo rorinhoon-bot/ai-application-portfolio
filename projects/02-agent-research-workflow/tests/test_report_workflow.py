@@ -29,6 +29,12 @@ from agent_research.report_drafting import (
     EvidenceCitationBinder,
     hash_report_draft,
 )
+from agent_research.report_review import (
+    DeterministicDraftReviser,
+    DeterministicReportReviewer,
+    ReviewOutcome,
+    ReviewPolicy,
+)
 from agent_research.runtime_state import RuntimeState, RuntimeStatus
 from agent_research.tool_contracts import (
     SearchSourcesArgs,
@@ -37,6 +43,7 @@ from agent_research.tool_contracts import (
 )
 from agent_research.workflow import (
     build_draft_report_graph,
+    build_report_review_graph,
     create_initial_state,
     workflow_config,
 )
@@ -264,6 +271,53 @@ def _run(
         return final
 
 
+def _review_policy() -> ReviewPolicy:
+    return ReviewPolicy(
+        policy_id="privacy-review-policy",
+        required_candidate_ids=("atlasflow",),
+        required_dimension_ids=("privacy", "reliability"),
+        forbidden_statements=_bundle().gold.forbidden_claims,
+    )
+
+
+def _run_review(
+    *,
+    checkpoint: Path,
+    writer: DeterministicFakeWriter,
+    reviewer: DeterministicReportReviewer,
+    reviser: DeterministicDraftReviser,
+) -> RuntimeState:
+    case = _case("privacy-durable-selection")
+    config = workflow_config("thread-privacy-review")
+    with SqliteSaver.from_conn_string(str(checkpoint)) as saver:
+        graph = build_report_review_graph(
+            checkpointer=saver,
+            tool_calls=_privacy_calls(case),
+            executor=DeterministicFakeToolExecutor(
+                sources=_bundle().sources,
+                outcomes=case.tool_outcomes,
+            ),
+            assessor=_privacy_assessor(),
+            writer=writer,
+            binder=_binder(),
+            reviewer=reviewer,
+            reviser=reviser,
+        )
+        graph.invoke(
+            create_initial_state(
+                run_id="run-privacy-review",
+                thread_id="thread-privacy-review",
+                request=case.input,
+            ),
+            config,
+        )
+        waiting = _snapshot(graph, config)
+        graph.invoke(Command(resume=_approval(waiting)), config)
+        final = _snapshot(graph, config)
+        assert graph.get_state(config).next == ()
+        return final
+
+
 def test_sufficient_evidence_creates_bound_structured_draft(
     tmp_path: Path,
 ) -> None:
@@ -395,3 +449,135 @@ def test_checkpoint_restores_draft_without_runtime_writer_or_binder(
 
     assert restored == final
     assert restored_writer.write_count == 0
+
+
+def test_clean_draft_passes_review_without_revision(
+    tmp_path: Path,
+) -> None:
+    writer = _writer()
+    reviewer = DeterministicReportReviewer(_review_policy())
+    reviser = DeterministicDraftReviser((_proposal(),))
+
+    final = _run_review(
+        checkpoint=tmp_path / "review-pass.sqlite3",
+        writer=writer,
+        reviewer=reviewer,
+        reviser=reviser,
+    )
+
+    assert final.status is RuntimeStatus.REVIEWED
+    assert final.graph_version == "report-review-v1"
+    assert final.report_revision == 1
+    assert final.review_rounds == 0
+    assert final.last_review_result is not None
+    assert final.last_review_result.outcome is ReviewOutcome.PASS
+    assert writer.write_count == 1
+    assert reviewer.review_count == 1
+    assert reviser.revision_count == 0
+    assert final.artifact_id is None
+
+    mismatched = final.model_dump(mode="json")
+    mismatched["review_policy_id"] = "another-review-policy"
+    with pytest.raises(ValidationError, match="review result policy ID mismatch"):
+        RuntimeState.model_validate(mismatched)
+
+
+def test_forbidden_assertion_is_revised_then_passes(
+    tmp_path: Path,
+) -> None:
+    forbidden = _bundle().gold.forbidden_claims[1]
+    flawed = _proposal().model_copy(
+        update={"executive_summary": f"错误初稿声称：{forbidden}。"}
+    )
+    reviewer = DeterministicReportReviewer(_review_policy())
+    reviser = DeterministicDraftReviser((_proposal(),))
+
+    final = _run_review(
+        checkpoint=tmp_path / "review-revise.sqlite3",
+        writer=_writer(flawed),
+        reviewer=reviewer,
+        reviser=reviser,
+    )
+
+    assert final.status is RuntimeStatus.REVIEWED
+    assert final.report_revision == 2
+    assert final.review_rounds == 1
+    assert final.last_review_result is not None
+    assert final.last_review_result.outcome is ReviewOutcome.PASS
+    assert forbidden not in final.report_draft.executive_summary  # type: ignore[union-attr]
+    assert reviewer.review_count == 2
+    assert reviser.revision_count == 1
+
+
+def test_review_stops_after_two_unsuccessful_revisions(
+    tmp_path: Path,
+) -> None:
+    forbidden = _bundle().gold.forbidden_claims[1]
+    initial = _proposal().model_copy(
+        update={"executive_summary": f"初稿错误：{forbidden}。"}
+    )
+    revision_one = _proposal().model_copy(
+        update={"executive_summary": f"第一次修改仍错误：{forbidden}。"}
+    )
+    revision_two = _proposal().model_copy(
+        update={"executive_summary": f"第二次修改仍错误：{forbidden}。"}
+    )
+    reviewer = DeterministicReportReviewer(_review_policy())
+    reviser = DeterministicDraftReviser((revision_one, revision_two))
+
+    final = _run_review(
+        checkpoint=tmp_path / "review-limit.sqlite3",
+        writer=_writer(initial),
+        reviewer=reviewer,
+        reviser=reviser,
+    )
+
+    assert final.status is RuntimeStatus.FAILED
+    assert final.report_revision == 3
+    assert final.review_rounds == 2
+    assert final.last_review_result is not None
+    assert final.last_review_result.outcome is ReviewOutcome.FAIL
+    assert final.errors[-1].code == "review-limit-exhausted"
+    assert reviewer.review_count == 3
+    assert reviser.revision_count == 2
+    assert final.artifact_id is None
+
+
+def test_checkpoint_restores_reviewed_report_without_runtime_reviewers(
+    tmp_path: Path,
+) -> None:
+    checkpoint = tmp_path / "review-checkpoint.sqlite3"
+    final = _run_review(
+        checkpoint=checkpoint,
+        writer=_writer(),
+        reviewer=DeterministicReportReviewer(_review_policy()),
+        reviser=DeterministicDraftReviser((_proposal(),)),
+    )
+    raw = checkpoint.read_bytes()
+
+    assert b"DeterministicReportReviewer" not in raw
+    assert b"DeterministicDraftReviser" not in raw
+
+    case = _case("privacy-durable-selection")
+    restored_reviewer = DeterministicReportReviewer(_review_policy())
+    restored_reviser = DeterministicDraftReviser((_proposal(),))
+    config = workflow_config("thread-privacy-review")
+    with SqliteSaver.from_conn_string(str(checkpoint)) as saver:
+        graph = build_report_review_graph(
+            checkpointer=saver,
+            tool_calls=_privacy_calls(case),
+            executor=DeterministicFakeToolExecutor(
+                sources=_bundle().sources,
+                outcomes=case.tool_outcomes,
+            ),
+            assessor=_privacy_assessor(),
+            writer=_writer(),
+            binder=_binder(),
+            reviewer=restored_reviewer,
+            reviser=restored_reviser,
+        )
+        restored = _snapshot(graph, config)
+
+    assert restored == final
+    assert restored_reviewer.review_count == 0
+    assert restored_reviser.revision_count == 0

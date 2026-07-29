@@ -64,6 +64,8 @@ def test_runtime_state_has_explicit_checkpoint_business_fields() -> None:
         "report_revision",
         "report_hash",
         "report_draft",
+        "review_policy_id",
+        "last_review_result",
         "artifact_id",
         "idempotency_key",
     }
