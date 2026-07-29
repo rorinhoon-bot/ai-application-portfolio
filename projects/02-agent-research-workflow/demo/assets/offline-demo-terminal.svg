@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 780" role="img" aria-labelledby="terminal-title terminal-desc">
+<title id="terminal-title">P2 离线演示终端截图</title>
+<desc id="terminal-desc">真实离线演示输出，展示需求暂停、成功导出、证据不足停止和节点观测。</desc>
+<style>
+.canvas{fill:#08111f}.window{fill:#101827;stroke:#334155;stroke-width:2}.bar{fill:#172033}.dot-red{fill:#fb7185}.dot-yellow{fill:#fbbf24}.dot-green{fill:#4ade80}.chrome{font:500 18px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#94a3b8}.command{font:500 21px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#e2e8f0}.line{font:500 21px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#cbd5e1}.human{fill:#fbbf24}.success{fill:#4ade80}.failure{fill:#fb7185}.observed{fill:#60a5fa}.footer{font:400 17px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#64748b}
+</style>
+<rect class="canvas" width="1500" height="780"/>
+<rect class="window" x="35" y="35" width="1430" height="710" rx="18"/>
+<path class="bar" d="M53 35h1394a18 18 0 0 1 18 18v55H35V53a18 18 0 0 1 18-18z"/>
+<circle class="dot-red" cx="76" cy="72" r="9"/>
+<circle class="dot-yellow" cx="108" cy="72" r="9"/>
+<circle class="dot-green" cx="140" cy="72" r="9"/>
+<text x="750" y="79" class="chrome" text-anchor="middle">PowerShell · P2 offline demo</text>
+<text x="70" y="145" class="command">PS&gt; .\.venv\Scripts\python.exe scripts\run_demo.py</text>
+<text x="70" y="205" class="line">P2 离线演示 v1</text>
+<text x="70" y="257" class="line human">[1] NEEDS_HUMAN  missing-candidates: 候选缺失；不猜测</text>
+<text x="70" y="309" class="line success">[2] COMPLETED    privacy-durable-selection: 2 条带引用声明；推荐 atlasflow</text>
+<text x="70" y="361" class="line failure">[3] FAILED       missing-offline-proof: 2 轮检索后停止；不生成报告</text>
+<text x="70" y="413" class="line observed">[4] OBSERVED     13 个节点事件；2 次正常人工中断</text>
+<text x="70" y="465" class="line">报告：demo/generated/3cb6e874c988bd2795164fbde10e882e1093a536bb0a01d40f180cd097f24dd0.md</text>
+<text x="70" y="517" class="line">摘要：evals/results/privacy-durable-run-summary.json</text>
+<text x="70" y="569" class="line">network=false model_api=false known_cost_microunits=0</text>
+<text x="70" y="704" class="footer">verified: offline-demo-v1 · deterministic · network=false · model_api=false</text>
+</svg>

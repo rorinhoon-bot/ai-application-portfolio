@@ -14,6 +14,10 @@
 - 普通 RAG 通常是“检索一次，再回答一次”；本项目会先确认需求和研究计划，再多轮检索、检查证据是否充足、写作、审校和修改。
 - 模型不能直接执行任意工具、访问任意 URL、决定输出路径或完成最终导出。程序校验 Tool Calling 参数；人工批准后才产生最终报告文件。
 
+## 工作流概览
+
+![LangGraph 研究报告工作流](demo/assets/workflow-overview.svg)
+
 ## 当前阶段
 
 - P1 已完成，满足 P2 启动条件。
@@ -25,13 +29,15 @@
 - 可选运行时 observer 已覆盖完整图；生成 `node-event-v1` 和内容哈希绑定的 `run-summary-v1`，不进入 checkpoint。
 - `offline-demo-v1` 用三个固定案例展示需求暂停、成功导出和证据不足停止，并关联确定性运行摘要。
 - 当前量化基线：案例通过 `12/12`，路径 `12/12`，引用绑定 `10/10`，重试/停止 `12/12`，checkpoint 恢复 `1/1`，无证据声明 `0/10`，未批准导出与权限扩大均为 `0`。
-- 当前普通测试：`138 passed`；测试默认阻断网络。
+- 当前普通测试：`144 passed`；测试默认阻断网络。
 - 需求见 `docs/PRD.md`，状态图和安全边界见 `docs/ARCHITECTURE.md`。
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
 当前仍只使用原创虚构资料、确定性假工具和假写作者。未下载真实研究语料，未调用模型 API，未产生费用，也未公开部署。
 
 ## 离线演示
+
+![P2 离线演示终端截图](demo/assets/offline-demo-terminal.svg)
 
 运行暂停、成功、失败和观测四段终端简报：
 
@@ -42,6 +48,14 @@ $env:LANGSMITH_TRACING="false"
 ```
 
 使用 `--json` 输出机器可读 manifest；使用 `--check` 重跑真实图并逐字节检查提交的 manifest、Markdown 报告与运行摘要。脚本不接受任意案例 ID 或输出路径。完整说明与提交制品见 `demo/README.md`。
+
+逐字节重建并检查两张 SVG：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\check_demo_assets.py --check
+```
+
+五分钟讲解提纲见 `demo/FIVE_MINUTE_TALK.md`。
 
 ## 离线验证
 

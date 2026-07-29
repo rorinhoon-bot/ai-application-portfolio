@@ -8,6 +8,10 @@
 
 同一成功案例还生成 `run-summary-v1`，展示节点事件、两次正常人工中断、工具次数、报告 revision/hash 和制品 ID。
 
+## 工作流概览
+
+![LangGraph 研究报告工作流](assets/workflow-overview.svg)
+
 ## 运行
 
 在 P2 目录执行：
@@ -32,10 +36,24 @@ $env:LANGSMITH_TRACING="false"
 
 脚本不接受任意案例 ID 或输出路径。运行中的 checkpoint 和导出先进入系统临时目录；`--check` 只读，不覆盖提交文件。
 
+## 演示截图
+
+![P2 离线演示终端截图](assets/offline-demo-terminal.svg)
+
+截图由 `run_demo.py` 的真实确定性输出生成。逐字节检查：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\check_demo_assets.py --check
+```
+
+面试演示顺序和讲解内容见 `FIVE_MINUTE_TALK.md`。
+
 ## 提交制品
 
 - `generated/offline-demo-v1.json`：暂停、成功、失败三条路径的哈希绑定 manifest。
 - `generated/<artifact_id>.md`：最终人工批准后由安全导出器生成的 Markdown 报告。
+- `assets/offline-demo-terminal.svg`：从真实终端简报确定性生成的截图。
+- `assets/workflow-overview.svg`：两个人工门、有限循环和稳定终态的简化图。
 - `../evals/results/privacy-durable-run-summary.json`：成功案例的确定性运行摘要。
 
 这些是原创虚构资料的工程演示，不是现实技术选型建议，也不证明真实模型语义质量。

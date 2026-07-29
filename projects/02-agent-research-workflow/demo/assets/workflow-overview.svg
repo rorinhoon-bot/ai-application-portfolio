@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1020" role="img" aria-labelledby="workflow-title workflow-desc">
+<title id="workflow-title">LangGraph 研究报告工作流</title>
+<desc id="workflow-desc">从需求校验到幂等导出的显式状态图，包含两个人工暂停点、有限重试、证据不足停止和稳定终态。</desc>
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+</defs>
+<style>
+.canvas{fill:#f8fafc}.title{font:500 32px 'Microsoft YaHei UI',sans-serif;fill:#0f172a}.subtitle{font:400 18px 'Microsoft YaHei UI',sans-serif;fill:#475569}.edge{fill:none;stroke:#64748b;stroke-width:2;marker-end:url(#arrow)}.branch{fill:none;stroke:#94a3b8;stroke-width:2;stroke-dasharray:7 7;marker-end:url(#arrow)}.edge-label{font:400 16px 'Microsoft YaHei UI',sans-serif;fill:#475569}.node rect{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.node.human rect{fill:#fef3c7;stroke:#d97706}.node.success rect{fill:#dcfce7;stroke:#16a34a}.node-title{font:500 20px 'Microsoft YaHei UI',sans-serif;fill:#0f172a}.node-subtitle{font:400 15px 'Microsoft YaHei UI',sans-serif;fill:#475569}.callout rect{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.callout.failure rect{fill:#fee2e2;stroke:#dc2626}.callout.human rect{fill:#fff7ed;stroke:#ea580c}.callout-title{font:500 18px 'Microsoft YaHei UI',sans-serif;fill:#0f172a}.callout-subtitle{font:400 14px 'Microsoft YaHei UI',sans-serif;fill:#475569}.legend{font:400 15px 'Microsoft YaHei UI',sans-serif;fill:#64748b}
+</style>
+<rect class="canvas" width="1600" height="1020"/>
+<text x="800" y="48" class="title" text-anchor="middle">LangGraph 研究报告工作流</text>
+<text x="800" y="78" class="subtitle" text-anchor="middle">显式状态 · 两个人工门 · 有限循环 · checkpoint · 幂等导出</text>
+<path class="edge" d="M800 166V190"/>
+<path class="edge" d="M800 262V286"/>
+<path class="edge" d="M800 358V382"/>
+<path class="edge" d="M800 454V478"/>
+<path class="edge" d="M800 550V574"/>
+<path class="edge" d="M800 646V670"/>
+<path class="edge" d="M800 742V766"/>
+<path class="edge" d="M800 838V872"/>
+<path class="branch" d="M550 226H430"/>
+<path class="branch" d="M1050 418H1170"/>
+<path class="branch" d="M1345 456V478H1050"/>
+<path class="branch" d="M550 514H430"/>
+<path class="branch" d="M1050 610H1170"/>
+<path class="branch" d="M1345 648V670H1050"/>
+<path class="branch" d="M550 706H430"/>
+<text x="466" y="213" class="edge-label" text-anchor="middle">缺字段</text>
+<text x="1110" y="405" class="edge-label" text-anchor="middle">瞬时错误</text>
+<text x="466" y="501" class="edge-label" text-anchor="middle">第 2 轮仍不足</text>
+<text x="1110" y="597" class="edge-label" text-anchor="middle">发现问题</text>
+<text x="466" y="693" class="edge-label" text-anchor="middle">拒绝 / 取消</text>
+<g class="node normal" data-node="validate-request">
+<rect x="550" y="94" width="500" height="72" rx="14"/>
+<text x="800" y="124" class="node-title" text-anchor="middle">1. 需求校验</text>
+<text x="800" y="149" class="node-subtitle" text-anchor="middle">候选、评价维度、范围完整性</text>
+</g>
+<g class="node human" data-node="requirements-human-gate">
+<rect x="550" y="190" width="500" height="72" rx="14"/>
+<text x="800" y="220" class="node-title" text-anchor="middle">2. Human-in-the-loop：需求确认</text>
+<text x="800" y="245" class="node-subtitle" text-anchor="middle">先写 checkpoint，再正常暂停；决定绑定 revision/hash</text>
+</g>
+<g class="node normal" data-node="plan-research">
+<rect x="550" y="286" width="500" height="72" rx="14"/>
+<text x="800" y="316" class="node-title" text-anchor="middle">3. 研究规划</text>
+<text x="800" y="341" class="node-subtitle" text-anchor="middle">固定范围与调用预算，不扩大权限</text>
+</g>
+<g class="node normal" data-node="tool-calling">
+<rect x="550" y="382" width="500" height="72" rx="14"/>
+<text x="800" y="412" class="node-title" text-anchor="middle">4. 只读 Tool Calling</text>
+<text x="800" y="437" class="node-subtitle" text-anchor="middle">名称 allowlist + Schema + 业务作用域；最多重试 2 次</text>
+</g>
+<g class="node normal" data-node="evidence-gate">
+<rect x="550" y="478" width="500" height="72" rx="14"/>
+<text x="800" y="508" class="node-title" text-anchor="middle">5. 证据充分性门</text>
+<text x="800" y="533" class="node-subtitle" text-anchor="middle">最多检索 2 轮；不能用常识或模型推断补证据</text>
+</g>
+<g class="node normal" data-node="draft-and-review">
+<rect x="550" y="574" width="500" height="72" rx="14"/>
+<text x="800" y="604" class="node-title" text-anchor="middle">6. 结构化写作与审校</text>
+<text x="800" y="629" class="node-subtitle" text-anchor="middle">程序绑定引用；自动修改最多 2 次</text>
+</g>
+<g class="node human" data-node="report-human-gate">
+<rect x="550" y="670" width="500" height="72" rx="14"/>
+<text x="800" y="700" class="node-title" text-anchor="middle">7. Human-in-the-loop：报告确认</text>
+<text x="800" y="725" class="node-subtitle" text-anchor="middle">批准绑定 report revision/hash；旧批准失效</text>
+</g>
+<g class="node normal" data-node="safe-export">
+<rect x="550" y="766" width="500" height="72" rx="14"/>
+<text x="800" y="796" class="node-title" text-anchor="middle">8. 安全幂等导出</text>
+<text x="800" y="821" class="node-subtitle" text-anchor="middle">内容寻址 Markdown；不覆盖；重复导出 UNCHANGED</text>
+</g>
+<g class="node success" data-node="completed">
+<rect x="550" y="872" width="500" height="72" rx="14"/>
+<text x="800" y="902" class="node-title" text-anchor="middle">COMPLETED</text>
+<text x="800" y="927" class="node-subtitle" text-anchor="middle">已批准报告与 artifact_id 保持绑定</text>
+</g>
+<g class="callout human" data-callout="needs-human">
+<rect x="55" y="188" width="350" height="76" rx="12"/>
+<text x="230" y="219" class="callout-title" text-anchor="middle">NEEDS_HUMAN</text>
+<text x="230" y="244" class="callout-subtitle" text-anchor="middle">等待人工是正常状态，不是失败</text>
+</g>
+<g class="callout normal" data-callout="tool-retry">
+<rect x="1195" y="380" width="350" height="76" rx="12"/>
+<text x="1370" y="411" class="callout-title" text-anchor="middle">retry_tool</text>
+<text x="1370" y="436" class="callout-subtitle" text-anchor="middle">同一逻辑调用键；attempt 写入 checkpoint</text>
+</g>
+<g class="callout failure" data-callout="evidence-failed">
+<rect x="55" y="476" width="350" height="76" rx="12"/>
+<text x="230" y="507" class="callout-title" text-anchor="middle">FAILED</text>
+<text x="230" y="532" class="callout-subtitle" text-anchor="middle">evidence-insufficient；不写报告</text>
+</g>
+<g class="callout normal" data-callout="review-loop">
+<rect x="1195" y="572" width="350" height="76" rx="12"/>
+<text x="1370" y="603" class="callout-title" text-anchor="middle">revise_report</text>
+<text x="1370" y="628" class="callout-subtitle" text-anchor="middle">按持久化轮次修改，再回到审校</text>
+</g>
+<g class="callout failure" data-callout="human-terminal">
+<rect x="55" y="668" width="350" height="76" rx="12"/>
+<text x="230" y="699" class="callout-title" text-anchor="middle">稳定人工终态</text>
+<text x="230" y="724" class="callout-subtitle" text-anchor="middle">REPORT_REJECTED / REPORT_CANCELLED</text>
+</g>
+<text x="800" y="987" class="legend" text-anchor="middle">离线确定性夹具：12/12 案例通过 · 144 项测试 · network=false · model_api=false</text>
+</svg>
