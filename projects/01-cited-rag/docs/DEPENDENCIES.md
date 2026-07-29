@@ -13,8 +13,9 @@
 - 已创建 `pyproject.toml`、`requirements.txt`、`requirements-dev.txt`。
 - 已创建 P1 独立 `.venv`。
 - 已安装固定生产与开发依赖。
-- 尚未下载 `BAAI/bge-small-zh-v1.5`。
-- 尚未调用真实 MiMo API。
+- 已批准并安装 Streamlit 求职展示页的固定依赖。
+- 已经单独批准并下载固定revision的 `BAAI/bge-small-zh-v1.5` 必需资产；资产本体位于Git忽略目录，逐文件哈希见 `data/model-assets.json`。
+- 已在人民币5元授权上限内调用真实 MiMo API；调用次数和tokens见回答、版本比较评估报告。普通测试仍不调用API。
 
 ## 2. 兼容性验证方法
 
@@ -41,7 +42,7 @@ python -m pip install `
 
 - 依赖解析成功。
 - 无版本冲突。
-- 所有 50 个包均有当前平台可用的二进制 wheel 或通用 Python wheel。
+- 核心栈首轮所有 50 个包均有当前平台可用的二进制 wheel 或通用 Python wheel。
 - dry-run 本身未安装任何包；获得批准后才执行实际安装。
 - pip 提示有新版本，但 P1 不升级全局或 P0 pip。
 
@@ -55,6 +56,7 @@ python -m pip install `
 | `httpx` | `0.28.1` | 是 | 调用 MiMo HTTPS API，并处理超时与 HTTP 错误 |
 | `pydantic` | `2.13.4` | 是 | 输入、元数据、回答、引用和错误模型 |
 | `pydantic-settings` | `2.14.2` | 是 | 集中读取环境变量和本地 `.env` |
+| `streamlit` | `1.60.0` | 是 | 本地求职展示页与可注入 AppTest |
 
 未加入：
 
@@ -62,6 +64,14 @@ python -m pip install `
 - LlamaIndex：首版直接实现导入、检索和引用边界。
 - `lxml`：Beautiful Soup 配合标准库 `html.parser` 已满足首批 HTML。
 - GPU 版 FastEmbed：首版使用 CPU，避免 CUDA 依赖。
+
+Streamlit 扩展验证：
+
+- 官方安装文档声明支持 Python 3.10—3.14。
+- PyPI 元数据确认 `streamlit==1.60.0`、Python `>=3.10`、Apache-2.0 和通用 wheel。
+- 对完整 `requirements-dev.txt + streamlit==1.60.0` 执行 `--dry-run --only-binary=:all:`，解析为 79 个固定版本，无冲突。
+- 实际安装后 `pip check` 通过，核心导入输出 `1.60.0`。
+- 参考：<https://docs.streamlit.io/get-started/installation/command-line>、<https://pypi.org/project/streamlit/>。
 
 ## 4. 顶层开发与构建依赖
 
@@ -139,6 +149,39 @@ urllib3==2.7.0
 win32-setctime==1.2.0
 ```
 
+### 5.3 Streamlit 新增间接包
+
+```text
+altair==6.2.2
+attrs==26.1.0
+blinker==1.9.0
+gitdb==4.0.12
+GitPython==3.1.57
+httptools==0.8.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+MarkupSafe==3.0.3
+narwhals==2.24.0
+pandas==3.0.5
+pyarrow==24.0.0
+pydeck==0.9.3
+python-dateutil==2.9.0.post0
+python-multipart==0.0.32
+referencing==0.37.0
+rpds-py==2026.6.3
+six==1.17.0
+smmap==5.0.3
+starlette==1.3.1
+tenacity==9.1.4
+toml==0.10.2
+tzdata==2026.3
+uvicorn==0.51.0
+watchdog==6.0.0
+websockets==16.1.1
+```
+
 ## 6. 关键二进制兼容证据
 
 dry-run 为 CPython `3.14`、Windows x86-64 选择：
@@ -185,7 +228,7 @@ BAAI/bge-small-zh-v1.5
 5. 成功导入 Beautiful Soup、FastEmbed、Qdrant Client、HTTPX、Pydantic、Pydantic Settings 和 pytest。
 6. 使用 Qdrant `:memory:` 建立 3 维余弦距离 collection，写入假向量并成功检索到预期 point。
 7. `pip check` 输出 `No broken requirements found.`。
-8. requirements 中 50 个固定版本与实际安装版本完全一致。
+8. Streamlit 扩展后，生产与开发 requirements 中 79 个固定版本与实际安装版本完全一致。
 9. `.venv` 已被仓库根目录 `.gitignore` 的 `.venv/` 规则忽略。
 
 该阶段没有实例化 FastEmbed 模型，没有下载真实 Embedding 模型，没有下载知识库语料，也没有调用 MiMo API。

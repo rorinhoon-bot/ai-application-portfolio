@@ -1,7 +1,7 @@
 # STATUS
 
-- 状态：`in_progress`
-- 当前唯一目标：设计文档导入与真实元数据模型。
+- 状态：`completed`
+- 当前唯一目标：P1 已完成；等待学习者明确启动下一作品。
 - 已完成：
   - P0 已通过最终验收。
   - 从 `codex/p0-implementation` 创建并切换到 `codex/p1-cited-knowledge-base`。
@@ -23,13 +23,218 @@
   - 安装全部 50 个固定生产与开发依赖，实际版本与清单完全一致。
   - 核心依赖导入通过；Qdrant `:memory:` 假向量写入与检索通过。
   - `pip check` 通过；`.venv` 已被 Git 忽略。
-  - 未实例化或下载 Embedding 模型，未下载语料，未调用真实 MiMo API。
+  - 依赖安装阶段未实例化或下载 Embedding 模型、未下载语料、未调用真实 MiMo API。
   - `docs/DEPENDENCIES.md` 状态改为 `accepted`，并写入实际验证结果。
   - 学习者确认 `docs/ARCHITECTURE.md` v0.1，文档状态改为 `accepted`。
+  - 学习者确认文档导入数据合同：`SourceManifestEntry`、`DocumentSnapshot`、`ContentBlock` 和 `DocumentChunk` 四层。
+  - 确认来源、真实 HTML、程序派生字段和模型禁用字段的边界。
+  - 确认 `Chunk.text` 使用有限清洗后的正文；普通文本只规范空白，代码内容和缩进不改；原始 HTML 保留回查。
+  - 确认每个 `(document_key, python_version)` 只允许一个活动快照。
+  - 确认重复导入幂等、版本来源独立和整批原子更新规则。
+  - 确认 HTML 结构 allowlist、严格失败边界、路径穿越防护和五个最小自编测试夹具。
+  - `docs/ARCHITECTURE.md` 更新为 v0.2，记录数据合同、清洗、路径、重复导入、追踪和夹具验收规则。
+  - `DECISIONS.md` 新增 D-009～D-012。
+  - 创建 `src/cited_rag/models.py`，实现严格、不可变且拒绝未知字段的四层 Pydantic 数据合同。
+  - 创建 `SourceManifest` 整体模型，拒绝重复 `source_id`、重复活动 `(document_key, python_version)` 和重复来源 URL。
+  - manifest 字段验证覆盖 Python `3.13`/`3.14`、官方简体中文 HTTPS 页面、带时区获取时间、SHA-256、许可和安全 POSIX 相对 `.html` 路径。
+  - `ContentBlock` 验证段落与列表专用位置字段，并保证代码块 `clean_text` 与 `raw_text` 完全相同。
+  - `DocumentChunk` 验证 Block/段落范围、引用文本哈希、Embedding 文本包含关系、版本化来源和安全路径。
+  - 路径安全明确分为模型词法校验与后续导入服务文件系统校验；记录为 D-013。
+  - 创建 `tests/test_models.py`；27 项离线测试通过，包含正常合同、未知字段、URL、时间、路径、重复来源、跨版本相同内容、代码空白、范围和哈希失败路径。
+  - Pydantic JSON Schema 生成检查通过，`SourceManifest` 为 `additionalProperties: false`。
+  - 本步未实现 HTML 解析、文件读取、ID 生成、Chunk 切分、Embedding 或索引。
+  - 创建五个带 `synthetic test fixture` 标记的自编 Sphinx 形状 HTML；没有下载或复制官方语料。
+  - 两个有效夹具分别覆盖 Python 3.14、3.13 形式，主内容选择器、标题层级、段落、嵌套列表、代码、admonition、定义项、表格、blockquote、图片 alt 和页面噪声。
+  - 三个异常夹具固定缺少主内容、缺少 `h1` 和重复 anchor 的 `DOCUMENT_PARSE_ERROR` 验收条件。
+  - 每个 HTML 配套固定 JSON 期望并保存规范化文本 SHA-256；有效期望包含页面标题、canonical URL 和完整 Block 序列。
+  - 固定父子元素去重、admonition 聚合、表格行连接、标题路径和段落顺序规则；记录为 D-014。
+  - `docs/ARCHITECTURE.md` 更新为 v0.3。
+  - 新增 `tests/test_fixture_contracts.py`；全部 38 项离线测试通过，其中 11 项验证夹具来源标记、哈希、期望完整性、顺序、类型、代码保真、异常合同和噪声排除。
+  - 本步仍未实现 HTML 解析、真实文件读取边界、ID 生成、Chunk 切分、Embedding 或索引。
+  - 创建 `DocumentParseError`，稳定错误码为 `DOCUMENT_PARSE_ERROR`。
+  - 创建不持久化的 `ParsedDocument` 和 `ParsedContentBlock`，隔离 HTML 解析结果与真实来源身份。
+  - 创建 `PythonDocsHtmlParser.parse(html: str)`；解析器无路径、URL、文件系统或网络读取能力。
+  - 使用 Beautiful Soup `html.parser` 实现唯一主内容选择、canonical URL 提取、页面噪声删除、重复 anchor 检查、`h1` 标题校验、标题路径和固定 Block 映射。
+  - 两个有效夹具逐字段匹配预先固定的 JSON；未修改期望结果迁就实现。
+  - 三个异常夹具分别稳定返回缺少主内容、缺少 `h1` 和重复 anchor 的 `DOCUMENT_PARSE_ERROR`。
+  - 解析器额外拒绝空 HTML，并保留标题层级跳跃警告。
+  - 解析器边界记录为 D-015；`docs/ARCHITECTURE.md` 更新为 v0.4。
+  - 新增 `tests/test_html_parser.py`；全部 44 项离线测试通过。
+  - 本步未实现真实文件读取、manifest 绑定、持久化 ID、Chunk 切分、Embedding 或索引。
+  - 实现 `SingleDocumentIngestor`：限制允许根目录，拒绝路径穿越、符号链接或 junction 逃逸和非普通文件，严格读取 UTF-8 HTML，并校验实际 SHA-256、标题与 canonical URL。
+  - 固定 Snapshot ID 与 Block ID 的 UUIDv5 输入；清洗后内容哈希使用规范 JSON，同一输入可复现。
+  - 实现安全 `load_source_manifest()`：只读取允许根目录内的 UTF-8 `.json` 相对路径，并执行严格 JSON 与 Pydantic 校验。
+  - 实现 `CorpusIngestor` 整批内存预检：任一文档失败则整批失败；预检不写索引、不调用 Embedding 或生成模型。
+  - 固定 manifest 规范哈希与 Corpus ID；数组顺序不影响语料身份，解析器 schema 变化会改变语料身份。
+  - 重复 manifest 返回 `UNCHANGED` 前仍重新验证真实文件；同一 `source_id` 对应新哈希时失败，内容更新必须使用新 `source_id`。
+  - 新增单文档、manifest 读取、批量原子性、重复导入和冲突测试；共 71 项离线测试通过。
+  - Windows 当前环境无法创建真实 junction；测试覆盖了真实路径包含检查，并在可创建符号链接时走真实链接，否则用受控替身验证解析后逃逸拒绝。真实 junction 仍需后续手工验收。
+  - `docs/ARCHITECTURE.md` 更新为 v0.5；导入身份与批量规则记录为 D-016、D-017。
+  - 离线导入实现完成时尚未实现 Chunk 切分、Embedding、Qdrant 持久化或问答链路，且当时未下载模型、真实语料或调用真实 API。
+  - 学习者批准新增 `documentation_release` 字段，以及25个正文页面和1个许可证据页面的精确下载方案。
+  - `SourceManifestEntry` 与 `DocumentChunk` 新增必填精确发布版；系列与补丁版本必须一致，测试覆盖格式错误和跨系列错误。
+  - 创建 `data/sources/source-catalog.json`，固定25个正文 URL、来源身份、精确版本和本地安全路径。
+  - 创建安全获取工具：只允许 `docs.python.org` HTTPS、同域重定向、`text/html`、10 MiB单页上限，并拒绝覆盖已有文件。
+  - 获取 Python `3.14.6` 正文22页、Python `3.13.14` 正文3页及1份官方许可证据；总计3,581,318字节。
+  - 原始 HTML 与许可证据保存在 Git 忽略目录；获取报告、正式 Manifest、清单和许可说明可追踪。
+  - 真实简体中文页面使用语言无关 `/3/` canonical；新增严格路径等价规则和回归测试，不接受任意同域页面。
+  - 真实 Manifest 严格加载成功；25份文档整批离线导入成功，得到5003个内容 Block。
+  - 使用同一活动 Manifest 重复导入返回 `UNCHANGED`，并重新读取验证全部真实文件。
+  - Manifest SHA-256：`60258d7589162244cce9dc24ef79a26fe7f1cee1d05af5692f228d614947ae43`。
+  - Corpus ID：`5386ccee-bb5f-5417-b70a-33395abe9669`。
+  - 数据合同、canonical 和真实语料决定记录为 D-018～D-020；来源说明见 `docs/CORPUS_SOURCES.md`。
+  - 全部79项普通测试离线通过；真实语料验证命令独立执行，不属于普通测试。
+  - 未下载 Embedding 模型，未调用 MiMo 或其他真实 API，未写 Qdrant 索引。
+  - 学习者接受 `docs/CHUNKING_DESIGN.md` v0.1。
+  - 真实输入分析确认5003个 Block、531个章节；Block 中位60字符、P99 517字符，13个 Block 超过800字符，最长代码块8705字符。
+  - 新增严格不可变 `ChunkingConfig`，固定字符上限、重叠、分隔符、最小拆分位置和章节前缀配置。
+  - `DocumentChunk` 新增 chunker schema、配置哈希和首尾 Block 内0-based半开区间偏移。
+  - 新增稳定 `CHUNKING_ERROR`。
+  - 创建六类自编 Chunk JSON 夹具，固定合并与重叠、长文本、长代码、超长单行、配置敏感身份和错误顺序规则。
+  - 新增夹具合同测试，验证范围可重建、章节一致、字符上限、代码保真、完整覆盖和预期错误。
+  - Chunk 关键决定记录为 D-021。
+  - 实现 `BlockSegment` 和单 Block 确定性分段：普通文本按换行、句末、空白、硬边界；代码按完整行、超长单行硬边界。
+  - 固定夹具逐字段验证超长文本、代码和单行代码的半开区间、文本保真与完整覆盖。
+  - 全部5003个真实 Block 分段成功，生成5029个片段；最大片段800字符。
+  - 真实8705字符代码块发现并修复换行搜索上界多取一位的错误；新增专门回归测试。
+  - 实现 `DocumentChunker`：章节内贪心合并、完整 Block 重叠、真实章节前缀、配置哈希、内容哈希和稳定 UUIDv5 Chunk ID。
+  - 四类成功夹具逐字段匹配完整 `DocumentChunk` 期望；错误顺序固定返回 `CHUNKING_ERROR`。
+  - 25份真实文档生成974个 Chunk；长度中位580、P90 784、P95 793、P99 799、最大800。
+  - 286个真实 Chunk 使用同章节完整 Block 重叠；全部 Chunk ID 唯一。
+  - Chunk 设计更新为 v0.2，架构更新为 v0.6；实现与基线结果记录为 D-022、D-023。
+  - 全部114项普通测试离线通过。
+  - 未下载或加载 Embedding 模型，未写 Qdrant 索引，未调用真实 API。
+  - 核实已安装 `fastembed==0.8.0`：`BAAI/bge-small-zh-v1.5` 注册维度为512、最大输入512 tokens、输出做L2归一化，并提供 `query_embed()`、`passage_embed()` 和 `local_files_only=True`。
+  - 核实 FastEmbed tokenizer 默认静默截断；当前800字符 Chunk 不能直接视为满足512 tokens，真实模型到位后必须先做无截断 tokenizer 审计。
+  - 核实 `qdrant-client==1.18.0` 本地模式支持 alias，但本地实现逐条修改后保存，不作为首版失败可回滚的原子激活依据。
+  - 创建 `docs/EMBEDDING_INDEX_DESIGN.md` v0.1 待确认草案，提出模型 revision 与资产哈希、64条批次、向量校验、`payload-v1`、索引 Manifest、原子指针、重复构建和离线验收规则。
+  - 本步只读取已安装包源码和写设计草案；未实例化或下载 Embedding 模型，未生成真实向量，未写 Qdrant 索引，未访问网络。
+  - 学习者批准 `docs/EMBEDDING_INDEX_DESIGN.md` 的六项基线；文档更新为 accepted v0.2。
+  - 新增严格不可变 `EmbeddingConfig`，固定 FastEmbed、BGE模型与实际来源、完整commit SHA、模型资产哈希、MIT许可、安全缓存路径、512维、512 tokens、64条批次、Cosine和无手工指令。
+  - 新增 `IndexSpecification`、`IndexManifest`、`ActiveIndexPointer` 和 `ChunkPayload`；未知字段、错误路径、point数不一致和不支持的payload schema均拒绝。
+  - 新增 `EmbeddingService` 与 Provider/TokenCounter边界；全量token预检先于Provider调用，Chunk稳定排序后分批处理。
+  - 向量统一转 `float32` 并校验输出数量、维度、有限值和非零范数，再L2归一化；问题与文档使用同一向量规则。
+  - 新增模型配置规范哈希、索引 fingerprint、UUIDv5 `index_id`、安全collection名称和 `payload-v1` 转换。
+  - `payload-v1` 保留Chunk、版本、正文、章节、来源URL、安全相对路径和内容哈希；不包含 `embedding_text`、原始HTML、绝对路径、许可重复项或模型输出元数据。
+  - 新增不可变build Manifest和 `active-index.json` 原子替换；Manifest与指针逐字段交叉校验，路径必须留在索引根目录。
+  - 模拟最终 `os.replace()` 失败时，旧活动指针字节完全不变；失败被稳定映射为 `INDEX_BUILD_ERROR`。
+  - 新增自编3维 Fake Embedding固定夹具；覆盖两批顺序、归一化、513 tokens预检、数量缺失、维度错误、`NaN`、`Inf` 和零向量。
+  - Qdrant `:memory:` 写入与检索通过；固定查询命中预期首位，Python `3.13` 过滤只返回3.13 point，payload可重建真实引用URL。
+  - Embedding与索引决定记录为 D-024～D-026；架构更新为 v0.7。
+  - 全部139项普通测试离线通过；`compileall` 和 `git diff --check` 通过。
+  - 本阶段未下载或实例化BGE模型，未生成真实向量，未写持久化Qdrant索引，未访问网络，未调用MiMo或其他真实API。
+  - 学习者另行批准查询模型在线revision、下载约90 MB必需资产并执行真实tokenizer审计；真实向量、持久化索引和MiMo API不在该批准范围。
+  - Hugging Face官方元数据确认实际仓库 `Qdrant/bge-small-zh-v1.5`、完整revision `46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59` 和MIT许可。
+  - 创建受限模型获取脚本，固定仓库、revision、许可、5个文件allowlist和预期大小；下载只写入Git忽略的 `data/models/fastembed/`。
+  - 下载5个必需模型文件共95,221,432字节；主 `model_optimized.onnx` 为94,781,076字节。
+  - 生成逐文件SHA-256和规范模型资产SHA-256 `dea3d1b18367c7734c34cdcdc01d4cc78ccf8f591fceb7e74d6e272e8f8e4133`；报告保存为 `data/model-assets.json`。
+  - 使用FastEmbed同一tokenizer，确认原配置启用512截断后显式关闭截断和padding，逐条审计974个当前 `embedding_text`。
+  - 当前Chunk token中位329、P90 507、P95 544、P99 606、最大694；94个超过512，审计状态为failed。
+  - 按合同停止：未加载ONNX、未生成真实向量、未写Qdrant索引。
+  - 比较字符上限后，`500/120/400` 首次零超限；进一步比例比较推荐 `520/80/260`，生成1359个Chunk、349个重叠Chunk，token中位241、P99 407、最大460、零超限。
+  - 模型资产和真实tokenizer边界记录为D-027；详细报告见 `data/embedding-token-audit.json` 与 `data/chunk-token-config-analysis.json`。
+  - 新增3项报告合同测试；全部142项普通测试离线通过，`compileall` 和 `git diff --check` 通过。
+  - Git边界检查确认95 MB模型本体被忽略；模型资产、token审计和配置分析三个小型JSON报告可提交。
+  - 学习者批准把生产Chunk基线从失败的 `800/120/400` 调整为 `520/80/260`。
+  - 新增唯一 `BASELINE_CHUNKING_CONFIG`；分析与token审计脚本改为复用该对象，防止多个脚本数字漂移。
+  - 小型Chunk语义夹具保持原测试配置；新增生产默认配置及固定配置哈希测试。
+  - 新基线把5003个Block拆为5082个片段，生成1359个Chunk；字符中位416、P90 508、P95 514、P99 519、最大520。
+  - 349个新Chunk使用完整Block重叠；全部Chunk ID唯一。
+  - 新配置哈希：`ff8d07e2916a175093ce9c06920013dda95e6ce61036ece84ac34e614c9b28b4`。
+  - 使用固定BGE tokenizer关闭截断复验通过：token中位241、P90 346、P95 369、P99 407、最大460，超过512为0。
+  - 新审计报告 `data/embedding-token-audit-v2.json` 状态为passed；旧失败报告继续保留。
+  - 新Chunk决定记录为D-028；D-023标记为被D-028取代；Chunk设计更新为v0.3，架构更新为v0.8。
+  - 全部144项普通测试离线通过；`compileall` 和 `git diff --check` 通过。
+  - 本阶段仍未运行ONNX、未生成真实向量、未写持久化Qdrant索引、未调用MiMo或其他API。
+  - 学习者批准加载固定本地ONNX、生成1359个真实向量并构建持久化Qdrant索引；MiMo仍不在范围。
+  - 新增模型资产核心校验与FastEmbed本地适配器；强制 `specific_model_path`、`local_files_only=True`、`cuda=False` 和无截断token计数。
+  - 新增持久化Qdrant构建器：新collection全量构建、64条upsert、物理验收、不可变Manifest和原子活动指针。
+  - Fake持久化测试覆盖成功激活、Embedding失败不激活、维度不匹配、重复构建 `UNCHANGED` 和无Provider活动索引复验。
+  - 首次真实构建在payload转换时安全失败：一个代码Chunk以换行结尾，旧 `ChunkPayload.text` 错误要求trim；此时已完成Embedding但尚未写入point和活动指针。
+  - 修正payload正文合同为“非空但不裁剪”，新增代码尾换行保真回归；失败collection保留为0 point非活动构建。
+  - 第二次真实离线构建39.052秒完成，为1359个Chunk生成512维 `float32` 归一化向量并写入活动collection。
+  - Index ID：`614f6c23-7c35-5832-8086-c29651d60866`；fingerprint：`ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd`。
+  - 物理验收通过：1359 point、1359 payload、1359唯一ID；self-query约1.0；Python 3.13过滤通过。
+  - 相同规格真实复验返回 `UNCHANGED`、`embedded_count=0`，未构造真实Embedding Provider，首份构建报告未覆盖。
+  - 索引本体约10.9 MB，位于Git忽略的 `data/indexes/`；`data/index-build-report.json` 可提交。
+  - 真实索引决定记录为D-029；Embedding/索引设计补充真实结果，架构更新为v0.9，依赖状态更新。
+  - 全部152项普通测试离线通过；`compileall` 和 `git diff --check` 通过。
+  - 本阶段全程离线，未调用MiMo或其他API；未删除旧或失败collection。
+  - 新增严格 `RetrievalQuery`：问题非空、去首尾空白、最多500字符；版本仅允许3.13、3.14或未指定；固定 `top_k=5`。
+  - 新增 `RetrievalConfig`、`RetrievedChunk` 和 `RetrievalResult`；结果绑定活动index/build、连续rank、真实Cosine分数、完整payload、程序生成引用URL和检索原因。
+  - 查询前校验活动Manifest、collection存在性、Cosine配置、向量维度和point数；返回point ID、payload、Chunk配置和版本过滤不一致时失败。
+  - 新增稳定 `RETRIEVAL_INPUT_ERROR`、`RETRIEVAL_ERROR` 和评估合同；检索服务与普通测试全程离线。
+  - 创建 `data/evaluation/retrieval-v1.json`：15个人工从已验证语料选证据的问题，绑定活动索引fingerprint和真实Chunk ID，覆盖Python 3.13/3.14精确过滤。
+  - 稠密基线命中10/15，`Recall@5=66.7%`，未达到80%；报告为 `data/retrieval-evaluation-report.json`。
+  - BGE中文查询指令对固定集无收益；仅移除版本过滤已覆盖的冗余版本词后为11/15。
+  - 按PRD的基线失败优化路径，实现透明“稠密+用户原文代码标识符”通道：最多2条标识符匹配结果，再用稠密结果补满5条；不生成或改写查询。
+  - 优化结果命中13/15，`Recall@5=86.7%`，达到80%目标；报告为 `data/retrieval-evaluation-optimized-report.json`。
+  - 两个失败样例继续保留：未显式出现 `__name__` 的模块名称属性问题，以及 `zip(*matrix)` 转置问题。
+  - 检索与评估决定记录为D-030、D-031；详细说明见 `docs/RETRIEVAL_EVALUATION.md`；架构更新为v0.10。
+  - 创建独立24题拒答校准集：12题语料内可回答、12题应拒答，覆盖缺失文档、第三方库、其他语言、无意义问题和提示注入。
+  - 自动比较全部相邻分数阈值；实验阈值 `0.6187245534246643` 在校准集达到可回答召回100%、拒答准确率91.7%。
+  - 新增严格 `EvidencePolicy`、`EvidenceAssessment`、校准报告与显式证据门；证据分数定义为返回5条中的最大Cosine分数。
+  - 创建未参与调参的全新20题锁定评估集；同一阈值仅达到可回答召回70%、拒答准确率70%、平衡准确率70%，未达标。
+  - 保留6个锁定失败：3个语料内问题被误拒，3个缺少完整API语料的问题被误答。
+  - 单一分数阈值正式否决为生产规则；实验策略改名 `EXPERIMENTAL_SCORE_ONLY_POLICY`，证据门不提供默认策略。
+  - 拒答阈值失败决定记录为D-032；完整说明见 `docs/EVIDENCE_CALIBRATION.md`；架构更新为v0.11。
+  - 当前全部168项普通测试离线通过；未调用MiMo或其他API。
+  - 学习者选择方向C：使用MiMo同时完成结构化证据充分性判断与回答生成，真实API总费用上限人民币5元。
+  - 新增P1独立 `.env.example`；真实 `.env` 已被Git忽略，配置使用 `SecretStr`，固定 `mimo-v2.5`、HTTPS和不超过60秒的超时。
+  - 新增MiMo适配器：JSON Object输出、最多800 completion tokens、禁用thinking、无自动重试；映射超时、网络和HTTP错误，并读取token usage。
+  - 新增严格 `ModelAnswer`、`AnswerResult` 和程序绑定 `AnswerCitation`；模型只选择Chunk ID，不能生成URL、版本、章节、anchor、路径或摘录。
+  - 新增 `INVALID_MODEL_JSON`、`MODEL_OUTPUT_ERROR` 和 `INVALID_CITATION_ID`；未知引用、错误状态组合和伪造元数据全部安全失败。
+  - 当前全部203项普通测试离线通过；`compileall` 和 `git diff --check` 通过。
+  - 真实烟雾测试成功：1次调用、1830 input tokens、143 output tokens；回答状态 `answered`，2个引用均通过本次检索子集校验并绑定真实Python 3.14官方URL。
+  - 创建新锁定集 `answering-v1`：5题应回答、5题应拒答，绑定活动索引fingerprint，目标为两类准确率均不低于80%且引用绑定有效率100%。
+  - 第一批5个应回答题全部返回 `answered`，当前可回答召回为5/5；评估共9493 input tokens、662 output tokens。
+  - 连同烟雾测试，当前累计6次真实调用、12128 tokens；无自动重试。
+  - 第二批5个应拒答题尚未调用：付费操作保护要求先取得可信累计费用；官方公开页未能核实单价，只读控制台检查又被账户安全策略阻止。
+  - 学习者确认当时实际扣费0.01元，并批准继续剩余调用；`answering-v1` 最终可回答召回100%、拒答准确率40%、引用绑定有效率100%，未达标。
+  - 单次诊断确认空拒答正文触发 `answer:string_too_short`；错误诊断只保存字段位置、类型和usage，不保存原始模型输出。
+  - usage统计补充完整性字段；v1只有7/10个响应usage可恢复，不能把13524 known tokens误称为全部消耗。
+  - 拒答现在允许空正文，由程序替换固定拒答文案；`answered/conflict` 仍严格要求正文和引用。
+  - `answering-v2` 可回答召回80%、拒答准确率60%、引用绑定有效率100%，未达标；失败含缺少固定schema版本和1次网络错误。
+  - 固定schema版本、空拒答正文和空拒答引用改为程序安全默认值；MiMo请求固定 `temperature=0`。
+  - 新锁定集 `answering-v3` 达标：可回答召回80%、拒答准确率100%、引用绑定有效率100%。
+  - v3共10次调用，17144 input tokens、624 output tokens、17768 total tokens，usage完整。
+  - 人工逐条核对v3的4个实际回答，全部由引用原文直接支持，忠实度4/4。
+  - 回答阶段决定记录为D-033、D-034；完整说明见 `docs/ANSWERING_EVALUATION.md`；架构更新为v0.13。
+  - 新增 `CitedRagService`，只负责组合严格检索和回答服务。
+  - 新增本地 `ask` CLI：固定本地资产和活动索引，只接受问题及可选Python版本，输出验证后的JSON。
+  - CLI配置、领域错误和意外错误使用短稳定JSON；不泄露Key、供应商响应或异常详情。
+  - 普通CLI测试注入假应用，不加载模型、不访问Qdrant、不调用MiMo。
+  - 真实CLI端到端问答成功：返回正确 `ensure_ascii=False` 结论、1个真实Python 3.14引用和1956 total tokens。
+  - CLI决定记录为D-035；README补充当前运行命令、指标和限制；架构更新为v0.14。
+  - 阶段验收通过：全部209项普通测试离线通过；`compileall`、`pip check` 和 `git diff --check` 通过。
+  - Git安全检查确认 `.env`、95 MB模型资产、原始HTML和约10.9 MB Qdrant索引均被忽略。
+  - 发现新环境复现阻塞：Git保留获取报告和哈希，但不含原始HTML；`docs.python.org/zh-cn/3.14/` 与 `/3.13/` 系列URL会随补丁版更新，未来重新下载不能保证得到当前3.14.6/3.13.14字节。
+  - 学习者批准方案A：提交确定性压缩语料快照和离线恢复脚本，展开后的原始HTML继续忽略。
+  - 真实26文件共3,581,318字节压缩为580,230字节；归档SHA-256为 `c1d3fb0a04968f8810fe71efede103c04d28bb2499ac53e690f5bbbc27d1c2a0`。
+  - 新增归档整体/逐文件哈希、精确成员集合、路径穿越、符号链接、加密、覆盖和临时恢复边界。
+  - 5项语料制品测试通过；真实归档已在临时目录完整恢复并验证26个文件。
+  - 模型获取和索引构建新增显式 `--restore`：恢复固定资产/本地索引，同时保留已提交历史报告。
+  - README新增新环境依赖安装、语料离线恢复、模型固定恢复、索引离线重建和CLI命令。
+  - 语料制品决定记录为D-036；架构更新为v0.15。
+  - 初始版本比较真实评估为0/3；旧集合和报告原样保留，确认根因是单路Top-5缺少双版本平衡证据。
+  - 实现显式双版本平衡检索：分别按3.13、3.14过滤检索，再以2+2+1合并5条证据；新增3项服务测试。
+  - 学习者批准方案A：显式版本比较证据充分时使用 `answered` 并标版本；无法安全化解的矛盾才使用 `conflict`。
+  - 新版本比较集3题全部给出正确、明确标版本的回答；人工复核3/3，引用绑定3/3有效；旧错误状态判定0/3报告不覆盖。
+  - 新增真实结果CLI展示图和确定性渲染脚本；图片SHA-256为 `213b64f66a6a5dfe0b2a7301c03882b1ad561703cd39045f40d11602ab70c471`。
+  - 新增 `docs/DEMO.md` 五分钟演示、`LLH_Study.md`、`docs/FINAL_CHECKLIST.md`。
+  - 最终验收：全部217项普通测试离线通过；`compileall`、`pip check`、`git diff --check` 和Git忽略边界通过。
+  - 最终架构版本为v0.17；版本语义与双版本检索决定记录为D-037、D-038。
+  - 学习者批准增加 Streamlit 求职展示版；完整 CPython 3.14 固定依赖 dry-run 解析79个版本，无冲突，安装 `streamlit==1.60.0` 后 `pip check` 通过。
+  - 新增 `streamlit_app.py`、`cited_rag.ui` 和本地主题配置；页面复用现有问答服务，首次加载不初始化BGE、Qdrant或MiMo。
+  - 新增3项Streamlit AppTest，覆盖无副作用首屏、带引用回答和安全网络错误；普通测试不访问网络。
+  - 真实浏览器完成桌面与窄屏验收：无横向溢出，示例填充与版本切换正确，官方引用锚点可回查，控制台无错误。
+  - 保存真实带引用回答截图 `docs/images/streamlit-cited-answer.png`，SHA-256为 `6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5`。
+  - 浏览器验收产生1次已授权真实MiMo问答，无自动重试；没有追加其他付费调用。
+  - Streamlit阶段最终验收：全部220项普通测试离线通过；`compileall`、`pip check`、`git diff --check` 和Git忽略边界通过。
+  - PRD更新为v0.2，架构更新为v0.18；Streamlit展示层决定记录为D-039。
+  - 新增仓库根目录 `start-p1-web-ui.cmd`；双击即可使用P1本地`.venv`启动Streamlit并自动打开浏览器，缺少虚拟环境时安全停止并提示README；已用8502本地端口实际启动验证。
+  - 首次用户实测暴露Streamlit邮箱激活提示会阻塞启动；增加 `server.showEmailPrompt=false` 项目配置与脚本参数，首次运行无需输入邮箱。
 - 下一步：
-  - 设计文档、章节、段落、Chunk 和来源快照的真实元数据字段。
-  - 定义 HTML 清洗边界、路径安全规则和固定测试夹具。
-  - 学习者参与确认数据合同与首批验收样例后，再实现最小导入链路。
-  - 模型下载和真实 API 调用继续单独审批。
+  - P1已完成；进入P2前由学习者明确启动。
 - 阻塞：
-  - 无。文档导入与数据模型设计不需要下载模型或调用真实 API。
+  - 无。
