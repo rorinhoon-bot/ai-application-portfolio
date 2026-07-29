@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.1
+- 版本：v0.2
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：尚未实现；依赖、模型和真实语料均未选择或安装
+- 实现状态：最小状态合同与需求确认暂停路径已实现；完整检索、写作、审校和导出尚未实现
 
 ## 1. 架构目标
 
@@ -68,6 +68,27 @@ flowchart TD
 
 `confirm_requirements` 和 `confirm_report` 使用 LangGraph 中断语义。进入节点前保存 checkpoint；恢复时必须提供同一 `run_id`、状态版本和合法人工动作。
 
+### 3.1 当前已实现切片
+
+```mermaid
+flowchart TD
+    A["START"] --> B["validate_request"]
+    B --> C["confirm_requirements"]
+    C --> D["await_human_requirements: interrupt"]
+    D -->|approve| E["plan_research: deterministic placeholder"]
+    D -->|edit| B
+    D -->|reject| F["REJECTED"]
+    D -->|cancel| G["CANCELLED"]
+    E --> H["END"]
+    F --> H
+    G --> H
+```
+
+- 完整需求、缺候选和缺评价维度都进入持久化 `NEEDS_HUMAN`，不自动补猜。
+- `confirm_requirements` 在中断节点前写入等待状态、revision 和请求哈希。
+- `await_human_requirements` 只接受严格、revision 绑定的 `approve`、`edit`、`reject`、`cancel`。
+- `approve` 只到 `PLANNED`；当前没有检索、模型、报告或导出副作用。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -93,6 +114,26 @@ flowchart TD
 - 完整敏感供应商请求和响应。
 - 模型生成的任意本地路径、命令或可执行内容。
 - 未进入允许资料快照的私有原文。
+
+### 4.1 当前 `runtime-state-v1`
+
+当前实现把数据分成四类：
+
+1. 可持久化业务状态：
+   - 身份和版本：`schema_version`、`graph_version`、`run_id`、`thread_id`。
+   - 路由：`status`、`current_node`、缺失需求字段。
+   - 需求：`raw_request`、`confirmed_requirements`、人工确认 revision 和请求哈希。
+   - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
+   - 后续占位：`evidence_ids`、安全 `errors`、报告 revision/hash、`artifact_id`、`idempotency_key`。
+2. 运行时依赖：
+   - 编译后的 LangGraph、SQLite 连接/checkpointer、模型客户端、工具执行器和密钥提供器。
+   - 这些对象由运行环境创建或注入，不是业务状态。
+3. 密钥和敏感响应：
+   - API Key、Cookie、鉴权头、连接字符串、完整供应商请求/响应和未脱敏堆栈一律禁止进入 checkpoint。
+4. 不可序列化或不应持久化对象：
+   - 打开的文件、socket、数据库连接、线程锁、回调、模型 SDK 响应对象和任意可执行对象。
+
+所有初始输入先经严格 Pydantic 合同校验，再提交给图。节点接收统一 `RuntimeState`，只返回自己负责的字段增量；SQLite checkpoint 中只出现基础类型、列表和映射。计数都有硬上限，未知字段和非法字段组合被拒绝。
 
 ## 5. 节点职责
 

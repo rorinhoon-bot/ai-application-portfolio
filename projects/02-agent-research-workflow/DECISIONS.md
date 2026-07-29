@@ -138,3 +138,23 @@
 - 决定：需求不完整、证据不足或确定性工具失败时，金标准的 `allowed_candidates` 可以为空。
 - 原因：强迫失败路径给出候选会奖励无依据推荐，违反“证据不足时停止”原则。
 - 结果：正常完成案例仍固定一个允许候选；失败或暂停案例要求不产生推荐和最终制品。
+
+## D-018：checkpoint 只保存版本化业务状态
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：最小运行合同固定为 `runtime-state-v1`；Pydantic 拒绝未知字段、非法组合和越界计数，节点只返回自己负责的基础类型状态增量。
+- 原因：checkpoint 应保存恢复决策所需业务事实，不应序列化进程内对象或扩大敏感数据面。
+- 保存：`run_id/thread_id`、状态和当前节点、原始与确认需求、人工确认 revision、有限循环计数、证据 ID、安全错误摘要、报告 revision/hash、`artifact_id` 和幂等键。
+- 不保存：编译图、SQLite 连接/checkpointer、模型客户端、工具执行器、密钥提供器、API Key、Cookie、鉴权头、连接字符串、完整供应商请求/响应或未脱敏堆栈。
+- 结果：严格 msgpack checkpoint 只接收项目自有基础类型和严格合同；秘密形态错误摘要与未知敏感字段在持久化前被拒绝。
+
+## D-019：需求暂停使用预写等待状态和 revision 绑定
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：`validate_request` 只判定缺失项；`confirm_requirements` 先写入 `NEEDS_HUMAN`、当前 revision 和请求哈希；`await_human_requirements` 再调用 LangGraph `interrupt()`。
+- 原因：`interrupt()` 恢复时会从节点开头重放。暂停前先持久化等待状态，进程重启后仍能判断人工决定对应哪个请求版本。
+- 路由：批准只进入确定性 `plan_research` 占位；编辑回到校验并增加 revision；拒绝和取消进入稳定终态。
+- 安全：人工决定必须同时匹配 `run_id`、`thread_id`、revision 和请求哈希；旧批准不能授权编辑后的需求。
+- 边界：本阶段不执行检索、模型、写作、审校、导出或其他外部副作用。

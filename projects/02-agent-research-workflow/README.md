@@ -20,11 +20,13 @@
 - P2 用户场景、PRD 和架构基线已形成。
 - P2 独立 `.venv`、固定依赖和 SQLite checkpoint 恢复验证已完成。
 - 10 份原创资料、40 个稳定证据章节、12 个固定案例和金标准已冻结。
-- 当前普通测试：`13 passed`；测试默认阻断网络。
+- 严格 `runtime-state-v1` 状态合同和需求确认 Human-in-the-loop 路径已实现。
+- 显式最小图支持完整/缺字段暂停、批准、编辑、拒绝、取消和 SQLite 恢复；批准后只到确定性规划占位状态。
+- 当前普通测试：`33 passed`；测试默认阻断网络。
 - 需求见 `docs/PRD.md`，状态图和安全边界见 `docs/ARCHITECTURE.md`。
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
-依赖与 P2 独立 `.venv` 已完成验证；尚未下载真实研究语料、调用模型 API 或实现完整工作流。离线环境检查：
+依赖与 P2 独立 `.venv` 已完成验证；尚未下载真实研究语料、调用模型 API，尚未实现检索、写作、审校或导出。离线环境检查：
 
 ```powershell
 $env:LANGGRAPH_STRICT_MSGPACK="true"
