@@ -17,11 +17,19 @@ from agent_research.models import (
     ResearchInput,
     Sha256,
     StrictModel,
+    ToolOutcomeKind,
+)
+from agent_research.tool_contracts import (
+    MAX_TOOL_ATTEMPTS,
+    SOURCE_SNAPSHOT_V1,
+    SourceSnapshotIdV1,
+    ToolCall,
+    ToolResult,
+    compute_tool_call_key,
 )
 
 
 MAX_CONFIRMATION_REVISIONS = 32
-MAX_TOOL_ATTEMPTS = 3
 MAX_RETRIEVAL_ROUNDS = 2
 MAX_REVIEW_ROUNDS = 2
 MAX_HUMAN_REVISIONS = 2
@@ -40,6 +48,9 @@ class RuntimeStatus(StrEnum):
     NEEDS_HUMAN = "NEEDS_HUMAN"
     REQUIREMENTS_CONFIRMED = "REQUIREMENTS_CONFIRMED"
     PLANNED = "PLANNED"
+    TOOL_READY = "TOOL_READY"
+    TOOL_RETRY = "TOOL_RETRY"
+    EVIDENCE_READY = "EVIDENCE_READY"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
@@ -50,6 +61,8 @@ class RuntimeNode(StrEnum):
     CONFIRM_REQUIREMENTS = "confirm_requirements"
     AWAIT_HUMAN_REQUIREMENTS = "await_human_requirements"
     PLAN_RESEARCH = "plan_research"
+    EXECUTE_TOOLS = "execute_tools"
+    RETRY_TOOL = "retry_tool"
     END = "end"
 
 
@@ -83,6 +96,7 @@ class RuntimeState(StrictModel):
     )
     run_id: Identifier
     thread_id: Identifier
+    source_snapshot_id: SourceSnapshotIdV1 = SOURCE_SNAPSHOT_V1
     status: RuntimeStatus = RuntimeStatus.NEW
     current_node: RuntimeNode = RuntimeNode.VALIDATE_REQUEST
     raw_request: ResearchInput
@@ -97,6 +111,12 @@ class RuntimeState(StrictModel):
         Field(max_length=2),
     ] = ()
     last_human_action: HumanActionKind | None = None
+    pending_tool_call: ToolCall | None = None
+    last_tool_result: ToolResult | None = None
+    tool_call_budget: Annotated[
+        int,
+        Field(ge=1, le=MAX_TOOL_ATTEMPTS),
+    ] = MAX_TOOL_ATTEMPTS
     tool_attempts: Annotated[int, Field(ge=0, le=MAX_TOOL_ATTEMPTS)] = 0
     retrieval_rounds: Annotated[
         int,
@@ -141,6 +161,8 @@ class RuntimeState(StrictModel):
     def validate_state_consistency(self) -> Self:
         if len(self.evidence_ids) != len(set(self.evidence_ids)):
             raise ValueError("evidence_ids must be unique")
+        if self.tool_attempts > self.tool_call_budget:
+            raise ValueError("tool_attempts cannot exceed tool_call_budget")
 
         confirmed = self.confirmed_requirements is not None
         hashed = self.confirmation_request_hash is not None
@@ -168,6 +190,57 @@ class RuntimeState(StrictModel):
 
         if self.status is RuntimeStatus.PLANNED and self.plan_id is None:
             raise ValueError("PLANNED requires plan_id")
+
+        tool_statuses = {
+            RuntimeStatus.TOOL_READY,
+            RuntimeStatus.TOOL_RETRY,
+            RuntimeStatus.EVIDENCE_READY,
+        }
+        if self.status in tool_statuses:
+            if self.pending_tool_call is None:
+                raise ValueError("tool state requires pending_tool_call")
+            if self.confirmed_requirements is None or self.plan_id is None:
+                raise ValueError("tool state requires confirmed plan")
+
+        if self.last_tool_result is not None:
+            if self.pending_tool_call is None:
+                raise ValueError("tool result requires pending_tool_call")
+            expected_key = compute_tool_call_key(
+                self.pending_tool_call,
+                self.source_snapshot_id,
+            )
+            if self.last_tool_result.logical_call_key != expected_key:
+                raise ValueError("tool result logical_call_key mismatch")
+
+        if self.status is RuntimeStatus.TOOL_READY:
+            if self.current_node is not RuntimeNode.EXECUTE_TOOLS:
+                raise ValueError("TOOL_READY must enter execute_tools")
+
+        if self.status is RuntimeStatus.TOOL_RETRY:
+            if self.current_node is not RuntimeNode.RETRY_TOOL:
+                raise ValueError("TOOL_RETRY must enter retry_tool")
+            if (
+                self.last_tool_result is None
+                or self.last_tool_result.outcome
+                is not ToolOutcomeKind.TRANSIENT_ERROR
+                or self.tool_attempts >= self.tool_call_budget
+            ):
+                raise ValueError(
+                    "TOOL_RETRY requires retryable result and remaining budget"
+                )
+
+        if self.status is RuntimeStatus.EVIDENCE_READY:
+            if self.current_node is not RuntimeNode.END:
+                raise ValueError("EVIDENCE_READY must stop at end")
+            if (
+                self.last_tool_result is None
+                or self.last_tool_result.outcome is not ToolOutcomeKind.SUCCESS
+            ):
+                raise ValueError("EVIDENCE_READY requires successful tool result")
+            if not set(self.last_tool_result.evidence_ids) <= set(
+                self.evidence_ids
+            ):
+                raise ValueError("successful evidence must enter runtime state")
 
         if self.status in {
             RuntimeStatus.REJECTED,

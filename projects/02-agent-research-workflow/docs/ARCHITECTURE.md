@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.2
+- 版本：v0.3
 - 状态：accepted design baseline
 - 日期：2026-07-29
-- 实现状态：最小状态合同与需求确认暂停路径已实现；完整检索、写作、审校和导出尚未实现
+- 实现状态：最小状态、需求确认和受控假工具执行切片已实现；证据评估、写作、审校和导出尚未实现
 
 ## 1. 架构目标
 
@@ -89,6 +89,24 @@ flowchart TD
 - `await_human_requirements` 只接受严格、revision 绑定的 `approve`、`edit`、`reject`、`cancel`。
 - `approve` 只到 `PLANNED`；当前没有检索、模型、报告或导出副作用。
 
+### 3.2 当前工具执行切片
+
+```mermaid
+flowchart TD
+    A["人工批准需求"] --> B["plan_research"]
+    B --> C["execute_tools"]
+    C -->|success| D["EVIDENCE_READY"]
+    C -->|transient error and budget remains| E["retry_tool"]
+    E --> C
+    C -->|deterministic error| F["FAILED"]
+    C -->|third transient error| F
+```
+
+- 工具图是独立构建入口；上一阶段需求图仍保持批准后停在 `PLANNED`。
+- `plan_research` 只持久化一个已验证、确定性的 `ToolCall`。
+- `execute_tools` 先做业务作用域校验，再调用内存假执行器。
+- 当前成功只表示证据 ID 已安全进入状态，不表示报告完成。
+
 ## 4. 状态模型
 
 状态使用严格结构化模型。未知字段拒绝；节点只返回自己负责的字段更新。
@@ -123,6 +141,7 @@ flowchart TD
    - 身份和版本：`schema_version`、`graph_version`、`run_id`、`thread_id`。
    - 路由：`status`、`current_node`、缺失需求字段。
    - 需求：`raw_request`、`confirmed_requirements`、人工确认 revision 和请求哈希。
+   - 工具：`source_snapshot_id`、`pending_tool_call`、`last_tool_result`、`tool_call_budget`。
    - 有限循环：`tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count`。
    - 后续占位：`evidence_ids`、安全 `errors`、报告 revision/hash、`artifact_id`、`idempotency_key`。
 2. 运行时依赖：
@@ -260,6 +279,22 @@ Tool Calling 执行流程：
 → 写入状态
 ```
 
+### 6.1 当前实现合同
+
+- `tool-call-v1`：稳定 `call_id`、allowlist `tool_name`、带 discriminator 的版本化参数。
+- `search-sources-args-v1`：query 最长 300 字符，候选 1～4 个，来源类型 1～4 个，`top_k` 为 1～8。
+- `read-source-args-v1`：只接受规范 `source_id` 与 `section_id`，不接受 URL 或文件路径。
+- `calculate-comparison-args-v1`：权重总和 100；每个候选必须覆盖同一维度集合；无证据分值保持缺失。
+- `tool-result-v1`：只保存 outcome、attempt、稳定错误码、安全摘要和 evidence ID；不保存完整工具响应。
+- 逻辑调用键绑定规范调用与来源快照。重试不会更换 call key、候选、来源范围或参数。
+
+当前 `DeterministicFakeToolExecutor` 是运行时依赖：
+
+- 输入为已验证来源、固定脚本和持久化 attempt。
+- Schema 合法后仍检查本次人工确认候选、来源章节、维度权重和返回证据作用域。
+- 未知来源、越权候选或越界证据返回稳定确定性错误。
+- 不访问网络、不读取任意路径、不产生写操作、不进入 checkpoint。
+
 ## 7. 路由条件和停止条件
 
 | 条件 | 路由 | 上限或终态 |
@@ -286,6 +321,8 @@ Tool Calling 执行流程：
 - 401、403、404、Schema 错误、allowlist 拒绝、内容哈希冲突和预算不足不重试。
 - 模型重试不得静默增加候选、资料范围或输出权限。
 - 每次失败写稳定错误码、安全摘要、节点和尝试次数；不保存密钥或完整供应商响应。
+
+当前工具图已实现前三条停止分类和 3 次硬上限。普通测试不真实 sleep；attempt 直接选择固定脚本结果。
 
 ## 9. Human-in-the-loop
 
@@ -401,15 +438,15 @@ artifact_id = hash(run_id + approved_revision + approved_content_hash + format)
 
 ## 15. 依赖与实现边界
 
-本阶段不选择或安装依赖。下一阶段依赖提案必须逐项给出：
+P2 独立 `.venv`、精确依赖和原创固定资料已安装或创建并验证，详见 `docs/DEPENDENCIES.md` 与 `docs/EVALUATION_DATA.md`。
 
-- 精确版本。
-- 用途和不可替代性。
-- CPython 兼容性。
-- 许可证。
-- 是否触发下载、联网、费用或系统修改。
+当前边界：
 
-P2 将创建项目独立 `.venv`。在依赖与数据提案获得批准前，不创建完整 LangGraph 代码、不下载真实资料、不调用真实模型。
+- 不新增依赖。
+- 不下载真实资料，不调用真实模型或外部工具。
+- `langsmith` 只作为必要传递包存在；tracing 保持关闭。
+- 不实现开放 HTTP、任意文件、shell、SQL、部署或写操作。
+- 后续真实模型、真实资料和费用仍需独立提案与批准。
 
 ## 16. 后续可选扩展
 

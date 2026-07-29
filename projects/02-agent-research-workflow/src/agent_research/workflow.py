@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 import hashlib
+from functools import partial
 from typing import Literal
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
-from agent_research.models import HumanActionKind, ResearchInput
+from agent_research.fake_tools import DeterministicFakeToolExecutor
+from agent_research.models import (
+    HumanActionKind,
+    ResearchInput,
+    ToolOutcomeKind,
+)
 from agent_research.runtime_state import (
     MissingRequirement,
     RequirementsDecision,
@@ -17,8 +23,10 @@ from agent_research.runtime_state import (
     RuntimeNode,
     RuntimeState,
     RuntimeStatus,
+    SafeStateError,
     hash_research_input,
 )
+from agent_research.tool_contracts import ToolCall
 
 
 class HumanDecisionError(ValueError):
@@ -202,9 +210,164 @@ def plan_research(state: RuntimeState) -> dict[str, object]:
     )
 
 
-def build_requirements_graph(checkpointer: BaseCheckpointSaver):
-    """Compile the explicit minimal graph with durable Human-in-the-loop."""
+def plan_tool_call(
+    state: RuntimeState,
+    *,
+    tool_call: ToolCall,
+) -> dict[str, object]:
+    """Persist one deterministic validated call for the minimal tool slice."""
 
+    if state.confirmation_request_hash is None:
+        raise ValueError("PLAN_REQUIRES_CONFIRMED_REQUEST_HASH")
+    plan_id = hashlib.sha256(
+        (
+            f"{state.run_id}:{state.confirmation_request_hash}:"
+            "tool-execution-v1"
+        ).encode("utf-8")
+    ).hexdigest()
+    retrieval_rounds = (
+        1
+        if tool_call.tool_name.value in {"search_sources", "read_source"}
+        else state.retrieval_rounds
+    )
+    return _validated_update(
+        state,
+        status=RuntimeStatus.TOOL_READY.value,
+        current_node=RuntimeNode.EXECUTE_TOOLS.value,
+        plan_id=plan_id,
+        pending_tool_call=tool_call.model_dump(mode="json"),
+        last_tool_result=None,
+        tool_attempts=0,
+        retrieval_rounds=retrieval_rounds,
+    )
+
+
+def _safe_error(
+    *,
+    code: str,
+    summary: str,
+    retryable: bool,
+) -> dict[str, object]:
+    return SafeStateError(
+        code=code,
+        node=RuntimeNode.EXECUTE_TOOLS,
+        safe_summary=summary,
+        retryable=retryable,
+    ).model_dump(mode="json")
+
+
+def execute_tools(
+    state: RuntimeState,
+    *,
+    executor: DeterministicFakeToolExecutor,
+) -> dict[str, object]:
+    """Execute one allowlisted call with persisted attempt and stop rules."""
+
+    if state.pending_tool_call is None:
+        raise ValueError("TOOL_EXECUTION_REQUIRES_PENDING_CALL")
+    if state.confirmed_requirements is None:
+        raise ValueError("TOOL_EXECUTION_REQUIRES_CONFIRMED_REQUIREMENTS")
+
+    attempt = state.tool_attempts + 1
+    result = executor.execute(
+        call=state.pending_tool_call,
+        confirmed=state.confirmed_requirements,
+        source_snapshot_id=state.source_snapshot_id,
+        attempt=attempt,
+    )
+    common: dict[str, object] = {
+        "tool_attempts": attempt,
+        "last_tool_result": result.model_dump(mode="json"),
+    }
+
+    if result.outcome is ToolOutcomeKind.SUCCESS:
+        evidence_ids = tuple(
+            dict.fromkeys((*state.evidence_ids, *result.evidence_ids))
+        )
+        return _validated_update(
+            state,
+            **common,
+            status=RuntimeStatus.EVIDENCE_READY.value,
+            current_node=RuntimeNode.END.value,
+            evidence_ids=evidence_ids,
+        )
+
+    if result.outcome is ToolOutcomeKind.TRANSIENT_ERROR:
+        retryable = attempt < state.tool_call_budget
+        code = (
+            result.error_code
+            if retryable
+            else "tool-retry-exhausted"
+        )
+        summary = (
+            result.safe_summary
+            if retryable
+            else "tool retry budget exhausted"
+        )
+        errors = (
+            *state.errors,
+            _safe_error(
+                code=code or "transient-tool-error",
+                summary=summary or "transient tool error",
+                retryable=retryable,
+            ),
+        )
+        return _validated_update(
+            state,
+            **common,
+            status=(
+                RuntimeStatus.TOOL_RETRY.value
+                if retryable
+                else RuntimeStatus.FAILED.value
+            ),
+            current_node=(
+                RuntimeNode.RETRY_TOOL.value
+                if retryable
+                else RuntimeNode.END.value
+            ),
+            errors=errors,
+        )
+
+    errors = (
+        *state.errors,
+        _safe_error(
+            code=result.error_code or "deterministic-tool-error",
+            summary=result.safe_summary or "deterministic tool error",
+            retryable=False,
+        ),
+    )
+    return _validated_update(
+        state,
+        **common,
+        status=RuntimeStatus.FAILED.value,
+        current_node=RuntimeNode.END.value,
+        errors=errors,
+    )
+
+
+def retry_tool(state: RuntimeState) -> dict[str, object]:
+    """Route one persisted transient failure back to the same logical call."""
+
+    return _validated_update(
+        state,
+        status=RuntimeStatus.TOOL_READY.value,
+        current_node=RuntimeNode.EXECUTE_TOOLS.value,
+    )
+
+
+def _route_after_tool(
+    state: RuntimeState,
+) -> Literal["success", "retry", "failed"]:
+    if state.status is RuntimeStatus.EVIDENCE_READY:
+        return "success"
+    if state.status is RuntimeStatus.TOOL_RETRY:
+        return "retry"
+    if state.status is RuntimeStatus.FAILED:
+        return "failed"
+    raise ValueError("TOOL_EXECUTION_INVALID_ROUTE")
+
+
+def _requirements_builder(plan_node: object) -> StateGraph:
     builder = StateGraph(RuntimeState)
     builder.add_node("validate_request", validate_request)
     builder.add_node("confirm_requirements", confirm_requirements)
@@ -212,7 +375,7 @@ def build_requirements_graph(checkpointer: BaseCheckpointSaver):
         "await_human_requirements",
         await_human_requirements,
     )
-    builder.add_node("plan_research", plan_research)
+    builder.add_node("plan_research", plan_node)
 
     builder.add_edge(START, "validate_request")
     builder.add_edge("validate_request", "confirm_requirements")
@@ -229,5 +392,42 @@ def build_requirements_graph(checkpointer: BaseCheckpointSaver):
             "terminal": END,
         },
     )
+    return builder
+
+
+def build_requirements_graph(checkpointer: BaseCheckpointSaver):
+    """Compile the requirements-only graph from the previous stage."""
+
+    builder = _requirements_builder(plan_research)
     builder.add_edge("plan_research", END)
+    return builder.compile(checkpointer=checkpointer)
+
+
+def build_tool_execution_graph(
+    *,
+    checkpointer: BaseCheckpointSaver,
+    tool_call: ToolCall,
+    executor: DeterministicFakeToolExecutor,
+):
+    """Compile the next explicit slice through safe tool execution."""
+
+    builder = _requirements_builder(
+        partial(plan_tool_call, tool_call=tool_call)
+    )
+    builder.add_node(
+        "execute_tools",
+        partial(execute_tools, executor=executor),
+    )
+    builder.add_node("retry_tool", retry_tool)
+    builder.add_edge("plan_research", "execute_tools")
+    builder.add_conditional_edges(
+        "execute_tools",
+        _route_after_tool,
+        {
+            "success": END,
+            "retry": "retry_tool",
+            "failed": END,
+        },
+    )
+    builder.add_edge("retry_tool", "execute_tools")
     return builder.compile(checkpointer=checkpointer)

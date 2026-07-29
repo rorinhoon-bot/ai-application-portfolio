@@ -158,3 +158,23 @@
 - 路由：批准只进入确定性 `plan_research` 占位；编辑回到校验并增加 revision；拒绝和取消进入稳定终态。
 - 安全：人工决定必须同时匹配 `run_id`、`thread_id`、revision 和请求哈希；旧批准不能授权编辑后的需求。
 - 边界：本阶段不执行检索、模型、写作、审校、导出或其他外部副作用。
+
+## D-020：Tool Calling 提案必须经过版本化合同和业务作用域校验
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：固定 `tool-call-v1`、三类参数合同和 `tool-result-v1`；只允许 `search_sources`、`read_source`、`calculate_comparison`。
+- 校验顺序：工具名 allowlist、Pydantic Schema、已确认候选与维度、来源和章节 allowlist、调用预算、执行、标准化结果、证据作用域。
+- 原因：Schema 合法不代表业务授权。合法候选 ID 仍可能超出本次人工确认范围；已知 evidence ID 仍可能来自未批准候选。
+- 结果：URL、路径、命令、未知字段、越界候选、未知来源/章节、修改后的权重和越界证据均不能进入执行结果。
+- 边界：当前参数由确定性测试计划提供；尚未接入模型 Tool Calling 提案。
+
+## D-021：重试按持久化 attempt 驱动，假执行器不进入 checkpoint
+
+- 状态：accepted
+- 日期：2026-07-29
+- 决定：同一规范 Tool Call 加来源快照生成稳定逻辑调用键；attempt 写入 `runtime-state-v1`。初次调用加最多 2 次重试，共 3 次尝试。
+- 原因：若脚本依赖进程内游标，checkpoint 恢复后可能重复错误结果或跳过尝试；持久化 attempt 可确定性选择同一脚本步骤。
+- 路由：成功停在 `EVIDENCE_READY`；瞬时错误且有预算进入 `retry_tool`；确定性错误或预算耗尽进入 `FAILED`。
+- 结果：底层假工具、来源索引和脚本属于运行时依赖，不序列化；checkpoint 只保存规范调用、安全结果、attempt、错误摘要和证据 ID。
+- 边界：本阶段不真实等待、不执行指数退避；未来真实适配器使用虚拟时钟测试后再启用退避。

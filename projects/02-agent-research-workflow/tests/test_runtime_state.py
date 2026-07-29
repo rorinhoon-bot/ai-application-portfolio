@@ -45,9 +45,13 @@ def test_runtime_state_has_explicit_checkpoint_business_fields() -> None:
         "thread_id",
         "status",
         "current_node",
+        "source_snapshot_id",
         "raw_request",
         "confirmed_requirements",
         "human_confirmation_revision",
+        "pending_tool_call",
+        "last_tool_result",
+        "tool_call_budget",
         "tool_attempts",
         "retrieval_rounds",
         "review_rounds",
@@ -69,10 +73,19 @@ def test_runtime_state_rejects_unknown_fields() -> None:
         RuntimeState.model_validate(payload)
 
 
+def test_runtime_state_rejects_another_source_snapshot() -> None:
+    payload = _state_payload()
+    payload["source_snapshot_id"] = "f" * 64
+
+    with pytest.raises(ValidationError, match="source_snapshot_id"):
+        RuntimeState.model_validate(payload)
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
         ("human_confirmation_revision", 33),
+        ("tool_call_budget", 4),
         ("tool_attempts", 4),
         ("retrieval_rounds", 3),
         ("review_rounds", 3),
@@ -88,6 +101,15 @@ def test_runtime_state_rejects_out_of_bounds_counts(
     payload[field] = value
 
     with pytest.raises(ValidationError, match="less than or equal"):
+        RuntimeState.model_validate(payload)
+
+
+def test_tool_attempts_cannot_exceed_smaller_runtime_budget() -> None:
+    payload = _state_payload()
+    payload["tool_call_budget"] = 2
+    payload["tool_attempts"] = 3
+
+    with pytest.raises(ValidationError, match="tool_call_budget"):
         RuntimeState.model_validate(payload)
 
 
