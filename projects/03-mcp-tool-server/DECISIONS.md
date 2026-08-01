@@ -70,3 +70,13 @@
 - 日期：2026-08-01
 - 决定：当前只设计未来 stdio 本地 Server 与真实 Host/Client 成功、拒绝和错误路径演示；不伪称已接入。
 - 原因：规划文档不能替代协议运行证据。接入前必须先完成离线单元和集成测试。
+
+## D-011：Slice A 实现范围与临时测试底座
+
+- 状态：accepted
+- 日期：2026-08-01
+- 决定：Slice A 只实现 `search_notes` 的纯标准库数据合同、索引登记、离线检索与 stdlib `unittest`；不接触 MCP SDK、不建 `.venv`、不安装依赖、不读真实笔记、不联网。
+- 参数锁定：note_id 由 relative_path 的 SHA-256 前 16 位派生；excerpt 内部文本上限 120 字符；匹配为大小写无关 + Unicode NFKC 归一；hits 上限 5，按索引顺序返回。
+- 测试底座：当前用 CPython 标准库 `unittest`（`python -m unittest`）直接运行，避免提前引入 pytest 与安装步骤；后续统一测试框架待安装批准时再决定。
+- 边界：`index.py` 当前仅做最小普通 `.md` 文件登记，未实现 symlink/junction/reparse point/路径穿越/TOCTOU 的拒绝式检查；这些属于 Slice B，未因 Slice A 提前放宽。
+- 结果：`compileall` 通过；27 项 stdlib 单元测试全部通过；无网络、无依赖、无密钥。

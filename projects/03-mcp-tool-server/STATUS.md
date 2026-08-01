@@ -1,16 +1,21 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：完成 P3 规划基线。
-- 当前阶段：`规划文档`
+- 当前唯一目标：完成 Slice A（search_notes 纯标准库数据合同、索引、离线检索与单测），并已离线验证。
+- 当前阶段：`Slice A 实现与离线验证完成；待进入 Slice B（路径安全索引 + create_task 确认状态机）`
 - 已完成：
   - 从 P2 最终验收提交 `ba9f061891fed3c4920f5cb922e77d247d6cce83` 创建独立分支 `codex/p3-local-mcp-tool-service`。
   - 固定场景为“本地 MCP 笔记检索与受控任务创建服务”。
   - 创建 README、PRD、架构、依赖提案、离线评估方案和安全接力说明。
   - 固定只读 `search_notes(keyword)`、受控写 `create_task(title, description)`、只读 Resource、路径安全、人工确认与幂等边界。
+  - Slice A（search_notes 纯标准库合同）已完成并验证：新增 `src/mcp_notes/`（`contracts.py` 数据类型与参数校验、`index.py` 索引、`search.py` 检索）；3 份原创虚构笔记夹具 `evals/fixtures/notes-v1/`；stdlib `unittest` 套件 `tests/test_search_contract.py`。
+  - Slice A 锁定参数：note_id = SHA-256(relative_path)[:16]；excerpt 内部上限 120 字符；匹配为大小写无关 + Unicode NFKC 归一；hits 上限 5，按索引顺序返回。
+  - 用托管 Python 3.13 直接运行 stdlib `unittest`，未建 `.venv`、未安装任何依赖；`compileall` 通过，27 项测试全部通过。
+  - 明确 Slice A 不含路径安全（symlink/junction/reparse point/TOCTOU）与 MCP SDK 适配；二者属于后续切片，未因 Slice A 提前放宽。
 - 未完成：
-  - 未安装依赖、未创建 `.venv`、未创建 requirements 文件。
-  - 未实现 MCP Server、Tool、Resource、文件访问、任务写入、状态存储或测试。
-  - 未创建或运行真实 MCP Host/Client 演示。
-  - 未下载数据、未读取私人笔记、未访问网络、未调用模型、未产生费用、未部署。
-- 下一阶段前提：学习者批准依赖核实与安装范围；实现时先完成数据合同、路径安全和离线测试，再接入真实本地 Host/Client。
+  - 未安装依赖、未创建 `.venv`、未创建 requirements 文件（Slice A 仅用标准库，无需安装）。
+  - 未实现 MCP Server 适配层、Resource `notes://service-info`、Tool 注册或 stdio transport。
+  - 未实现 `create_task` 待确认意图、人工确认状态机、确认/幂等/审计持久化（sqlite3）或任务文件 no-replace 原子发布。
+  - 未实现路径安全索引（symlink/junction/reparse point/.. 越界/TOCTOU 拒绝）——当前 `index.py` 仅为最小登记，安全检查待 Slice B。
+  - 未创建或运行真实 MCP Host/Client 演示；未下载数据、未读取私人笔记、未访问网络、未调用模型、未产生费用、未部署。
+- 下一阶段（Slice B）前提：先实现路径安全索引（拒绝 symlink/junction/reparse point/.. 越界/TOCTOU），再实现 `create_task` 确认状态机与 sqlite3 持久化；安装 MCP SDK 与 pytest 仍需单独批准，不先于离线核心逻辑。
