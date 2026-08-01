@@ -95,3 +95,7 @@ $env:LANGSMITH_TRACING="false"
 - 当前摘要记录节点主动执行耗时，不包含人工等待时间；进程崩溃前未外送的 observer 事件不会由 checkpoint 恢复。
 - 当前没有模型调用，因此 token、模型调用和已知费用字段均为 `0`；不是未来真实模型成本估算。
 - 真实模型、真实官方资料和公开部署仍需单独批准。
+
+## 开发复盘
+
+离线首版的开发过程、失败根因、关键取舍、限制和真实模型接入条件见 [`RETROSPECTIVE.md`](RETROSPECTIVE.md)。P2 尚需完成 `LLH_Study.md` 和最终验收审计，当前仍为 `in_progress`。
