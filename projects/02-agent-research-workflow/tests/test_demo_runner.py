@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from agent_research.demo_runner import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 GENERATED_ROOT = PROJECT_ROOT / "demo" / "generated"
 MANIFEST_PATH = GENERATED_ROOT / "offline-demo-v1.json"
+REVIEW_REPORT_PATH = GENERATED_ROOT / "report-v2.md"
+REVIEW_REPORT_HASH_PATH = GENERATED_ROOT / "report-v2.md.sha256"
 SUMMARY_PATH = (
     PROJECT_ROOT
     / "evals"
@@ -113,7 +116,13 @@ def test_committed_demo_files_match_runtime(
     assert {item.name for item in GENERATED_ROOT.iterdir()} == {
         MANIFEST_PATH.name,
         report_path.name,
+        REVIEW_REPORT_PATH.name,
+        REVIEW_REPORT_HASH_PATH.name,
     }
+    expected_hash = hashlib.sha256(REVIEW_REPORT_PATH.read_bytes()).hexdigest()
+    assert REVIEW_REPORT_HASH_PATH.read_text(encoding="utf-8") == (
+        f"{expected_hash} *{REVIEW_REPORT_PATH.name}\n"
+    )
 
 
 def test_demo_outputs_exclude_runtime_paths_and_sensitive_payloads(

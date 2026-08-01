@@ -52,6 +52,8 @@ $env:LANGSMITH_TRACING="false"
 
 - `generated/offline-demo-v1.json`：暂停、成功、失败三条路径的哈希绑定 manifest。
 - `generated/<artifact_id>.md`：最终人工批准后由安全导出器生成的 Markdown 报告。
+- `generated/report-v2.md`：根据人工反馈补齐三候选比较、适用条件、下一步、风险和限制的独立评审改写稿；不覆盖 v1 制品。
+- `generated/report-v2.md.sha256`：`report-v2.md` 完整文件 SHA-256 校验值。
 - `assets/offline-demo-terminal.svg`：从真实终端简报确定性生成的截图。
 - `assets/workflow-overview.svg`：两个人工门、有限循环和稳定终态的简化图。
 - `../evals/results/privacy-durable-run-summary.json`：成功案例的确定性运行摘要。
