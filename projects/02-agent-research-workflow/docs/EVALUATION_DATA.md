@@ -1,8 +1,8 @@
 # P2 固定评估资料方案
 
-- 版本：v0.4
+- 版本：v0.5
 - 状态：implemented and verified
-- 日期：2026-07-29
+- 日期：2026-08-01
 - 首批原则：原创、离线、确定性、无外部下载
 
 ## 1. 为什么先用原创夹具
@@ -198,7 +198,7 @@ $env:LANGSMITH_TRACING="false"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-2026-07-29 结果：`132 passed`。
+2026-08-01 结果：`144 passed`。
 
 已自动验证：
 

@@ -98,4 +98,8 @@ $env:LANGSMITH_TRACING="false"
 
 ## 开发复盘
 
-离线首版的开发过程、失败根因、关键取舍、限制和真实模型接入条件见 [`RETROSPECTIVE.md`](RETROSPECTIVE.md)。P2 尚需完成 `LLH_Study.md` 和最终验收审计，当前仍为 `in_progress`。
+离线首版的开发过程、失败根因、关键取舍、限制和真实模型接入条件见 [`RETROSPECTIVE.md`](RETROSPECTIVE.md)。P2 尚需完成最终验收审计，当前仍为 `in_progress`。
+
+## 学习与面试讲义
+
+30 秒、2 分钟和 5 分钟介绍、核心代码、面试问答、自测题及诚实参与范围见 [`LLH_Study.md`](LLH_Study.md)。完成讲义不等于项目已通过最终验收；P2 当前仍为 `in_progress`。

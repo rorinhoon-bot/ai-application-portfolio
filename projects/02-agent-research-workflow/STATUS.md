@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：完成 `RETROSPECTIVE.md`，记录开发证据、失败根因、取舍、限制和真实模型接入条件。
-- 当前阶段：`离线首版开发复盘已完成`
+- 当前唯一目标：创建 `LLH_Study.md`，整理分层项目介绍、核心代码、评估解释、面试问答和自测。
+- 当前阶段：`项目学习与面试讲义已完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -140,9 +140,14 @@
   - 固定真实模型接入门槛：独立费用与资料批准、版本化适配器和评估集、现有安全边界不放宽、保留原创 `workflow-v1` 基线。
   - README 新增开发复盘入口；当前仍保持 `in_progress`，不提前宣称 P2 完成。
   - 本阶段验证通过：环境与 SQLite 恢复检查、144 项普通测试、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall`、`pip check`、`git diff --check` 和敏感模式扫描；无网络、模型 API 或费用。
+  - 新增项目级 `LLH_Study.md`；覆盖事实卡、30 秒/2 分钟/5 分钟介绍、LangGraph 核心概念、完整数据流、12 个核心代码入口、Human-in-the-loop、checkpoint、幂等、安全、评估和真实模型边界。
+  - 新增 25 道高频面试问答、25 道自测题、答案关键词、STAR 故事、实操自测和五轮复习路线。
+  - 学习讲义明确区分“离线确定性工作流可靠性”和“尚未验证的真实模型语义质量”，并记录 AI 编码助手协作范围。
+  - README 新增学习讲义入口；P2 仍保持 `in_progress`，等待最终 `PROJECT_STANDARDS.md` 完成审计。
+  - 本阶段验证通过：环境与 SQLite 恢复检查、pytest `144 passed`、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall`、`pip check`、文档链接与题目计数、`git diff --check` 和敏感模式扫描；无网络、模型 API 或费用。
 - 下一步：
-  - 下一阶段创建 `LLH_Study.md`，用于 30 秒、2 分钟、5 分钟讲解、面试问答和自测。
-  - 最后按 `PROJECT_STANDARDS.md` 做完成审计，缺项补齐后才把 P2 标记为 `completed`。
+  - 下一阶段按 `PROJECT_STANDARDS.md` 做最终完成审计，逐项核对问题、运行、代码、测试、评估、安全和展示证据。
+  - 缺项补齐后才把 P2 标记为 `completed`，并更新总作品集状态。
   - 不提前接入真实模型、真实资料、公开部署或多智能体。
 - 阻塞：
   - 无。
