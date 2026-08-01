@@ -223,6 +223,29 @@ $env:LANGSMITH_TRACING="false"
 
 提交结果：`evals/results/workflow-v1-baseline.json`。
 
+### 12.1 评估运行配置记录
+
+`workflow-v1` 是无模型、无 Prompt 的确定性工作流可靠性评估。为避免把“不适用”误写成“遗漏”，固定记录如下：
+
+| 项目 | 固定值 |
+|---|---|
+| 评估数据版本 | `workflow-evaluation-v1` |
+| 金标准版本 | `workflow-gold-v1` |
+| 运行器版本 | `workflow-runner-v1` |
+| 完整图版本 | `report-export-v1` |
+| 来源快照 | `0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c` |
+| 模型 | 不适用；`model_api_used=false` |
+| Prompt | 不适用；没有 Prompt 或模型生成步骤 |
+| 工具与写作参数 | 由 `workflow-v1.json`、严格合同和确定性运行时夹具固定 |
+| 工具尝试上限 | 3 次 |
+| 检索轮次上限 | 2 轮 |
+| 自动报告修改上限 | 2 次 |
+| 人工报告返修上限 | 2 次 |
+| checkpoint 序列化 | `LANGGRAPH_STRICT_MSGPACK=true` |
+| 依赖环境 | `requirements.txt` 与 `requirements-dev.txt` |
+
+未来接入真实模型时，必须新建评估版本并保存模型 ID、模型版本、Prompt 版本、生成参数、token、费用和资料快照；不能覆盖本表或 `workflow-v1`。
+
 | 指标 | 首个基线 | v1 目标 |
 |---|---:|---:|
 | 固定案例通过率 | `12/12` | 记录 |

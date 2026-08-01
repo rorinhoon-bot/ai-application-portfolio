@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 当前唯一目标：创建 `LLH_Study.md`，整理分层项目介绍、核心代码、评估解释、面试问答和自测。
-- 当前阶段：`项目学习与面试讲义已完成`
+- 当前唯一目标：完成 `PROJECT_STANDARDS.md` 最终审计；等待真实人工报告质量量表结果。
+- 当前阶段：`完成审计进行中：工程证据已齐，人工质量评分待完成`
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -145,10 +145,17 @@
   - 学习讲义明确区分“离线确定性工作流可靠性”和“尚未验证的真实模型语义质量”，并记录 AI 编码助手协作范围。
   - README 新增学习讲义入口；P2 仍保持 `in_progress`，等待最终 `PROJECT_STANDARDS.md` 完成审计。
   - 本阶段验证通过：环境与 SQLite 恢复检查、pytest `144 passed`、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall`、`pip check`、文档链接与题目计数、`git diff --check` 和敏感模式扫描；无网络、模型 API 或费用。
+  - 新增 `docs/COMPLETION_AUDIT.md`，逐项映射 `PROJECT_STANDARDS.md` 的问题、运行、代码、测试、评估、安全和展示证据。
+  - README 补齐目标用户、输入、输出、非目标和 CPython 3.14 新环境安装步骤；`.env.example` 补齐离线 tracing 开关。
+  - `docs/EVALUATION_DATA.md` 集中记录评估数据、金标准、运行器、完整图、来源快照、模型/Prompt 不适用状态及四类循环参数。
+  - PRD 与架构文档更新到离线 v1 实际实现状态；保留阶段切片作为小步开发证据，不再把早期切片误写成当前完整范围。
+  - 新增 `evals/HUMAN_REPORT_RUBRIC.md`；人工质量量表不得由自动测试或 AI 助手代填。
+  - 最终审计自动验证通过：环境与 SQLite 恢复、pytest `144 passed`、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall` 和 `pip check`；无网络、模型 API、下载或费用。
 - 下一步：
-  - 下一阶段按 `PROJECT_STANDARDS.md` 做最终完成审计，逐项核对问题、运行、代码、测试、评估、安全和展示证据。
-  - 缺项补齐后才把 P2 标记为 `completed`，并更新总作品集状态。
+  - 由真实人工阅读固定演示报告，按五个维度各给 1～5 分并写一句主要问题。
+  - 平均分达到 `4.0` 后保存结果、重跑完整验证，再把 P2 标记为 `completed` 并更新总作品集状态。
+  - 平均分低于 `4.0` 时保持 `in_progress`，记录失败分类并另建修订版本；不修改 `workflow-v1` 金标准迎合评分。
   - 不提前接入真实模型、真实资料、公开部署或多智能体。
 - 阻塞：
-  - 无。
+  - PRD 人工报告质量量表尚未由真实人工填写；这是唯一完成阻塞。
   - 真实资料下载和真实 API 调用仍未授权；不影响原创离线夹具阶段。

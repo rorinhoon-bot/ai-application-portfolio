@@ -1,9 +1,9 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
-- 版本：v0.9
-- 状态：accepted design baseline
-- 日期：2026-07-29
-- 实现状态：最小状态、需求确认、受控假工具执行、两轮证据评估、安全草稿、有限审校、最终报告确认、幂等 Markdown 导出和运行时可观测性切片已实现
+- 版本：v1.0
+- 状态：offline implementation verified
+- 日期：2026-08-01
+- 实现状态：完整离线图、两个 Human-in-the-loop 暂停点、受控假工具、两轮证据门、安全草稿、有限审校、幂等 Markdown 导出和运行时可观测性均已实现
 
 ## 1. 架构目标
 
@@ -21,7 +21,7 @@ P2 不复制 P1 代码，不导入 P1 内部模块，不复用 P1 `.venv`。只�
   │
   ▼
 LangGraph 编排器
-  ├─ 规划与写作模型适配器
+  ├─ 确定性规划/写作适配器（未来可替换为受控模型适配器）
   ├─ 受控 Tool Calling 执行器
   ├─ 证据与引用绑定服务
   ├─ 审校与路由规则
@@ -29,9 +29,10 @@ LangGraph 编排器
   └─ 人工批准后的幂等导出器
 
 外部边界：
-- 模型、数据快照和依赖尚未批准
-- 首版无开放式联网搜索
-- 首版无任意写工具
+- 当前不调用真实模型；规划、工具、写作、审校和返修使用确定性夹具
+- 已固定原创虚构来源快照；不开放联网搜索或任意 URL
+- 依赖已精确锁定并在 P2 独立 `.venv` 验证
+- 无任意写工具；唯一写边界是最终报告人工批准后的受控 Markdown 导出
 ```
 
 ## 3. 显式状态图
@@ -39,35 +40,39 @@ LangGraph 编排器
 ```mermaid
 flowchart TD
     A["START"] --> B["validate_request"]
-    B -->|完整| C["confirm_requirements"]
-    B -->|缺字段| D["propose_clarification"]
-    D --> C
-    C -->|人工批准| E["plan_research"]
-    C -->|人工修改| B
-    C -->|人工取消| X["CANCELLED"]
+    B --> C["confirm_requirements"]
+    C --> D["await_human_requirements: interrupt"]
+    D -->|approve| E["plan_research"]
+    D -->|edit| B
+    D -->|reject / cancel| X["稳定人工终态"]
     E --> F["execute_tools"]
-    F -->|工具成功| G["assess_evidence"]
-    F -->|可重试瞬时错误| F
-    F -->|不可重试或耗尽| Y["FAILED"]
-    G -->|证据充足| H["draft_report"]
-    G -->|可补检索且未达上限| E
-    G -->|证据不足且达上限| Y
+    F -->|retryable and budget remains| R["retry_tool"]
+    R --> F
+    F -->|success| G["assess_evidence"]
+    F -->|deterministic error or exhausted| Y["FAILED"]
+    G -->|round 1 gaps| E
+    G -->|round 2 gaps| Y
+    G -->|sufficient| H["draft_report"]
     H --> J["review_report"]
-    J -->|通过| K["confirm_report"]
-    J -->|需修改且未达上限| H
-    J -->|严重安全问题| Y
-    J -->|修改耗尽| K
-    K -->|人工批准| L["export_report"]
-    K -->|人工退回且未达上限| H
-    K -->|人工拒绝| X
-    K -->|退回耗尽| Y
-    L -->|成功或相同制品已存在| Z["COMPLETED"]
-    L -->|冲突或写入失败| Y
+    J -->|automatic revision remains| V["revise_report"]
+    V --> J
+    J -->|findings and revision exhausted| Y
+    J -->|pass| K["confirm_report"]
+    K --> L["await_human_report: interrupt"]
+    L -->|request-changes remains| M["apply_human_report_revision"]
+    M --> J
+    L -->|request-changes exhausted| Y
+    L -->|reject / cancel| X
+    L -->|approve| N["export_report"]
+    N -->|CREATED / UNCHANGED| Z["COMPLETED"]
+    N -->|conflict / unsafe write| Y
 ```
 
-`confirm_requirements` 和 `confirm_report` 使用 LangGraph 中断语义。进入节点前保存 checkpoint；恢复时必须提供同一 `run_id`、状态版本和合法人工动作。
+`await_human_requirements` 和 `await_human_report` 使用 LangGraph `interrupt()`。前置节点先持久化等待状态和 revision/hash；恢复决定必须绑定同一 `run_id`、`thread_id` 和当前内容版本。
 
-### 3.1 当前已实现切片
+以下 3.1～3.7 保留小步开发时的阶段切片，说明每层如何独立验证；离线 v1 最终入口是 `build_report_export_graph`，完整路径如上。
+
+### 3.1 阶段 1：需求确认切片
 
 ```mermaid
 flowchart TD
@@ -86,9 +91,9 @@ flowchart TD
 - 完整需求、缺候选和缺评价维度都进入持久化 `NEEDS_HUMAN`，不自动补猜。
 - `confirm_requirements` 在中断节点前写入等待状态、revision 和请求哈希。
 - `await_human_requirements` 只接受严格、revision 绑定的 `approve`、`edit`、`reject`、`cancel`。
-- `approve` 只到 `PLANNED`；当前没有检索、模型、报告或导出副作用。
+- 该阶段 `approve` 只到 `PLANNED`，用于隔离验证需求暂停；后续阶段再组合工具、报告和导出。
 
-### 3.2 当前工具执行切片
+### 3.2 阶段 2：工具执行切片
 
 ```mermaid
 flowchart TD
@@ -106,7 +111,7 @@ flowchart TD
 - `execute_tools` 先做业务作用域校验，再调用内存假执行器。
 - 当前成功只表示证据 ID 已安全进入状态，不表示报告完成。
 
-### 3.3 当前证据评估切片
+### 3.3 阶段 3：证据评估切片
 
 ```mermaid
 flowchart TD
@@ -126,7 +131,7 @@ flowchart TD
 - 第二轮仍不足写入安全错误 `evidence-insufficient`，稳定停在 `FAILED`，不生成报告或制品。
 - `graph_version` 在该路径固定为 `evidence-assessment-v1`；旧工具切片保持 `tool-execution-v1`。
 
-### 3.4 当前安全草稿切片
+### 3.4 阶段 4：安全草稿切片
 
 ```mermaid
 flowchart TD
@@ -142,9 +147,9 @@ flowchart TD
 - `report-draft-v1` 是 checkpoint 业务状态，不是人工批准的最终报告，也不是已导出制品。
 - 非法草稿提案记录 `invalid-draft-proposal` 后稳定失败；证据不足路径不会调用写作者。
 - 当前写作者和金标准匹配器都是确定性运行时夹具，不访问模型或网络，不进入 checkpoint。
-- 新路径使用 `draft-report-v1` 图版本；当前终态为 `DRAFTED`，尚未进入审校和最终人工暂停。
+- 该阶段使用 `draft-report-v1` 图版本并停在 `DRAFTED`；最终离线图继续进入审校和报告人工暂停。
 
-### 3.5 当前有限审校切片
+### 3.5 阶段 5：有限审校切片
 
 ```mermaid
 flowchart TD
@@ -163,9 +168,9 @@ flowchart TD
 - `review_rounds` 只在新草稿成功绑定后增加；初始检查不占修改预算。
 - 无发现项停在 `REVIEWED`；最多修改 2 次，仍不通过则记录 `review-limit-exhausted` 并失败。
 - reviewer、reviser 和 binder 是运行时依赖；checkpoint 只保存规范草稿、策略 ID、轮次、发现项和安全结果。
-- 当前不调用模型，不进入最终报告 Human-in-the-loop，不生成制品。
+- 该阶段不进入最终报告 Human-in-the-loop，不生成制品；最终离线图已组合后续人工确认和导出。
 
-### 3.6 当前最终报告确认切片
+### 3.6 阶段 6：最终报告确认切片
 
 ```mermaid
 flowchart TD
@@ -187,7 +192,7 @@ flowchart TD
 - `approve` 只持久化当前批准 revision/hash 并进入 `REPORT_APPROVED`；`artifact_id` 和 `idempotency_key` 保持空，不执行导出。
 - 人工修改器、reviewer、binder 和 SQLite 连接仍是运行时依赖，不进入 checkpoint。
 
-### 3.7 当前安全幂等导出切片
+### 3.7 阶段 7：安全幂等导出切片
 
 ```mermaid
 flowchart TD
@@ -208,7 +213,7 @@ flowchart TD
 - 同一文件同字节返回 `UNCHANGED`；同 ID 不同字节记录 `export-artifact-conflict` 并失败，原文件不变。
 - checkpoint 只保存 `ArtifactRecord` 和导出结果；根目录、文件句柄、临时路径和 `SafeMarkdownExporter` 是运行时依赖。
 
-### 3.8 当前运行时可观测性切片
+### 3.8 最终运行时可观测性切片
 
 ```text
 节点函数
@@ -234,17 +239,17 @@ flowchart TD
 
 | 字段组 | 关键字段 | 说明 |
 |---|---|---|
-| 身份 | `run_id`、`thread_id`、`state_schema_version`、`graph_version` | 一次研究任务和可恢复状态身份 |
-| 需求 | `research_question`、`audience`、`constraints`、`candidates`、`evaluation_dimensions`、`deliverable_requirements` | 已校验的用户需求 |
-| 人工动作 | `pending_approval`、`approval_revision`、`human_decisions` | 只保存结构化决定、时间和安全摘要 |
-| 规划 | `research_questions`、`search_plan`、`source_policy`、`plan_revision` | 已确认范围内的研究计划 |
-| 工具 | `tool_requests`、`tool_results`、`tool_attempts`、`tool_call_budget` | 只保存校验后的参数和标准化结果 |
-| 证据 | `evidence_items`、`evidence_gaps`、`source_snapshot_id` | 证据按来源、章节和内容哈希去重 |
-| 报告 | `draft_revision`、`draft_sections`、`claims`、`citations`、`review_findings` | 草稿、声明和程序绑定引用 |
-| 循环计数 | `retrieval_round`、`review_round`、`human_revision_round`、`structured_output_retry` | 所有循环的硬上限依据 |
-| 运行状态 | `status`、`current_node`、`last_error`、`started_at`、`updated_at` | 可观察运行状态 |
+| 身份 | `schema_version`、`graph_version`、`run_id`、`thread_id`、`source_snapshot_id` | 合同、图、任务、checkpoint 和来源身份 |
+| 路由 | `status`、`current_node`、`missing_requirements` | 当前业务状态和下一步依据 |
+| 需求 | `raw_request`、`confirmed_requirements`、`human_confirmation_revision`、`confirmation_request_hash` | 原始需求、已确认版本及绑定 |
+| 工具 | `pending_tool_call`、`last_tool_result`、`tool_call_budget`、`tool_attempts` | 只保存校验后的调用、标准化结果和预算 |
+| 证据 | `evidence_ids`、`evidence_policy_id`、`evidence_gaps`、`last_evidence_assessment` | 已验证证据身份和确定性评估结果 |
+| 报告 | `report_draft`、`report_revision`、`report_hash`、`last_review_result` | 结构化草稿、内容版本、哈希与审校结果 |
+| 报告人工门 | `report_confirmation_revision`、`last_report_action`、`approved_report_revision/hash` | 最终报告决定绑定 |
+| 循环计数 | `tool_attempts`、`retrieval_rounds`、`review_rounds`、`human_revision_count` | 所有循环的硬上限依据 |
 | 观测 | 不进入 `runtime-state-v1` | 由运行时 observer 生成事件和摘要，避免扩大 checkpoint 数据面 |
-| 制品 | `approved_content_hash`、`artifact_id`、`export_status` | 只在最终批准后生成 |
+| 制品 | `artifact_id`、`idempotency_key`、`artifact_record`、`last_export_outcome` | 只在最终批准后生成 |
+| 错误 | `errors` | 只保存稳定错误码和安全摘要 |
 
 不得保存：
 
@@ -282,27 +287,27 @@ flowchart TD
 
 ### `validate_request`
 
-- 对长度、数量、枚举、候选重复、权重和来源策略做确定性校验。
-- 区分“输入非法”和“信息不足”。非法输入失败；信息不足进入澄清提案。
+- `ResearchInput` 在进入图前对长度、数量、候选重复、权重和来源策略做严格校验。
+- 节点确定性识别缺少候选或评价维度；完整和缺失输入都进入人工确认边界。
 - 不调用模型，不访问网络。
 
-### `propose_clarification`
+### 缺失需求处理
 
-- 只提出最少必要问题或候选默认值。
-- 结构化输出失败最多再生成 1 次；仍失败则停止。
-- 不把模型提案视为用户批准。
+- 离线 v1 没有 `propose_clarification` 模型节点。
+- 缺少候选或评价维度时，`confirm_requirements` 保存缺失项；`await_human_requirements` 暂停等待人工编辑。
+- 系统不提出默认候选或维度，不把确定性夹具当成人工批准。
 
 ### `confirm_requirements`
 
-- 暂停并展示规范化需求、候选、维度、权重、来源范围和预计调用上限。
-- 只接受 `approve`、`edit`、`cancel` 三类结构化动作。
-- `edit` 后重新走输入校验。
+- 写入规范化需求、缺失项、新确认 revision 和请求哈希。
+- `await_human_requirements` 随后暂停，只接受 `approve`、`edit`、`reject`、`cancel`。
+- `edit` 后重新校验；旧 revision/hash 决定失效。
 
 ### `plan_research`
 
-- 把已批准需求拆成研究问题和有限检索计划。
-- 每个检索项必须绑定候选、评价维度和预期证据类型。
-- 不能新增未批准候选、来源域或写操作。
+- 需求切片中的 `plan_research` 只生成确定性 `plan_id`。
+- 完整图使用同名节点选择当前检索轮次的冻结 `ToolCall`；调用必须保持在批准候选、维度和来源范围内。
+- 当前没有真实模型规划；不能新增未批准候选、来源或写操作。
 
 ### `execute_tools`
 
@@ -323,7 +328,7 @@ flowchart TD
 - 写作者只引用 `evidence_id`；程序绑定来源 ID、标题、版本、章节和来源 SHA-256。
 - 只有 `EVIDENCE_SUFFICIENT` 才能进入后续写作；证据不足路径不得生成草稿。
 - 当前确定性夹具要求声明精确匹配固定金标准；这证明引用和范围边界，不替代未来语义审校。
-- 当前成功只到 `DRAFTED`，不允许导出。
+- 节点成功产生 `DRAFTED`；完整图继续进入审校，不能直接导出。
 
 ### `review_report`
 
@@ -332,14 +337,14 @@ flowchart TD
 1. 当前已实现：确定性检查引用集合、策略要求的候选/维度覆盖和禁止断言。
 2. 尚未实现：模型审校比较公平性、证据与表述强度、矛盾、遗漏和可读性。
 
-默认最多 2 次自动修改。初始审校不计修改次数；修改上限后仍有发现项则稳定失败。当前通过只到 `REVIEWED`。
+默认最多 2 次自动修改。初始审校不计修改次数；修改上限后仍有发现项则稳定失败。通过后进入最终报告人工确认。
 
 ### `confirm_report`
 
-- 当前最小实现持久化新的报告确认 revision，再暂停并显示结构化报告及已通过的审校结果。
+- `confirm_report` 持久化新的报告确认 revision；`await_human_report` 再暂停并显示结构化报告及已通过的审校结果。
 - 只接受 `approve`、`request-changes`、`reject`、`cancel`。
 - 人工退回最多 2 次。决定绑定运行身份、暂停 revision、报告 revision 和内容哈希，旧批准不能授权新内容。
-- 批准只进入 `REPORT_APPROVED`；导出仍是后续独立副作用边界。
+- 在 `report-confirmation-v1` 中批准停在 `REPORT_APPROVED`；在完整 `report-export-v1` 中批准进入独立 `EXPORT_READY`/导出边界。
 
 ### `export_report`
 
@@ -428,7 +433,7 @@ Tool Calling 执行流程：
 
 | 条件 | 路由 | 上限或终态 |
 |---|---|---|
-| 需求缺字段 | `propose_clarification` | 等待人工，不自动猜测批准 |
+| 缺候选或评价维度 | `confirm_requirements` 后 `await_human_requirements` | 等待人工，不自动猜测 |
 | 人工修改需求 | `validate_request` | 每次生成新 approval revision |
 | 瞬时工具错误 | 重试当前工具 | 初次加 2 次重试，共 3 次尝试 |
 | 参数、权限、404 或内容哈希错误 | 失败或重新规划 | 不自动重试相同调用 |
@@ -440,7 +445,7 @@ Tool Calling 执行流程：
 | 审校需修改 | `draft_report` | 最多 2 轮自动修改 |
 | 人工退回 | `apply_human_report_revision` | 最多成功返修 2 次；重新审校并再次暂停 |
 | 第 3 次人工退回 | `FAILED` | `human-revision-limit-exhausted` |
-| 结构化模型输出非法 | 重生成当前输出 | 最多 1 次 |
+| 未来真实结构化模型输出非法 | 重生成当前输出 | 离线 v1 不适用；接入时最多 1 次 |
 | 最终报告人工取消或拒绝 | `REPORT_CANCELLED` / `REPORT_REJECTED` | 稳定终态 |
 | 已批准报告待导出 | `export_report` | 只允许程序派生的 Markdown 制品 |
 | 同一制品已经存在且字节一致 | `COMPLETED` | `UNCHANGED`，不新增文件 |
@@ -453,7 +458,7 @@ Tool Calling 执行流程：
 ## 8. 重试策略
 
 - 只重试超时、连接中断、HTTP 429 和明确的 5xx 瞬时错误。
-- 指数退避参数在实现阶段固定；普通测试用虚拟时钟，不真实等待。
+- 离线 v1 不真实等待，也未实现指数退避；未来真实适配器必须固定退避参数并用虚拟时钟测试。
 - 同一工具重试使用相同规范参数和相同逻辑调用 ID。
 - 401、403、404、Schema 错误、allowlist 拒绝、内容哈希冲突和预算不足不重试。
 - 模型重试不得静默增加候选、资料范围或输出权限。
@@ -485,15 +490,15 @@ Tool Calling 执行流程：
 
 ## 10. 状态持久化
 
-首版计划使用 P2 本地 SQLite checkpoint；具体 LangGraph checkpointer 包和精确版本在依赖提案阶段确认，不在本阶段安装。
+离线 v1 使用 P2 本地 SQLite checkpoint，固定 `langgraph-checkpoint-sqlite==3.1.0`，并要求 `LANGGRAPH_STRICT_MSGPACK=true`。
 
 规则：
 
 - 每个节点成功后保存 checkpoint；人工暂停前强制保存。
 - 使用稳定 `thread_id/run_id` 恢复，不用自然语言标题定位。
-- checkpoint 带状态 Schema、图、Prompt 和来源快照版本。
+- checkpoint 带状态 Schema、图和来源快照版本；离线 v1 没有 Prompt。
 - 版本不兼容时拒绝自动恢复；后续如需迁移，使用显式迁移脚本和测试。
-- 并发恢复使用状态版本检查，旧客户端不能覆盖新状态。
+- 人工决定通过 revision/hash 绑定拒绝旧决定；当前没有通用多进程并发写入协议。
 - 持久化前脱敏；供应商原始响应只在内存解析，状态保存验证后字段和 usage。
 - 测试可使用临时 SQLite 或内存替身；不得写入 P1 数据目录。
 

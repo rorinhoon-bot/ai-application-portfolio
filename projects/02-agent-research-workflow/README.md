@@ -8,6 +8,13 @@
 
 首版场景：**AI 应用技术选型研究报告**。例如，输入“为中文技术文档问答选择工作流框架，比较 2～4 个候选方案，并考虑成本、可观测性和 Human-in-the-loop”，输出带证据、限制和建议的 Markdown 报告。
 
+## 用户、输入、输出与边界
+
+- 目标用户：需要比较 AI 应用技术方案的工程师、技术负责人和产品负责人。
+- 输入：研究问题、报告读者、业务约束、2～4 个候选方案、3～8 个评价维度及固定来源策略。候选或评价维度缺失时暂停等待人工，不自行猜测。
+- 输出：人工批准后的内容寻址 Markdown 报告，以及可机器校验的运行摘要。
+- 不处理：真实或实时技术选型、任意网页搜索、代码/依赖/云资源修改、高风险医疗/法律/金融研究、公开部署。
+
 ## 与普通聊天机器人、普通 RAG 的区别
 
 - 普通聊天机器人通常直接生成一段回答；本项目保存显式状态，按节点执行，有条件路由、重试上限、停止条件和人工暂停。
@@ -34,6 +41,20 @@
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
 当前仍只使用原创虚构资料、确定性假工具和假写作者。未下载真实研究语料，未调用模型 API，未产生费用，也未公开部署。
+
+## 新环境安装
+
+要求：Windows、CPython `3.14.x`。在仓库根目录打开 PowerShell：
+
+```powershell
+Set-Location projects\02-agent-research-workflow
+& 'C:\Path\To\Python314\python.exe' --version
+& 'C:\Path\To\Python314\python.exe' -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip check
+```
+
+把示例 Python 路径替换为本机 CPython 3.14 可执行文件。`requirements-dev.txt` 已固定生产、传递和测试依赖版本。当前离线演示不需要 API Key；所需环境变量完整列在 `.env.example`，运行命令会显式设置它们。
 
 ## 离线演示
 
@@ -103,3 +124,7 @@ $env:LANGSMITH_TRACING="false"
 ## 学习与面试讲义
 
 30 秒、2 分钟和 5 分钟介绍、核心代码、面试问答、自测题及诚实参与范围见 [`LLH_Study.md`](LLH_Study.md)。完成讲义不等于项目已通过最终验收；P2 当前仍为 `in_progress`。
+
+## 完成审计
+
+逐项 `PROJECT_STANDARDS.md` 证据和唯一剩余阻塞见 [`docs/COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md)。人工报告质量评分使用 [`evals/HUMAN_REPORT_RUBRIC.md`](evals/HUMAN_REPORT_RUBRIC.md)；评分不能由自动测试或 AI 助手代填。

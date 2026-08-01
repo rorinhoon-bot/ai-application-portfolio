@@ -1,4 +1,4 @@
-"""Minimal LangGraph for requirement validation and human confirmation."""
+"""Explicit LangGraph workflow for offline evidence-backed reports."""
 
 from __future__ import annotations
 
