@@ -1,9 +1,9 @@
 # P2 完成审计
 
-- 审计版本：v0.1
+- 审计版本：v0.2
 - 日期：2026-08-01
 - 对照标准：仓库根目录 `docs/PROJECT_STANDARDS.md`
-- 当前结论：7 类工程与展示标准已有证据；PRD 人工报告质量量表尚未执行，P2 保持 `in_progress`
+- 当前结论：7 类工程与展示标准及 PRD 人工报告质量量表均已通过；P2 可标记为 `completed`。
 
 ## 1. 问题与用户：PASS
 
@@ -32,7 +32,7 @@
 - 普通测试覆盖成功、缺失需求、非法输入、工具瞬时/确定性失败、证据不足、自动与人工返修上限、人工拒绝/取消、checkpoint 恢复和导出冲突。
 - 高风险导出覆盖人工批准、revision/hash 绑定、路径规范化、symlink/junction 拒绝、不可覆盖发布和崩溃窗口重放。
 - `tests/conftest.py` 默认阻断网络。
-- 最近一次完整 pytest 结果：`144 passed`。
+- 最终完整 pytest 结果：`144 passed`。
 
 ## 5. AI 评估：PASS（工作流可靠性范围）
 
@@ -61,13 +61,8 @@
 - `demo/generated/` 有人工批准路径的固定 Markdown 报告和演示 manifest。
 - `demo/FIVE_MINUTE_TALK.md` 与 `LLH_Study.md` 支持五分钟讲解、面试问答和自测。
 
-## 8. 完成检查：BLOCKED
+## 8. 完成检查：PASS
 
-PRD 要求人工报告量表平均分至少 `4/5`。当前没有真实人工评分，不能由自动测试、确定性夹具或 AI 编码助手代填。
+真实人工已阅读 `demo/generated/report-v2.md`，并按 `evals/HUMAN_REPORT_RUBRIC.md` 评分：清晰度 `5`、证据充分性 `5`、比较公平性 `5`、可执行性 `5`、限制说明 `4`，平均 `4.8/5`。完整记录见 `evals/results/workflow-v2-human-report-review.md`。
 
-解除阻塞：
-
-1. 人工阅读 `demo/generated/3cb6e874c988bd2795164fbde10e882e1093a536bb0a01d40f180cd097f24dd0.md`。
-2. 按 `evals/HUMAN_REPORT_RUBRIC.md` 对五个维度各给 1～5 分，并写一句主要问题。
-3. 平均分达到 `4.0`：保存结果，重跑全部验证，再把 P2 与作品集计划标记为完成。
-4. 平均分低于 `4.0`：保持 `in_progress`，记录失败分类；另建修订版本，不修改 `workflow-v1` 金标准迎合评分。
+评分达到 `4.0/5` 门槛后，已重跑环境检查、全部 pytest、固定评估、观测样例、离线演示、SVG、编译和 `pip check`，均通过。AI 自评另存为辅助材料，未用于人工验收结论。

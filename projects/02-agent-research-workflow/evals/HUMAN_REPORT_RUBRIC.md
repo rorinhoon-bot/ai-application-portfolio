@@ -1,4 +1,4 @@
-# workflow-v1 人工报告质量量表
+# workflow-v1 / workflow-v2 人工报告质量量表
 
 ## 评审对象
 

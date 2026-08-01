@@ -36,7 +36,8 @@
 - 可选运行时 observer 已覆盖完整图；生成 `node-event-v1` 和内容哈希绑定的 `run-summary-v1`，不进入 checkpoint。
 - `offline-demo-v1` 用三个固定案例展示需求暂停、成功导出和证据不足停止，并关联确定性运行摘要。
 - 当前量化基线：案例通过 `12/12`，路径 `12/12`，引用绑定 `10/10`，重试/停止 `12/12`，checkpoint 恢复 `1/1`，无证据声明 `0/10`，未批准导出与权限扩大均为 `0`。
-- 当前普通测试：`144 passed`；测试默认阻断网络。
+- 最终普通测试：`144 passed`；测试默认阻断网络。
+- v2 报告真实人工质量评分：`4.8/5`，通过 `4.0/5` 门槛；记录见 `evals/results/workflow-v2-human-report-review.md`。
 - 需求见 `docs/PRD.md`，状态图和安全边界见 `docs/ARCHITECTURE.md`。
 - 精确依赖提案见 `docs/DEPENDENCIES.md`；首批原创离线评估资料见 `docs/EVALUATION_DATA.md`。
 
@@ -119,12 +120,12 @@ $env:LANGSMITH_TRACING="false"
 
 ## 开发复盘
 
-离线首版的开发过程、失败根因、关键取舍、限制和真实模型接入条件见 [`RETROSPECTIVE.md`](RETROSPECTIVE.md)。P2 尚需完成最终验收审计，当前仍为 `in_progress`。
+离线首版的开发过程、失败根因、关键取舍、限制和真实模型接入条件见 [`RETROSPECTIVE.md`](RETROSPECTIVE.md)。P2 已完成最终验收；真实模型、真实资料和部署仍需另立版本。
 
 ## 学习与面试讲义
 
-30 秒、2 分钟和 5 分钟介绍、核心代码、面试问答、自测题及诚实参与范围见 [`LLH_Study.md`](LLH_Study.md)。完成讲义不等于项目已通过最终验收；P2 当前仍为 `in_progress`。
+30 秒、2 分钟和 5 分钟介绍、核心代码、面试问答、自测题及诚实参与范围见 [`LLH_Study.md`](LLH_Study.md)。P2 已通过最终验收；讲义不代表真实模型或真实资料能力。
 
 ## 完成审计
 
-逐项 `PROJECT_STANDARDS.md` 证据和唯一剩余阻塞见 [`docs/COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md)。人工报告质量评分使用 [`evals/HUMAN_REPORT_RUBRIC.md`](evals/HUMAN_REPORT_RUBRIC.md)；评分不能由自动测试或 AI 助手代填。
+逐项 `PROJECT_STANDARDS.md` 证据见 [`docs/COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md)。真实人工报告质量评分为 `4.8/5`，记录见 [`evals/results/workflow-v2-human-report-review.md`](evals/results/workflow-v2-human-report-review.md)；AI 自评未代替人工验收。

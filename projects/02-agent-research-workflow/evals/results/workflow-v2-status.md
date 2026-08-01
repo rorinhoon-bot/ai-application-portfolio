@@ -1,11 +1,12 @@
 # workflow-v2 报告改写状态
 
-- 状态：`DRAFT_AWAITING_HUMAN_REVIEW`
+- 状态：`ACCEPTED`
 - 日期：2026-08-01
 - 范围：报告展示与人工评审改写；不是新的 LangGraph 图版本，不替代 `workflow-v1` 可靠性基线。
 - 报告：`demo/generated/report-v2.md`
 - 完整文件 SHA-256：`4b417eefa5b50f6e16258e8b35b538f441d7e7d3a9733e4009cf3f19e25d8674`；同值见 `demo/generated/report-v2.md.sha256`
 - 来源快照：`0e73ca7de985cdccb9295252fe2e7f3b2725183681a0576db2c7fb0838b44e3c`
+- 人工评分：`evals/results/workflow-v2-human-report-review.md`，`4.8/5`，达到 `4.0/5` 门槛；完整离线回归已通过。
 
 ## v1 到 v2 变更
 
@@ -34,4 +35,4 @@
 
 ## 人工验收边界
 
-`workflow-v2-ai-self-review.md` 只是 AI 自评记录，不是人工质量量表结果。真实人工仍须阅读 `report-v2.md`，按 `HUMAN_REPORT_RUBRIC.md` 打分后，才能决定 P2 是否完成。
+`workflow-v2-ai-self-review.md` 只是 AI 自评记录，不是人工质量量表结果。真实人工已按 `HUMAN_REPORT_RUBRIC.md` 复评并通过，完整离线回归也已通过；P2 最终验收完成。
