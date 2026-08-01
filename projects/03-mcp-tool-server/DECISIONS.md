@@ -80,3 +80,17 @@
 - 测试底座：当前用 CPython 标准库 `unittest`（`python -m unittest`）直接运行，避免提前引入 pytest 与安装步骤；后续统一测试框架待安装批准时再决定。
 - 边界：`index.py` 当前仅做最小普通 `.md` 文件登记，未实现 symlink/junction/reparse point/路径穿越/TOCTOU 的拒绝式检查；这些属于 Slice B，未因 Slice A 提前放宽。
 - 结果：`compileall` 通过；27 项 stdlib 单元测试全部通过；无网络、无依赖、无密钥。
+
+## D-012：P1 安全加固的确定性边界（Codex 验收项）
+
+- 状态：accepted
+- 日期：2026-08-01
+- 决定：针对 Codex 验收列出的 P1 项，在 Slice A 基础上固化以下不可绕过边界：
+  - **NFKC 优先于形态拒绝**：`validate_keyword` 先 `unicodedata.normalize("NFKC", raw)` 再 `strip`，随后才执行绝对路径/`..`/URL scheme/Shell 语义拒绝。防止全角 `／＼：｜＜＞＆＄（` 经归一后变成危险形态绕过。Keyword.value 存储归一化结果。
+  - **匹配用 NFKC + casefold**：比 `lower()` 更强，覆盖德文 ß→ss 等 Unicode 大小写折叠，确定性、可逆解释。
+  - **hits 与 excerpt 硬上限**：`MAX_HITS=5`、`EXCERPT_MAX=120` 为模块常量；`search_notes` 不再接收可放大的 `max_hits`/`excerpt_max` 参数。excerpt 以“最终转义文本 + 省略号”的真实长度计入预算，确保结果长度必 <= 120。
+  - **非法参数返回稳定错误对象**：`validate_keyword` / `parse_search_notes_args` 非法时返回 `ArgumentError(error_code="invalid-arguments")`，不再返回 None；对外可稳定映射错误码，不泄露路径/正文/异常。
+  - **标题按不可信数据净化**：`index.extract_title` 经 `sanitize_title` 去控制字符、转义 HTML、限长（TITLE_MAX=80，含省略号）；检索层直接复用已净化标题，不做二次转义以避免实体被重复转义。
+  - **默认网络阻断底座**：新增 `tests/_network_block.py` 的 `NetworkBlockedTestCase`，在 `setUp` 替换 socket 核心入口并 `tearDown` 还原；普通单测默认继承，任何 DNS/socket/HTTP 尝试立即失败。
+- 原因：这些边界是 Codex 验收明确指出的可被绕过或缺失项；固化后调用方与外部输入均无法放大长度、伪造路径/URL/Shell、或静默联网。
+- 结果：`compileall` 通过；38 项 stdlib 单元测试全部通过（含 3 个全角绕过反例、1 个 casefold Unicode 反例、网络阻断验证 5 项）；无网络、无依赖、无密钥。

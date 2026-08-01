@@ -11,7 +11,7 @@ import hashlib
 import os
 from pathlib import Path
 
-from .contracts import NoteIndexEntry
+from .contracts import NoteIndexEntry, TITLE_MAX, sanitize_title
 
 NOTE_EXT = ".md"
 
@@ -22,14 +22,18 @@ def compute_note_id(relative_path: str) -> str:
 
 
 def extract_title(text: str, fallback_name: str) -> str:
-    """取首个一级标题文本；无则回退为文件名（去 .md）。"""
+    """取首个一级标题文本；无则回退为文件名（去 .md）。
+
+    标题来自不可信笔记内容，统一经 sanitize_title 净化（去控制字符、转义 HTML、
+    限长）后进入索引与结果，不在检索层二次转义。
+    """
     for line in text.splitlines():
         s = line.strip()
         if s.startswith("# "):
-            return s[2:].strip()
+            return sanitize_title(s[2:].strip(), TITLE_MAX)
     if fallback_name.endswith(NOTE_EXT):
-        return fallback_name[: -len(NOTE_EXT)]
-    return fallback_name
+        return sanitize_title(fallback_name[: -len(NOTE_EXT)], TITLE_MAX)
+    return sanitize_title(fallback_name, TITLE_MAX)
 
 
 def build_index(notes_root: os.PathLike | str) -> list[NoteIndexEntry]:

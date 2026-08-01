@@ -9,9 +9,17 @@
   - 创建 README、PRD、架构、依赖提案、离线评估方案和安全接力说明。
   - 固定只读 `search_notes(keyword)`、受控写 `create_task(title, description)`、只读 Resource、路径安全、人工确认与幂等边界。
   - Slice A（search_notes 纯标准库合同）已完成并验证：新增 `src/mcp_notes/`（`contracts.py` 数据类型与参数校验、`index.py` 索引、`search.py` 检索）；3 份原创虚构笔记夹具 `evals/fixtures/notes-v1/`；stdlib `unittest` 套件 `tests/test_search_contract.py`。
-  - Slice A 锁定参数：note_id = SHA-256(relative_path)[:16]；excerpt 内部上限 120 字符；匹配为大小写无关 + Unicode NFKC 归一；hits 上限 5，按索引顺序返回。
-  - 用托管 Python 3.13 直接运行 stdlib `unittest`，未建 `.venv`、未安装任何依赖；`compileall` 通过，27 项测试全部通过。
+  - **P1 前基线（Slice A 初始提交 9e482d5）**：note_id = SHA-256(relative_path)[:16] 与 hits 上限 5、按索引顺序返回仍为最终事实；当时记录的“excerpt 内部上限 120 字符、匹配为大小写无关 + NFKC、27 项测试”属初始实现口径，已被下列 P1 最终事实替代。
+  - 用托管 Python 3.13 直接运行 stdlib `unittest`，未建 `.venv`、未安装任何依赖；`compileall` 通过，Slice A 初始实现 27 项测试全部通过（P1 前基线）。
   - 明确 Slice A 不含路径安全（symlink/junction/reparse point/TOCTOU）与 MCP SDK 适配；二者属于后续切片，未因 Slice A 提前放宽。
+  - **最终事实（P1 后）**：`compileall` 通过；stdlib `unittest` **38 项全部通过**；全部单测默认继承网络阻断底座。具体固化边界：
+    - 匹配：`NFKC` 归一 + `casefold()`（覆盖德文 ß 等，强于 `lower()`）。
+    - `validate_keyword` 先 `NFKC` 归一再做形态拒绝，拦截全角 `／＼：｜＜＞＆＄（` 绕过。
+    - `hits` 上限 **5**、`excerpt` 最终返回长度 **≤120** 为不可调用方绕过的常量硬上限，转义文本与省略号计入总长度。
+    - 非法参数返回稳定 `ArgumentError`（`error_code="invalid-arguments"`）而非 `None`。
+    - 笔记标题按不可信数据在索引处转义限长（`TITLE_MAX=80`）。
+    - 默认网络阻断底座 `tests/_network_block.py`，任何 DNS/socket/HTTP 尝试立即失败。
+  - **独立复验**：Codex 已在 **CPython 3.14.3** 独立复验 38 项 stdlib 测试全部通过（与托管 Python 3.13 结果一致）。
 - 未完成：
   - 未安装依赖、未创建 `.venv`、未创建 requirements 文件（Slice A 仅用标准库，无需安装）。
   - 未实现 MCP Server 适配层、Resource `notes://service-info`、Tool 注册或 stdio transport。

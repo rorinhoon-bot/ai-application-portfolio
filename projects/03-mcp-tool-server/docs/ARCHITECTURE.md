@@ -1,7 +1,13 @@
 # P3 架构：规划中的本地 MCP 服务
 
-- 版本：v0.1（规划中，未实现）
+- 版本：v0.1（规划中；Slice A 的 search_notes 纯标准库核心已实现并离线验证）
 - 日期：2026-08-01
+
+## 0. 实现状态（Slice A 已完成 / 仍计划）
+
+- **已实现（Slice A，纯标准库、离线、无依赖）**：`search_notes` 的数据合同、参数校验、笔记索引登记（最小普通 `.md` 登记）、确定性离线检索与 stdlib `unittest` 套件（含默认网络阻断底座）。关键词先 NFKC 归一再拒绝路径/URL/Shell 形态；匹配用 NFKC + casefold；excerpt 与 hits 为常量硬上限；非法参数返回稳定 `ArgumentError`；笔记标题按不可信数据转义限长。
+- **仍为计划（Slice B 及之后）**：MCP Server 适配层与 Resource `notes://service-info`、stdio transport；`create_task` 待确认意图与人工确认状态机；sqlite3 持久化；以及**路径安全检查**（symlink/junction/reparse point/`..` 越界/TOCTOU 拒绝式检查）。当前 `index.py` 仅为最小文件登记，未施行文件系统防护，不得宣称路径安全已实现。
+- 图中组件除已说明的 Slice A 核心外，其余仍为计划边界。
 
 ## 1. 组件边界
 

@@ -1,8 +1,8 @@
 # P3 固定离线评估方案
 
-- 版本：v0.1（规划中）
+- 版本：v0.1（规划中；Slice A 部分落地）
 - 日期：2026-08-01
-- 当前状态：只定义方案；没有夹具、金标准、基线结果或 MCP 运行。
+- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）。完整的 40 例固定套件、`evals/cases`、`evals/gold`、基线结果 `evals/results` 与 MCP 运行仍未实施。
 
 ## 1. 数据边界与快照
 
@@ -71,7 +71,7 @@
 
 ## 5. 测试隔离与扫描
 
-- 普通测试默认安装网络阻断器；任何 DNS、socket、HTTP 或 SDK 网络尝试立即失败并记录最小分类，不写 URL/请求头。
+- 普通测试默认安装网络阻断器；任何 DNS、socket、HTTP 或 SDK 网络尝试立即失败并记录最小分类，不写 URL/请求头。**Slice A 已实现 `tests/_network_block.py` 的 `NetworkBlockedTestCase` 基类与验证用例，现有单测默认继承该底座。**
 - 所有文件测试在系统临时目录复制或生成夹具；不读取真实用户目录，任务目标仅为测试专用受控根。
 - Windows-only junction/reparse point 案例在不支持的平台显式标为 `skipped-with-reason`，不能伪装通过；Windows P3 主环境必须实际执行。
 - 扫描模式覆盖典型 API key、Bearer、Cookie、授权头、连接串、私钥标记、绝对用户路径与未脱敏 traceback；扫描结果只报告文件与类别，不回显疑似秘密。
