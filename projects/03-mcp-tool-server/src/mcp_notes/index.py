@@ -1,15 +1,20 @@
-"""P3 Slice A：笔记索引构建与内容读取（纯标准库，离线）。
+"""P3 Slice B1：笔记索引构建与内容读取（句柄级路径安全，离线）。
 
-注意：本切片仅做最小文件登记与普通文件读取；symlink/junction/reparse point、
-路径穿越与 TOCTOU 的拒绝式检查属于后续路径安全切片，未在此实现。当前 build_index
-对普通 .md 文件登记元数据，不展开完整防护。
+本切片通过 `safe_open` 的 Windows 原生句柄层（NtOpenFile / NtQueryDirectoryFile）
+建立 `.md` 笔记索引并读取正文，抵御 symlink / junction / reparse point 跟随与
+TOCTOU，并拒绝 `..` 路径逃逸与非普通文件。
+
+保留 Slice A 行为：`compute_note_id`、`extract_title`、NoteIndexEntry 字段
+（note_id / title / relative_path / size / sha256）与字符串读取结果不变。
+
+事务语义（§9）：索引构建整体失败（含原生不可用、配置非法、IO 错误、reparse、
+超大文件 > MAX_NOTE_BYTES 等）时整体失败、不发布部分索引。
+超大文件使本次构建失败并丢弃新索引，绝不静默跳过或发布部分结果。
 """
 
 from __future__ import annotations
 
 import hashlib
-import os
-from pathlib import Path
 
 from .contracts import NoteIndexEntry, TITLE_MAX, sanitize_title
 
@@ -36,32 +41,70 @@ def extract_title(text: str, fallback_name: str) -> str:
     return sanitize_title(fallback_name, TITLE_MAX)
 
 
-def build_index(notes_root: os.PathLike | str) -> list[NoteIndexEntry]:
-    """从笔记根目录登记普通 .md 文件，生成 NoteIndexEntry 列表（按相对路径排序）。"""
-    root = Path(notes_root)
+def _make_entry(relative_path: str, data: bytes, filename: str) -> NoteIndexEntry:
+    """从文件字节构造 NoteIndexEntry（保留 Slice A 字段语义）。"""
+    text = data.decode("utf-8", errors="replace")
+    return NoteIndexEntry(
+        note_id=compute_note_id(relative_path),
+        title=extract_title(text, filename),
+        relative_path=relative_path,
+        size=len(data),
+        sha256=hashlib.sha256(data).hexdigest(),
+    )
+
+
+def build_index(notes_root: object) -> list[NoteIndexEntry]:
+    """从笔记根目录经句柄级路径安全层登记 `.md` 文件，生成 NoteIndexEntry 列表。
+
+    整体失败（原生不可用 / 配置非法 / IO 错误 / reparse / 超大文件等）抛
+    `IndexBuildFailed`，不发布部分索引（§9）。超大文件（> MAX_NOTE_BYTES）会使
+    本次构建失败并丢弃新索引，绝不静默跳过。
+    """
+    from . import safe_open
+
+    if not safe_open.verify_native_support():
+        # R0：绝不回退到字符串路径方案
+        raise safe_open.UnsafeOpenUnavailable()
+
+    root_h = None
     entries: list[NoteIndexEntry] = []
-    for path in sorted(root.rglob("*")):
-        if not path.is_file():
-            continue
-        if path.suffix.lower() != NOTE_EXT:
-            continue
-        data = path.read_bytes()
-        text = data.decode("utf-8", errors="replace")
-        rel = str(path.relative_to(root)).replace("\\", "/")
-        entries.append(
-            NoteIndexEntry(
-                note_id=compute_note_id(rel),
-                title=extract_title(text, path.name),
-                relative_path=rel,
-                size=len(data),
-                sha256=hashlib.sha256(data).hexdigest(),
-            )
-        )
+    try:
+        root_name = safe_open.configure_root(str(notes_root))
+        root_h = safe_open._nt_open(0, root_name, is_dir=True)
+
+        def consumer(rel_parts: list[str]) -> None:
+            rel = "/".join(rel_parts)
+            # 超大文件会在此抛出 ContentTooLarge → 向上传播 → 整个构建失败
+            data = safe_open.open_file_relative(root_h, rel_parts)
+            entries.append(_make_entry(rel, data, rel_parts[-1]))
+
+        safe_open._walk(root_h, [], consumer)
+    except safe_open.SafeOpenError:
+        # 构建失败：丢弃新索引，不发布部分（§9 事务语义）。
+        # 涵盖 NotAllowedReparse / ContentTooLarge / IoError / PathEscape 等。
+        raise safe_open.IndexBuildFailed()
+    finally:
+        if root_h is not None:
+            safe_open._close(root_h)
+
+    entries.sort(key=lambda e: e.relative_path)
     return entries
 
 
-def read_note_content(entry: NoteIndexEntry, notes_root: os.PathLike | str) -> str:
-    """按登记的 relative_path 读取笔记正文（UTF-8）。"""
-    root = Path(notes_root)
-    path = root / entry.relative_path
-    return path.read_text(encoding="utf-8", errors="replace")
+def read_note_content(entry: NoteIndexEntry, notes_root: object) -> str:
+    """按登记的 relative_path 经句柄级路径安全层读取笔记正文（UTF-8）。"""
+    from . import safe_open
+
+    if not safe_open.verify_native_support():
+        raise safe_open.UnsafeOpenUnavailable()
+
+    root_h = None
+    try:
+        root_name = safe_open.configure_root(str(notes_root))
+        root_h = safe_open._nt_open(0, root_name, is_dir=True)
+        parts = entry.relative_path.replace("\\", "/").split("/")
+        data = safe_open.open_file_relative(root_h, parts)
+    finally:
+        if root_h is not None:
+            safe_open._close(root_h)
+    return data.decode("utf-8", errors="replace")

@@ -94,3 +94,20 @@
   - **默认网络阻断底座**：新增 `tests/_network_block.py` 的 `NetworkBlockedTestCase`，在 `setUp` 替换 socket 核心入口并 `tearDown` 还原；普通单测默认继承，任何 DNS/socket/HTTP 尝试立即失败。
 - 原因：这些边界是 Codex 验收明确指出的可被绕过或缺失项；固化后调用方与外部输入均无法放大长度、伪造路径/URL/Shell、或静默联网。
 - 结果：`compileall` 通过；38 项 stdlib 单元测试全部通过（含 3 个全角绕过反例、1 个 casefold Unicode 反例、网络阻断验证 5 项）；无网络、无依赖、无密钥。
+
+## D-013：Slice B1 句柄级路径安全索引实现（v6 合同 + Codex P0/P1 修订）
+
+- 状态：accepted
+- 日期：2026-08-02
+- 决定：路径安全检查通过 Windows 原生对象管理器 API 实现，而非字符串路径遍历：
+  - 仅用 `NtOpenFile`（携带 `OBJ_DONT_REPARSE`，相对已验证父目录 HANDLE 打开）与 `NtQueryDirectoryFile`（class=1 = `FileDirectoryInformation`）做枚举与读取；**不**使用 `os.scandir` / `os.walk` / `glob` / `Path.rglob` / `os.path.realpath`，以抵御 reparse point 跟随与 TOCTOU（T6 静态校验源码不含这些 API）。
+  - 缓冲区解析遵循 §4.4 硬边界逐字段断言（新增 `buffer_length` 参数并断言 `0 < Information <= buffer_length`；固定头长度用 `FileName.offset` 而非 `sizeof`；`FileNameLength` 偶数字节；`NextEntryOffset==0` → `record_end=Information` 且本批结束，`NextEntryOffset!=0` 须 `>= 固定头长`、`8` 字节对齐、`record_start < record_end <= Information`；`FileName` 区域不得越过 `record_end`；UTF-16LE 解码异常 → `io-error`）；任何越界 / 畸形 / `Information==0` / 非成功状态 / `BUFFER_OVERFLOW` 一律 `io-error`，绝不返回部分枚举结果。
+  - 根配置门先拒绝 `..` / UNC / `\\?\` / `\\.\` / `\Device\` / 正斜杠混用 / 相对路径，再接受本地盘符绝对路径，`ObjectName = "\\??\\" + 归一化`；`UNICODE_STRING.Length/MaximumLength` 按真实 `name.encode("utf-16-le")` 字节数计算并拒绝超过 `USHORT` 上限，底层 UTF-16 缓冲（`create_unicode_buffer`）经 `cast` 持有引用并在 Native 调用期间存活。
+  - 组件级校验（§4.6）拒绝空段、`.`、`..`、`\`、`/`、`:`、`< > " | ? *`、控制字符、尾随点 / 空格、保留设备名；`open_file_relative` 先校验 `rel_parts` 为非空列表并对每一级组件校验；`_nt_open` 在相对父 HANDLE 打开时**也自行校验组件**，不依赖调用方。
+  - 文件打开（非目录）携带 `FILE_READ_ATTRIBUTES`，打开后查询 `WIN32_FILE_BASIC_INFO` 拒绝 DIRECTORY / REPARSE_POINT / DEVICE，再查询 `WIN32_FILE_STANDARD_INFO` 做容量上限（`> MAX_NOTE_BYTES`(1 MiB) → `content-too-large`）；任一查询失败 → `io-error`。Win32 与 Native 枚举使用不同具名常量（`WIN32_FILE_BASIC_INFO=0` / `WIN32_FILE_STANDARD_INFO=1` / `NATIVE_FILE_DIRECTORY_INFORMATION=1`），`GetFileInformationByHandleEx` 第二参数用 `wintypes.DWORD`，避免两类枚举数值巧合而混淆；`IO_STATUS_BLOCK` 的 `Status` 用 32 位 `c_long`、`Information` 用指针宽度 `c_size_t`（不写死 `c_ulonglong`）。
+  - R0 / T0 真实机器 ABI 冒烟（根打开 + 枚举 + 相对文件打开 + `FileBasicInfo` + `FileStandardInfo` + HANDLE→fd 读取 + 关闭一次 + 清理临时目录）；若失败抛 `unsafe-open-unavailable`，**绝不回退**到字符串路径方案（满足 D-003 “安全失败，不降级为尽力读取”）。
+  - 失败关闭与事务语义（§9）：reparse 条目 → `_walk` 抛 `not-allowed-reparse`（**不** `continue` 跳过、不继续构建）→ `build_index` 整体失败 `index-build-failed`；**超大文件使本次构建失败并丢弃新索引，绝不静默跳过或发布部分结果**；构建整体失败（原生不可用 / 配置非法 / IO 错误 / reparse / 超大）时整体失败、不发布部分索引。`index.py` 经该层构建 `.md` 索引与读取正文，保留 Slice A 全部字段（note_id / title / relative_path / size / sha256）与检索行为。
+  - 所有失败映射为稳定错误码，不泄露路径、用户名、环境变量或原始系统错误文本。
+- 原因：仅做字符串前缀判断无法抵抗链接、junction、重解析点和 TOCTOU；句柄级打开能在打开对象这一刻原子地拒绝 reparse，且不依赖不可信的路径字符串解析。
+- 边界：链接专项测试（T7–T10）默认跳过，即使设置 `P3_ALLOW_FS_LINK_FIXTURES=1` 也仅为未实现门控占位（真实 symlink / junction 夹具尚不可用，按授权禁止创建或运行）；预期行为为拒绝/构建失败（任何 reparse → `not-allowed-reparse` → `index-build-failed`），而非跳过。B1 仅在 Windows 原生 API 可用时启用，非 Windows 平台 R0 安全失败。
+- 结果：`compileall` 通过；B1 新增 T0–T9 共 30 项 + Slice A 既有测试全部保留并通过；stdlib `unittest` 共 72 项（68 执行通过 + 4 链接测试默认跳过）；无网络、无依赖、无密钥。经 Codex 二次独立复验未通过后，按 P0/P1 清单修订 `UNICODE_STRING.MaximumLength` 溢出边界并补失败回归测试、统一真实链接测试合同与文档测试数，复跑 72 项全部通过。

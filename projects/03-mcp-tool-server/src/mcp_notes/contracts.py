@@ -1,15 +1,18 @@
-"""P3 Slice A：search_notes 数据合同与参数校验（纯标准库，离线）。
+"""P3 Slice A+B1：search_notes 数据合同、参数校验与路径安全常量（纯标准库，离线）。
 
 本模块只定义数据类型、稳定错误码与纯函数校验。不接触 MCP SDK、网络、模型
-或真实私人笔记。路径安全（symlink/junction/reparse point/TOCTOU）属于后续切片，
-未在此实现；本模块的校验拒绝把任意输入当成路径、URL 或 Shell 指令。
+或真实私人笔记。
 
-安全要点（P1 修复）：
+Slice A 安全要点（P1 修复）：
 - `validate_keyword` 先做 NFKC 归一，再做形态拒绝，防止全角 `／＼：｜＜＞＆`
   等经归一后绕过路径/URL/Shell 检查。
 - 非法参数返回稳定 `ArgumentError` 错误对象（error_code 固定 invalid-arguments），
   而不是 None，便于调用方稳定判定与脱敏返回。
 - `title` 视为不可信笔记数据，提供转义 + 限长的纯函数，在索引登记处统一净化。
+
+Slice B1 路径安全常量与错误码：
+- 原生/Win32 枚举使用不同具名常量，避免混淆（见下方 *FILE_*_INFORMATION）。
+- 稳定错误码不泄露路径、正文、用户名、环境变量或原始系统错误文本。
 """
 
 from __future__ import annotations
@@ -31,6 +34,24 @@ TITLE_MAX = 80  # 笔记标题安全输出长度硬上限（含转义与省略�
 # 危险文本形态（即便用户只是普通搜索也要拒绝，避免被当成路径/URL/命令）
 _URL_PREFIXES = ("http://", "https://", "ftp://", "file://")
 _SHELL_TOKENS = (";", "|", "&&", "||", "$(", "`", "<", ">", "&")
+
+# Slice B1：路径安全索引稳定错误码（对外不含路径/正文/用户名/异常细节）
+INDEX_BUILD_FAILED = "index-build-failed"
+NOT_ALLOWED_REPARSE = "not-allowed-reparse"
+NOT_A_REGULAR_FILE = "not-a-regular-file"
+PATH_ESCAPE = "path-escape"
+IO_ERROR = "io-error"
+UNSAFE_OPEN_UNAVAILABLE = "unsafe-open-unavailable"
+CONTENT_TOO_LARGE = "content-too-large"
+NOT_REGISTERED = "not-registered"
+
+# Slice B1：单笔记内容读取容量上限（1 MiB）。区别于 Slice A 的 EXCERPT_MAX=120 检索摘录上限。
+MAX_NOTE_BYTES = 1_048_576
+
+# Slice B1：原生 / Win32 枚举具名常量（v6 防止两类枚举数值巧合而混淆）
+NATIVE_FILE_DIRECTORY_INFORMATION = 1  # 原生 FILE_INFORMATION_CLASS（NtQueryDirectoryFile 用）
+WIN32_FILE_BASIC_INFO = 0             # Win32 FILE_INFO_BY_HANDLE_CLASS（GetFileInformationByHandleEx 用）
+WIN32_FILE_STANDARD_INFO = 1          # Win32 FILE_INFO_BY_HANDLE_CLASS（GetFileInformationByHandleEx 用）
 
 
 @dataclass(frozen=True)
