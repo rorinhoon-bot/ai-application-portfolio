@@ -1,8 +1,8 @@
 # P3 PRD：本地 MCP 笔记检索与受控任务创建服务
 
-- 版本：v0.1（规划中）
-- 日期：2026-08-01
-- 范围：原创、虚构、离线、确定性夹具；没有实现、安装或 MCP 进程。
+- 版本：v0.2（Slice A / B1 / B2a 离线核心已实现并离线验证；MCP SDK 适配与 Host/Client 演示仍属 B2b，未实现）
+- 日期：2026-08-01（B2a 更新 2026-08-02）
+- 范围：原创、虚构、离线、确定性夹具；`search_notes` 与 `create_task` 的**离线核心逻辑**已实现（纯标准库，无依赖），但**没有**实现 MCP Server/Resource/stdio transport、没有安装 MCP SDK、没有运行任何 MCP 进程或 Host/Client。
 
 ## 1. 问题与目标用户
 
@@ -44,10 +44,14 @@
 | 合法值 | `title` 去空白后 `1..120` 字符；`description` 去空白后 `1..1000` 字符；拒绝控制字符、路径、`..`、URL、命令和 Shell 语义 |
 | 首次返回 | `PENDING_CONFIRMATION`、服务生成 `task_id`、`confirmation_id`、内容哈希、过期时间；不写任务文件 |
 | 写入前提 | 可信本地人工确认界面显示冻结标题、描述、任务 ID、到期时间后，使用同一主体批准 |
-| 批准结果 | 原子创建受控目录内程序派生的 `<task_id>.json`；返回 `CREATED` 或幂等 `UNCHANGED` |
+| 批准结果 | 原子创建受控目录内程序派生的 `<task_id>.json`；**文件发布成功后再提交 `APPROVED` 状态**，返回 `CREATED` 或幂等 `UNCHANGED` |
+| 发布失败 | 确认记录保持 `PENDING`，返回稳定 `task-write-failed`（或 `task-root-unsafe`）；**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则磁盘不留最终文件、半成品或临时残留，移除故障后可重放并成功创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功** |
+| 任务根 | 必须是部署配置中**预存在**的受控目录；服务不创建任务根或其祖先目录，仅做句柄链验证，验证不通过 → `task-root-unsafe` |
 | 拒绝/取消 | 返回稳定终态，不写任务文件 |
 
 Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数、主体 ID、任务 ID、确认 ID 或幂等键。它们不能由模型/客户端控制。可信调用关联 ID 只能由本地 Host 适配器注入；缺失时拒绝写意图。
+
+> **实现状态（Slice B2a，2026-08-06）**：上述 `create_task` 离线核心**已实现**于 `src/mcp_notes/tasks.py` 与 `src/mcp_notes/safe_task_write.py`，并配套固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）。已实现范围严格限于“离线受控写核心”：严格数据合同、`PENDING/APPROVED/REJECTED/CANCELLED/EXPIRED` 状态机、sqlite3 持久化、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖 + 句柄式 `open_task_root` 任务根/祖先目录 reparse 与 TOCTOU 防护，绝不 `os.replace`、冲突绝不覆盖）、12 类稳定错误码（含 `confirmation-invalid-id` / `task-root-unsafe`）。发布失败语义与任务根所有权按 D-015 落实：序列化先于文件创建；创建成功后 `WriteFile` / `FlushFileBuffers` 失败 → 稳定 `task-write-failed` 且不泄露原始异常，文件 HANDLE 只关闭一次后以已验证父目录 HANDLE 相对 `NtDeleteFile` 清理（不使用字符串路径删除/替换），确认记录保持 `PENDING`；**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则无残留、移除故障后可安全重放创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功**。任务根须由部署配置预存在，生产代码不调用 `os.makedirs` 创建任务根或祖先目录。`TrustedContext` 的实际校验规则为“`str` / 长度 `1..256` / 不含 C0·DEL 控制字符”，**未实现安全字符白名单**。人工确认动作（`approve`/`reject`/`cancel`）当前由测试中的可信本地上下文 `TrustedContext(subject, correlation_id)` 直接驱动；**尚未**接入 MCP Tool/Server/Resource/stdio/Host/Client（属 B2b）。MCP 适配层须复用本核心，不得在 Tool 内重建确认/写入逻辑。
 
 ### 3.3 只读 MCP Resource
 
@@ -100,6 +104,8 @@ Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数
 | 确认失效 | 到期、哈希/主体不匹配 | `confirmation-expired` 或 `confirmation-mismatch`，不写 |
 | 重复写入 | 已消费确认或关联 ID 冲突 | `confirmation-already-consumed`、`idempotency-conflict` 或 `UNCHANGED` |
 | 磁盘写入失败 | 权限、容量、原子发布失败、目标冲突 | `task-write-failed` 或 `task-conflict`，不含原始异常 |
+
+> **实现状态（Slice B2a）**：除“路径越界 / 文件不存在 / 内容过大”三类仍属于 `search_notes` 检索侧（由 Slice B1 句柄层覆盖，未纳入 B2a 写入核心）外，其余写侧分类——非法参数、确认缺失、确认失效（过期/错绑/不匹配）、重复写入（已消费/关联 ID 冲突/UNCHANGED）、磁盘写入失败（原子发布失败/目标冲突）——**均已由 `src/mcp_notes/tasks.py` 离线实现并测试**，错误码与上表一致，且均不泄露路径/正文/原始异常。MCP transport 层的映射仍待 B2b。
 
 ## 8. 固定评估指标
 

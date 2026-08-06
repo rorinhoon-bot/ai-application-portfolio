@@ -1,13 +1,15 @@
-# P3 架构：规划中的本地 MCP 服务
+# P3 架构：本地 MCP 服务（离线核心已实现，MCP 适配仍计划）
 
-- 版本：v0.1（规划中；Slice A 的 search_notes 纯标准库核心已实现并离线验证）
-- 日期：2026-08-01
+- 版本：v0.2（Slice A / B1 / B2a 离线核心已实现并离线验证；MCP Server/Resource/Host/Client 适配仍属 B2b，未实现）
+- 日期：2026-08-01（B2a 更新 2026-08-02）
 
-## 0. 实现状态（Slice A 已完成 / 仍计划）
+## 0. 实现状态
 
 - **已实现（Slice A，纯标准库、离线、无依赖）**：`search_notes` 的数据合同、参数校验、笔记索引登记（最小普通 `.md` 登记）、确定性离线检索与 stdlib `unittest` 套件（含默认网络阻断底座）。关键词先 NFKC 归一再拒绝路径/URL/Shell 形态；匹配用 NFKC + casefold；excerpt 与 hits 为常量硬上限；非法参数返回稳定 `ArgumentError`；笔记标题按不可信数据转义限长。
-- **仍为计划（Slice B 及之后）**：MCP Server 适配层与 Resource `notes://service-info`、stdio transport；`create_task` 待确认意图与人工确认状态机；sqlite3 持久化；以及**路径安全检查**（symlink/junction/reparse point/`..` 越界/TOCTOU 拒绝式检查）。当前 `index.py` 仅为最小文件登记，未施行文件系统防护，不得宣称路径安全已实现。
-- 图中组件除已说明的 Slice A 核心外，其余仍为计划边界。
+- **已实现（Slice B1 路径安全索引）**：`safe_open.py` 用 Windows 原生句柄层（非字符串路径遍历）拒绝 symlink / junction / reparse point 跟随与 TOCTOU；路径安全检查已落地，不得再宣称未实现。
+- **已实现（Slice B2a 离线 `create_task` 受控写入核心，纯标准库、离线、无依赖）**：`src/mcp_notes/tasks.py` + `src/mcp_notes/safe_task_write.py` 实现 `create_task` 严格数据合同、PENDING/APPROVED/REJECTED/CANCELLED/EXPIRED 人工确认状态机、标准库 `sqlite3` 持久化（`confirmations`/`idempotency`/`audit` 三表，审计不存正文）、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖，任务根/祖先目录经 `open_task_root` 逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 句柄验证，reparse→失败关闭 `task-root-unsafe`，绝不回退字符串路径方案），以及 12 类稳定错误码。固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）+ `tests/test_create_task.py`（53 项）。**B2a 不含** MCP SDK/Server/Resource/stdio/Host/Client —— 人工确认动作当前由可信本地上下文 `TrustedContext(subject, correlation_id)` 在 Tool 外驱动。
+- **仍为计划（Slice B2b）**：MCP Server 适配层、Resource `notes://service-info`、stdio transport、真实 Host/Client 演示；须复用 B2a 离线核心，不在 Tool 内重建确认/写入逻辑。
+- 图中组件除已说明的 Slice A 核心、B1 句柄层、B2a 受控写核心外，其余（MCP Server/Resource/Host/Client 与图示中的“规划中”状态根/任务根运行时）仍为计划边界。
 
 ## 1. 组件边界
 
@@ -63,13 +65,20 @@ sequenceDiagram
     S->>D: 绑定主体、哈希、状态，原子消费确认
     alt 已批准且可写
         S->>F: 程序派生路径，无覆盖原子发布
-        S->>D: 记录 CREATED / UNCHANGED
+        S->>F: 写内容 + FlushFileBuffers（任一失败→句柄原生清理：清理成功则无残留；清理失败则失败关闭、仅稳定错误码，不承诺零残留）
+        S->>D: **仅发布成功后**提交 APPROVED / 记录 CREATED；发布失败则保持 PENDING
     else 未批准、过期、错绑或重复
         S-->>U: 稳定拒绝，不写文件
     end
 ```
 
 人工确认器必须显示规范化标题、描述、`task_id`、到期时间与可信主体。人工动作不是 Tool 参数，不由 MCP 消息中的声明身份、笔记内容或模型输出决定。
+
+> **关键不变量（发布与状态提交顺序）**：确认记录仅在任务文件经 no-replace 原子发布**成功**后才提交为 `APPROVED`；若发布失败（写入 / 刷新 / 关闭前异常，或任务根不安全）→ 确认记录保持 `PENDING`，绝不写 `APPROVED`，并在移除故障后可通过重放安全重试并成功创建（**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）时**；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功）。即“**文件发布成功后再提交 APPROVED 状态**”。
+
+> **实现状态（Slice B2a）**：上述 `create_task` 离线数据流**已实现**于 `src/mcp_notes/tasks.py`——`create_task` 只写 PENDING 意图并返回 `task_id`/`confirmation_id`/到期时间（不写任务文件）；`approve`/`reject`/`cancel` 由可信本地上下文 `TrustedContext(subject, correlation_id)` 驱动，**成功批准后先经 no-replace 原子发布 `<task_root>/<task_id>.json`，文件发布成功后才经 sqlite3 持久化将确认记录提交为 `APPROVED`**（即“文件发布成功后再提交 APPROVED”）；发布失败则保持 `PENDING`。图示中标注“规划中”的 MCP Server / 人工确认器 UI / 任务目录运行时仍属 B2b 适配层，本离线核心不依赖它们即可被测试驱动。
+
+> **`TrustedContext` 的实际校验边界**：构造即校验，规则**仅有三条**——`subject` / `correlation_id` 必须是 `str`、长度 `1..256`、不含 C0/DEL 控制字符（`ord < 0x20` 或 `== 0x7F`）；非法值抛受控 `TaskPublishError(invalid-arguments)`，不抛原始 `TypeError`、不泄露异常。**当前未实现“安全字符白名单”**，除控制字符外的任意 Unicode 字符（空格、标点、CJK 等）均被接受。这两个值由本地可信边界注入，不是 Tool 参数，也不由模型 / 客户端控制；若未来需要更严格的字符集约束，须作为单独变更实现白名单并补测试，不得仅在文档中声称。
 
 ## 3. 文件系统安全设计
 
@@ -88,12 +97,15 @@ sequenceDiagram
 
 - `task_id` 由服务生成并限定字母、数字、连字符；最终路径仅为 `任务根 / <task_id>.json`。
 - 不接受外部目录、文件名、扩展名、相对段、绝对路径、URL 或 Shell 参数。
-- 每次写前重新验证任务根和最终父目录没有 symlink/junction/reparse point；最终目标若存在只能比较同一已提交记录后返回 `UNCHANGED`，绝不替换。
-- 在同一受控目录写临时普通文件、`fsync`，以 no-replace 原子发布；发布或清理失败只存稳定错误码。目标文件系统不能满足 no-replace 时失败，不降级覆盖。
+- 写入前经 `open_task_root` 用句柄逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 验证任务根与每一级祖先目录没有 symlink/junction/reparse point（句柄级打开，非字符串前缀判断，不依赖不可信路径字符串解析）；最终目标若存在只能比较同一已提交记录的内容哈希后返回 `UNCHANGED`，绝不替换。
+- 用 Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖创建任务文件（非 `os.replace`、无“先检查再发布”的竞态窗口）。发布顺序：**先序列化**（序列化失败不创建任何文件，无半成品）→ `open_task_root` 句柄验证根 → `NtCreateFile(FILE_CREATE)` 创建 → 句柄式 `WriteFile` + `FlushFileBuffers`（fsync）。**创建成功后任一写入 / 刷新 / 关闭前异常 → 稳定 `task-write-failed`，不泄露原始异常**；0 字节 / 半成品文件由句柄原生 `NtDeleteFile`（相对已验证父目录 HANDLE，`OBJ_DONT_REPARSE`，**绝不使用字符串路径 `os.remove` / `os.replace` / 任何回退**）清理——**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则无残留、无临时文件，移除故障后重放可成功创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功**；确认记录保持 `PENDING`。
+- **任务根由部署配置预存在，生产代码不创建任务根 / 祖先目录**（不调用 `os.makedirs`）：`open_task_root` 仅对预存在的受控目录做逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 句柄验证；根不存在 / 非目录 / reparse / 原生不可用 → 失败关闭 `task-root-unsafe`，绝不写文件、绝不回退字符串路径方案。目标文件系统不能满足 no-replace 时失败，不降级覆盖。
 
 ## 4. 状态与运行时依赖
 
-### 可持久化业务状态（计划）
+### 可持久化业务状态（Slice B2a 已实现，标准库 `sqlite3`）
+
+> 实现于 `src/mcp_notes/tasks.py`：`confirmations`（写意图 + 状态 + 到期）、`idempotency`（主体/关联ID/内容哈希/终态，用于重放与冲突检测）、`audit`（事件类型、稳定错误码、`task_id`/`confirmation_id` 安全标识，**不存 title/description/正文**）。所有写包在 `try/except sqlite3.Error → rollback`；不做网络、不引入数据库服务。下表为实际落地的字段设计。
 
 | 对象 | 最小字段 | 用途 |
 |---|---|---|

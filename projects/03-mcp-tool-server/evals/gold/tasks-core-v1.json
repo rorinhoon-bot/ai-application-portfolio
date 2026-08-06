@@ -1,0 +1,304 @@
+{
+  "version": "tasks-core-v1",
+  "description": "P3 Slice B2a create_task 受控写入离线核心固定金标准（原创虚构数据，离线确定性）",
+  "validity_seconds": 600,
+  "scenarios": [
+    {
+      "case_id": "TC-UNCONFIRMED",
+      "description": "批准不存在的确认 ID → confirmation-required，不写文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "approve",
+          "subject": "local-user",
+          "correlation_id": "c-unconfirmed",
+          "confirmation_id": "conf-0000000000000000",
+          "expect": {"outcome": "error", "error_code": "confirmation-required", "file_count": 0}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-APPROVED",
+      "description": "创建后同主体批准 → created，恰好 1 个任务文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "设计 MCP 工具服务接口",
+          "description": "明确 search_notes 与 create_task 的 JSON Schema 与权限边界。",
+          "subject": "local-user",
+          "correlation_id": "c-approved",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-approved",
+          "expect": {"outcome": "created", "file_count": 1}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-REJECTED",
+      "description": "创建后拒绝 → rejected，不写文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "整理检索评估集",
+          "description": "汇总 20 条固定检索问题与金标准。",
+          "subject": "local-user",
+          "correlation_id": "c-rejected",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "reject",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-rejected",
+          "expect": {"outcome": "rejected", "file_count": 0}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-CANCELLED",
+      "description": "创建后取消 → cancelled，不写文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "编写路径安全说明",
+          "description": "说明句柄级打开如何抵御 reparse point 跟随。",
+          "subject": "local-user",
+          "correlation_id": "c-cancelled",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "cancel",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-cancelled",
+          "expect": {"outcome": "cancelled", "file_count": 0}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-EXPIRED",
+      "description": "超过十分钟有效期后批准 → confirmation-expired，不写文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "归档已完成任务",
+          "description": "把已批准任务移入月度归档目录。",
+          "subject": "local-user",
+          "correlation_id": "c-expired",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-expired",
+          "advance": 700,
+          "expect": {"outcome": "error", "error_code": "confirmation-expired", "file_count": 0}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-IDENTITY-MISMATCH",
+      "description": "批准主体与创建主体不一致 → confirmation-identity-mismatch，不写文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "更新部署文档",
+          "description": "补充本地 stdio 启动步骤。",
+          "subject": "user-A",
+          "correlation_id": "c-idm",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "user-B",
+          "correlation_id": "c-idm",
+          "expect": {"outcome": "error", "error_code": "confirmation-identity-mismatch", "file_count": 0}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-CONTENT-CHANGE",
+      "description": "同一关联 ID 配不同内容 → idempotency-conflict；原意图仍可被批准创建文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "任务初版草稿",
+          "description": "第一版任务描述。",
+          "subject": "local-user",
+          "correlation_id": "c-content",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "create",
+          "title": "任务改版草稿",
+          "description": "第二版任务描述，内容不同。",
+          "subject": "local-user",
+          "correlation_id": "c-content",
+          "expect": {"outcome": "error", "error_code": "idempotency-conflict", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-content",
+          "expect": {"outcome": "created", "file_count": 1}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-DUPLICATE-REQUEST",
+      "description": "相同内容重复请求 → 安全幂等重放（pending），仍只创建 1 个文件",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "复查索引构建流程",
+          "description": "确认枚举缓冲区解析的硬边界。",
+          "subject": "local-user",
+          "correlation_id": "c-dupreq",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "create",
+          "title": "复查索引构建流程",
+          "description": "确认枚举缓冲区解析的硬边界。",
+          "subject": "local-user",
+          "correlation_id": "c-dupreq",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 1,
+          "subject": "local-user",
+          "correlation_id": "c-dupreq",
+          "expect": {"outcome": "created", "file_count": 1}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-DUPLICATE-APPROVE",
+      "description": "重复批准已批准意图 → confirmation-already-consumed / unchanged，文件数仍为 1",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "整理测试夹具",
+          "description": "准备原创虚构笔记与任务数据。",
+          "subject": "local-user",
+          "correlation_id": "c-dupapp",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-dupapp",
+          "expect": {"outcome": "created", "file_count": 1}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-dupapp",
+          "expect": {"outcome": "unchanged", "error_code": "confirmation-already-consumed", "file_count": 1}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-DUPLICATE-APPROVE-EXPIRED",
+      "description": "已批准后超过有效期再次批准 → unchanged + confirmation-already-consumed，数据库仍为 APPROVED，文件数仍为 1（过期逻辑绝不改写已消费记录）",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "复核受控写边界",
+          "description": "确认过期判断顺序不覆盖已批准记录。",
+          "subject": "local-user",
+          "correlation_id": "c-dupapp-exp",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-dupapp-exp",
+          "expect": {"outcome": "created", "file_count": 1}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "advance": 700,
+          "subject": "local-user",
+          "correlation_id": "c-dupapp-exp",
+          "expect": {"outcome": "unchanged", "error_code": "confirmation-already-consumed", "file_count": 1}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-CONFLICT-FILE",
+      "description": "目标已存在不同内容文件 → task-conflict，绝不覆盖（stale 文件保持不变）",
+      "clock_start": 1000000,
+      "steps": [
+        {
+          "op": "create",
+          "title": "生成发布检查清单",
+          "description": "列出提交前必查项。",
+          "subject": "local-user",
+          "correlation_id": "c-conflict",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "seed_conflict",
+          "confirmation_ref": 0,
+          "title": "旧任务占位",
+          "content_hash": "stale-hash-0001",
+          "subject": "local-user",
+          "correlation_id": "c-conflict"
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-conflict",
+          "expect": {"outcome": "error", "error_code": "task-conflict", "file_count": 1, "stale_hash": "stale-hash-0001"}
+        }
+      ]
+    },
+    {
+      "case_id": "TC-ATOMIC-WRITE-FAILURE",
+      "description": "NtCreateFile 成功后 WriteFile 失败 → 稳定 task-write-failed，confirmation 保持 PENDING，0 字节/半成品文件由句柄原生 NtDeleteFile 清理（清理成功路径）无残留，移除故障后重放可成功创建",
+      "clock_start": 1000000,
+      "inject_fault": "write_failure",
+      "steps": [
+        {
+          "op": "create",
+          "title": "编写回归测试",
+          "description": "覆盖状态机与发布边界。",
+          "subject": "local-user",
+          "correlation_id": "c-atomic",
+          "expect": {"outcome": "pending", "file_count": 0}
+        },
+        {
+          "op": "approve",
+          "confirmation_ref": 0,
+          "subject": "local-user",
+          "correlation_id": "c-atomic",
+          "expect": {"outcome": "error", "error_code": "task-write-failed", "file_count": 0}
+        }
+      ]
+    }
+  ]
+}

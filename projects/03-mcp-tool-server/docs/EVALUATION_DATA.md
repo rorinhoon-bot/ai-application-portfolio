@@ -1,8 +1,8 @@
 # P3 固定离线评估方案
 
-- 版本：v0.1（规划中；Slice A 部分落地）
-- 日期：2026-08-01
-- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）。完整的 40 例固定套件、`evals/cases`、`evals/gold`、基线结果 `evals/results` 与 MCP 运行仍未实施。
+- 版本：v0.2（Slice A / B1 / B2a 离线核心已落地；40 例集成套件与 MCP 运行仍属 B2b）
+- 日期：2026-08-01（B2a 更新 2026-08-02）
+- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）；**Slice B2a 已落地受控写核心固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）**。完整的 40 例固定套件、`evals/cases`、`evals/results` 基线与 MCP 运行仍未实施（属 B2b）。
 
 ## 1. 数据边界与快照
 
@@ -14,6 +14,9 @@
 - `evals/fixtures/security-v1/`：临时生成的符号链接、junction/reparse point、未登记文件、过大内容和冲突目标；不提交真实外部路径。
 - `evals/cases/mcp-service-v1.json`：固定输入、可信测试主体、可信调用关联 ID、人工动作脚本和期望分类。
 - `evals/gold/mcp-service-v1-gold.json`：检索金标准、期望终态、写入计数、任务 ID 关系和禁止泄露事实。
+- `evals/gold/tasks-core-v1.json`：**（Slice B2a 已落地）** 受控写核心固定金标准，12 个场景：未确认、批准、拒绝、取消、过期、身份错绑、内容变化（同关联 ID 不同内容 → 幂等冲突）、重复请求（安全重放）、重复批准（已消费幂等）、已批准超期再批准（P0-2：`unchanged` + `confirmation-already-consumed`，已批准记录不被过期改写）、冲突文件（no-replace，既存文件不覆盖）、原子写入失败（注入 `write_failure` 故障，即 `NtCreateFile` **成功创建后** `WriteFile` 返回失败 → `task-write-failed`、确认 `PENDING`、清理成功路径无残留）。全部原创虚构、无密钥/无绝对路径。金标准场景数保持 **12**（本轮未新增场景）；`NtDeleteFile` 非成功（清理失败）情形**不冒充金标准成功**，仅以代码级回归覆盖（见下）。
+- **创建成功后写入失败回归（3 项，`tests/test_create_task.py::TestWriteFailureAfterCreate`，均为清理成功路径）**：在 `NtCreateFile` **成功创建最终文件之后**分别注入 `WriteFile` 失败、`FlushFileBuffers` 失败，以及 `approve` 完整路径上的写入失败。判定：不外泄原始异常、返回稳定 `task-write-failed`、任务目录内 `.json` 计数为 `0` 且无 `.tmp` / `~` / `.partial` 临时残留、确认记录仍为 `PENDING`、移除故障后重放返回 `created`。故障注入只作用于原生写/刷新调用，不修改金标准数据。
+- **清理/回查收口回归（4 项，`tests/test_create_task.py::TestConflictReadonlyAndDeleteFailure`）**：(1)(2)(3) 冲突只读转换失败——冲突文件存在 + 原生冒烟完成 + 分别注入 `msvcrt.open_osfhandle` / `os.fdopen` / 真实文件 `read` 抛 `OSError`；`approve` 返回稳定 `task-write-failed`、confirmation 仍 `PENDING`、无原始异常文本，且**退出 mock 后冲突文件可被立即 `os.remove`**（证明 `_read_existing_json` 已精确释放仍归本函数所有的 HANDLE/fd，无遗留锁）；(4) 删除失败——`NtCreateFile` 成功后 `WriteFile` 失败触发清理路径，且 `NtDeleteFile` 返回非成功 NTSTATUS（`0xC0000043`）不抛异常，清理失败**不得静默吞掉**，返回脱敏稳定 `task-write-failed`、不回显 NTSTATUS/路径，确认保持 `PENDING`，且**不错误断言目录必空**（残余可能仍在）。
 - `evals/results/mcp-service-v1-baseline.json`：首次真实执行生成；禁止用期望值伪造实际结果。
 
 冻结后为目录清单、逐文件 SHA-256、总字节数、案例数和金标准版本生成 `source_snapshot_id`。任何资料修正必须创建 `v2`，不得覆盖 `v1`、P2 `workflow-v1`、P2 金标准、评估资料或演示制品。
@@ -37,6 +40,8 @@
 | **总计** | **40** | 成功、失败、安全与协议路径 |
 
 第 9 类仅在核心逻辑和离线测试通过后才执行真实本地 stdio Host/Client。当前不能声称它已完成。
+
+> **B2a 已落地（2026-08-06）**：计划分类 6（确认缺失/批准/拒绝/取消）、7（旧确认/身份错绑/重复批准/重复写入）、8（幂等/冲突/原子失败）的受控写核心已由固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）+ `tests/test_create_task.py`（53 项，含 3 项“创建成功后写入失败”故障注入回归、3 项冲突只读转换失败回归与 1 项删除失败回归）离线覆盖，并配套网络阻断与敏感扫描。上述 40 例仍是未来 B2b 集成（含真实 Host/Client、Resource、检索侧路径/链接案例）的完整目标，未因 B2a 提前宣称完成。
 
 ## 3. 金标准与判定
 

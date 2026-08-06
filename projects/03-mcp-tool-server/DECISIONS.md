@@ -111,3 +111,53 @@
 - 原因：仅做字符串前缀判断无法抵抗链接、junction、重解析点和 TOCTOU；句柄级打开能在打开对象这一刻原子地拒绝 reparse，且不依赖不可信的路径字符串解析。
 - 边界：链接专项测试（T7–T10）默认跳过，即使设置 `P3_ALLOW_FS_LINK_FIXTURES=1` 也仅为未实现门控占位（真实 symlink / junction 夹具尚不可用，按授权禁止创建或运行）；预期行为为拒绝/构建失败（任何 reparse → `not-allowed-reparse` → `index-build-failed`），而非跳过。B1 仅在 Windows 原生 API 可用时启用，非 Windows 平台 R0 安全失败。
 - 结果：`compileall` 通过；B1 新增 T0–T9 共 30 项 + Slice A 既有测试全部保留并通过；stdlib `unittest` 共 72 项（68 执行通过 + 4 链接测试默认跳过）；无网络、无依赖、无密钥。经 Codex 二次独立复验未通过后，按 P0/P1 清单修订 `UNICODE_STRING.MaximumLength` 溢出边界并补失败回归测试、统一真实链接测试合同与文档测试数，复跑 72 项全部通过。
+
+## D-014：Slice B2a 离线 `create_task` 受控写入核心实现（纯标准库）
+
+- 状态：accepted
+- 日期：2026-08-02
+- 决定：`create_task` 离线核心按 D-002/D-004/D-005/D-006/D-007 落地，新增 `src/mcp_notes/tasks.py`，**不**引入 MCP SDK/Server/Resource/stdio/Host/Client（属后续 B2b）。
+  - **数据合同**：`validate_task_field` 沿用 `validate_keyword` 的“NFKC 归一 → 去空白 → 长度 → 控制字符 → 路径形态”顺序；URL/Shell 判定由“前缀”改为“内含”（`prefix in low` + `_has_shell_token`），拦截中部文本（如 `参见 http://example.com`）；`title 1..120`、`description 1..1000`；绝对路径（`/`/`\` 开头）、盘符前缀（`X:`）、`..` 段均拒绝。空/超长/非字符串/含控制字符/路径/URL/Shell/未知字段 → `invalid-arguments`，不读不写。
+  - **状态机**：PENDING →（approve 成功且任务文件经 no-replace 原子发布**成功**）才提交 `APPROVED`——即“**文件发布成功后再提交 APPROVED**”；发布失败（写入 / 刷新失败或任务根不安全）则保持 `PENDING`，不写 `APPROVED`。（reject/cancel）REJECTED/CANCELLED（终态负向，不可再消费）；（批准时已超过 10 分钟）EXPIRED（懒求值，仅 PENDING 转，已消费不动）。`create_task` 只建 PENDING 意图，绝不写文件。
+  - **身份与过期绑定**：批准主体必须 == 创建主体（否则 `confirmation-identity-mismatch`）；缺失记录 / 已非 PENDING / 过期分别为 `confirmation-required` / `confirmation-mismatch` / `confirmation-expired`，均不写文件。`TrustedContext(subject, correlation_id)` 由本地 Host 适配器在 Tool 外注入，不在 Tool 参数内（满足 D-002/D-004）。
+  - **稳定 ID 与幂等**：`content_hash = SHA256(规范title‖规范desc)`；`task_id = "task-" + SHA256(subject‖correlation_id‖content_hash)[:16]`；`confirmation_id = "conf-" + SHA256(task_id‖content_hash)[:16]`。同主体+同关联ID+同内容重放返回安全结果（PENDING→`pending`、APPROVED→`unchanged`、EXPIRED→`confirmation-expired`、REJECTED/CANCELLED→`confirmation-mismatch`）；同关联ID+不同内容 → `idempotency-conflict`（不新建意图）；重复批准 → `unchanged` + `confirmation-already-consumed`（绝不二次写）。
+  - **no-replace 原子发布（P0-3/P0-4）**：最终路径仅由 `task_id` 派生为 `<task_root>/<task_id>.json`，**绝不接受外部路径**；发布由新增 `src/mcp_notes/safe_task_write.py` 用 Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖创建完成（**非** `os.replace`、无“先检查再发布”的竞态窗口），成功才写内容并 `FlushFileBuffers`；任务根与各级祖先目录经 `open_task_root` 逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 句柄验证（B1 同等级 reparse/TOCTOU 防护），任何 reparse 点 → 失败关闭 `task-root-unsafe`，**绝不回退字符串路径方案**。目标已存在：同内容 → `unchanged`，不同内容 → `task-conflict`（绝不覆盖、目标字节不变）；写失败（`OSError`/`STATUS` 非成功）→ `task-write-failed`（创建成功后的写入失败处理与残留清理见 D-015）；`task_id` 形态不符（非 `^[A-Za-z0-9-]{4,64}$`）→ `task-invalid-id`。非 Windows 或原生 API 不可用 → 失败关闭 `task-root-unsafe`，不降级为字符串路径写。
+  - **持久化（D-007）**：标准库 `sqlite3`，三表 `confirmations` / `idempotency` / `audit`；所有写包在 `try/except sqlite3.Error → rollback`；`audit` 仅存稳定事件类型、错误码、`task_id`/`confirmation_id` 的安全标识，**不存 title/description/正文**。
+  - **稳定错误码（12 类）**：`invalid-arguments` / `confirmation-required` / `confirmation-identity-mismatch` / `confirmation-mismatch` / `confirmation-expired` / `confirmation-already-consumed` / `confirmation-invalid-id` / `idempotency-conflict` / `task-conflict` / `task-write-failed` / `task-invalid-id` / `task-root-unsafe`；均不泄露路径/正文/原始异常（P1-6：`confirmation-invalid-id` / `confirmation-required` 等错误结果绝不回显任意 `confirmation_id` 输入）。
+  - **可测性**：所有时间经由构造注入的 `clock`（测试可前进 `advance`），不依赖真实 `time.time`；默认网络阻断底座对所有 B2a 用例生效；固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）驱动场景测试。
+- 原因：先用纯标准库把“确认状态机 + 幂等 + 不可覆盖原子发布 + 持久化”这一最难的安全核心离线钉死，再接 MCP 适配；避免把安全逻辑与 SDK/transport 混在一起难以审计。
+- 边界：B2a 不创建真实 symlink/junction、不下载数据、不读私人笔记、不联网、不调模型、不部署；测试只使用系统临时目录与原创虚构夹具。MCP Server/Resource/Host/Client（B2b）仍按计划单独实现并经批准。
+- 结果：`compileall` 通过；`tests/test_create_task.py` **53 项**全部通过（含 D-015 新增的 3 项写入失败回归，及后续冲突只读转换失败 3 项 + 删除失败 1 项收口回归）；stdlib `unittest` 总计 **125 项**（121 执行通过 + 4 链接测试默认跳过）；新增源码与金标准经敏感扫描（`sk-` 负向后顾模式）无真实密钥命中；`git diff --check` 通过。
+
+## D-015：任务文件发布的失败语义与任务根所有权（B2a 第二轮复验修订）
+
+- 状态：accepted
+- 日期：2026-08-02
+- 背景：第一轮 B2a 实现虽然做到了 no-replace 原子创建，但“`NtCreateFile` 已成功创建最终文件之后再写入失败”这条路径没有被正确处理——序列化在创建之后、失败可能外泄原始异常、清理依赖字符串路径、且存在 `open_osfhandle` 转移后又关闭同一 HANDLE 的双重关闭隐患；同时生产代码用 `os.makedirs` 自建任务根，与“任务根是部署配置中的受控目录”这一安全前提冲突。
+- 决定：
+  - **序列化前置**：`json.dumps` 在 `NtCreateFile` **之前**执行；序列化失败直接 `SafeWriteError("task-write-failed")`，此时磁盘上不会出现任何文件。
+  - **创建后失败统一语义**：文件创建成功后，`WriteFile`（循环写全量）与 `FlushFileBuffers` 任一失败一律映射稳定 `SafeWriteError("task-write-failed")`，上层 `TaskResult.error("task-write-failed", task_id=服务派生ID)`；**不向调用方泄露任何原始异常/系统错误文本**。
+  - **HANDLE 所有权唯一**：文件 HANDLE 由写入函数独占，成功与失败路径都**只关闭一次**；移除写路径上的 `open_osfhandle`（避免 fd 与 HANDLE 双重所有权导致的双重关闭）。
+  - **清理只用句柄原生操作**：失败后**先关闭文件 HANDLE**，再以**已验证的父目录 HANDLE** 为 `RootDirectory`、带 `OBJ_DONT_REPARSE` 调用 `NtDeleteFile` 删除残留；**绝不使用字符串路径 `os.remove` / `os.replace` 或任何字符串路径回退**。清理为 best-effort，其自身异常不改变已确定的稳定错误码。
+    - 取舍说明：本机环境下句柄级 delete-on-close（`NtSetInformationFile(FileDispositionInformation/Ex)`、`SetFileInformationByHandle(FileDispositionInfo/Ex)`）即使 HANDLE 已授予 `DELETE` 也一律返回 `ACCESS_DENIED`，唯一可用且仍满足“仅句柄原生操作”的方式是相对父目录 HANDLE 的 `NtDeleteFile`；而 `NtDeleteFile` 在文件自身独占句柄未关闭时返回 `SHARING_VIOLATION`，故顺序固定为“先关句柄、后删除”。
+  - **任务根所有权归部署配置**：生产代码移除 `os.makedirs(self._task_root, exist_ok=True)`（`tasks.py` 已不再 `import os`），**不创建任务根或任何祖先目录**；只做 `open_task_root` 句柄链原生验证。根不存在 / 非目录 / reparse / 原生不可用 → 失败关闭 `task-root-unsafe`，不写文件、不回退字符串路径。测试夹具在临时目录中自行预建任务根，属测试环境准备，不代表生产行为。
+  - **发布与状态提交顺序**：确认记录仅在任务文件发布**成功**后才提交 `APPROVED`；发布失败则保持 `PENDING`——**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）可移除故障后安全重放并成功创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功**。
+  - **`TrustedContext` 描述纠偏**：实际校验规则只有“必须是 `str`、长度 `1..256`、不含 C0/DEL 控制字符”，**未实现安全字符白名单**；本轮选择“文档改为实际规则”而非新增白名单实现（新增白名单会改变已固化的合法输入集合，属扩范围）。
+- 原因：把“创建成功后失败”这条最容易留下半成品的路径钉死为可预测的稳定错误码 +（清理成功路径）零残留 + 可重试，是受控写核心可被信任的前提；任务根由部署配置预置则避免服务自身具备创建目录树的权限，缩小写权限面。清理失败（非成功 NTSTATUS）必须失败关闭、不承诺零残留或自动重试成功，绝不静默吞掉。
+- 边界：不新增依赖、不联网、不改 P2；不因清理需求引入任何字符串路径删除；非 Windows / 原生不可用仍是失败关闭而非降级。
+- 结果：新增 3 项真实回归（`WriteFile` 失败 / `FlushFileBuffers` 失败 / `approve` 路径写入失败，均为清理成功路径），断言无原始异常外泄、返回 `task-write-failed`、任务目录 `.json` 计数为 0 且无临时残留、确认状态保持 `PENDING`、移除故障后重放返回 `created`。`compileall` 通过；`test_create_task.py` 53 项通过；stdlib `unittest` 总计 125 项（121 执行通过 + 4 链接测试默认跳过）；`git diff --check` 通过。
+
+## D-016：冲突只读回查 `_read_existing_json` 的 HANDLE/fd 所有权与关闭（B2a 第三轮复验修订）
+
+- 状态：accepted
+- 日期：2026-08-06
+- 背景：第二轮复验（D-015 续）已将 `open_osfhandle` / `fdopen` / `read` 阶段的 `OSError` 统一映射为稳定 `SafeWriteError("task-write-failed")`，但资源释放的 `finally` 仍挂在 JSON 解码那一层的 `try` 上，不在 `open_osfhandle`/`fdopen`/`read` 失败路径上执行——于是这些阶段抛错时，仍由本函数持有的 `fh`（HANDLE）或 `fd` 不会被关闭，冲突文件被遗留锁住，且上层可能泄露原始异常文本。Codex 独立复现：预热 `verify_native_support()`、制造同 `task_id` 冲突文件、注入 `msvcrt.open_osfhandle` 抛 `OSError`，`store.approve()` 虽返回稳定码，但冲突文件仍被锁定（无法删除/重命名）。
+- 决定：将 `_read_existing_json` 重构为**单一资源所有权作用域**，覆盖 `_nt_open → open_osfhandle → fdopen/read → JSON 解码` 完整生命周期：
+  - `fh_owned` / `fd` / `f` 三个所有权标志在进入作用域前初始化；任意失败路径都精确关闭一次“仍归本函数所有”的资源，绝不重复关闭已转交文件对象的 `fd`。
+  - `open_osfhandle` 失败 → `fh` 仍归本函数所有，`finally` 关闭 `fh`；`fdopen` 失败 → `fd` 仍归本函数所有，`finally` 关闭 `fd`；`read` 失败 → 真实 `fd` 已由 `f` 持有，`finally` 经 `f.close()` 关闭，不重复关闭 `fd`。
+  - `finally` 内 `f.close()` / `os.close(fd)` / `_close(fh)` 各自包在 `try/except OSError` 中：关闭失败也**不**覆盖已确定的稳定错误码、不泄露原始 `OSError`。
+  - 保持“已验证 HANDLE → fd”只读转换（保留 `open_osfhandle`），不改为纯 HANDLE 读取，绝不字符串路径回退。
+- 新增回归（`tests/test_create_task.py::TestConflictReadonlyAndDeleteFailure`，均为真实冲突文件 → `approve` 分支）：`open_osfhandle` 失败 / `fdopen` 失败 / `read` 失败 三项，均断言返回稳定 `task-write-failed`、无原始异常文本、confirmation 保持 `PENDING`，且**退出 mock 后冲突文件可被立即 `os.remove`**（证明 HANDLE/fd 已释放、无遗留锁）。
+- 原因：只读回查路径若泄漏 HANDLE/fd，会在写失败之外引入第二种“文件被锁、无法重试/清理”的故障面；把所有权钉死为单一作用域、关闭一次，是 no-replace 发布在冲突分支同样可被信任的前提。清理成功/失败的区分沿用 D-015：清理成功（`STATUS_SUCCESS`）无残留可重试，清理失败（非成功 NTSTATUS）失败关闭、不承诺零残留或自动重试成功。
+- 边界：仅修 P0 + 文档，不扩范围、不新增依赖、不联网、不改 P2、不进入 B2b；未暂存/提交/push/PR。
+- 结果：新增 2 项只读失败回归（`fdopen` / `read`），B2a 子集由 51 → **53** 项，stdlib `unittest` 总计 125 项（121 执行通过 + 4 链接测试默认跳过）；`compileall` 通过；`git diff --check` 通过。

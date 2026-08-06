@@ -207,6 +207,45 @@ def validate_keyword(raw: str) -> ValidationResult:
     return Keyword(value=value)
 
 
+# Slice B2a：create_task 字段合同常量（与 keyword 同样的 NFKC 优先拒绝策略）
+TASK_TITLE_MIN = 1
+TASK_TITLE_MAX = 120
+TASK_DESC_MIN = 1
+TASK_DESC_MAX = 1000
+
+
+def validate_task_field(raw: object, min_len: int, max_len: int) -> Union[str, None]:
+    """校验单个任务文本字段（title / description）。
+
+    返回归一化（NFKC + 去首尾空白）字符串；非法返回 None。
+    顺序与 validate_keyword 一致：先 NFKC 归一，再判长度、控制字符、路径 / URL / Shell 语义，
+    防止全角字符经归一后变成危险形态绕过。URL / Shell 采用“包含”判定（不仅前缀），
+    因为任务文本中出现的 `http://…`、`;`、`..` 等都应拒绝。
+    """
+    if not isinstance(raw, str):
+        return None
+    value = unicodedata.normalize("NFKC", raw).strip()
+    if len(value) < min_len or len(value) > max_len:
+        return None
+    if _has_control_char(value):
+        return None
+    low = value.lower()
+    for prefix in _URL_PREFIXES:
+        if prefix in low:
+            return None
+    if _has_shell_token(value):
+        return None
+    # 绝对路径（盘符或根斜杠）或 .. 越界段（任何位置）
+    if value.startswith(("/", "\\")):
+        return None
+    if len(value) >= 2 and value[1] == ":" and value[0].isalpha():
+        return None
+    norm = value.replace("\\", "/")
+    if ".." in norm.split("/"):
+        return None
+    return value
+
+
 def parse_search_notes_args(args) -> ValidationResult:
     """MCP 参数层校验：拒绝非对象、未知字段、keyword 非字符串；非法返回 ArgumentError。"""
     if not isinstance(args, dict):
