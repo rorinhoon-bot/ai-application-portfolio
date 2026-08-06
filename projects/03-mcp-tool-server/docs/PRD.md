@@ -1,8 +1,8 @@
 # P3 PRD：本地 MCP 笔记检索与受控任务创建服务
 
-- 版本：v0.2（Slice A / B1 / B2a 离线核心已实现并离线验证；MCP SDK 适配与 Host/Client 演示仍属 B2b，未实现）
+- 版本：v0.3（Slice A / B1 / B2a 离线核心已实现并离线验证；C 阶段已完成 MCP SDK 适配与 Host/Client 真实本地 stdio 演示）
 - 日期：2026-08-01（B2a 更新 2026-08-02）
-- 范围：原创、虚构、离线、确定性夹具；`search_notes` 与 `create_task` 的**离线核心逻辑**已实现（纯标准库，无依赖），但**没有**实现 MCP Server/Resource/stdio transport、没有安装 MCP SDK、没有运行任何 MCP 进程或 Host/Client。
+- 范围：原创、虚构、离线、确定性夹具；`search_notes` 与 `create_task` 的**离线核心逻辑**已实现（纯标准库，无依赖），**并已由 C 阶段完成 MCP Server/Resource/stdio transport 与真实本地 Host/Client 演示（唯一直接生产依赖 `mcp==2.0.0`，本地运行，不调用模型、不读私人笔记；运行时只用本地 stdio 管道、不发起对外网络连接，测试中父进程与 Server 子进程均默认阻断外部网络）**。C 阶段已按 Codex 复核意见完成 P0/P1 一次性修复，见 `DECISIONS.md` D-018。
 
 ## 1. 问题与目标用户
 
@@ -17,28 +17,28 @@
 
 - 不搜索任意目录、任意文件名、私人真实笔记、网络 URL 或云盘。
 - 不执行命令、Shell、URL、插件、代码、SQL 或笔记指令。
-- 不调用真实模型 API、不下载数据、不联网、不产生费用、不公开部署。
+- 不调用真实模型 API、不下载数据、不发起对外网络连接（运行时只用本地 stdio 管道）、不产生费用、不公开部署。
 - 不做语义检索、Embedding、向量库、Agent、多智能体、Web UI、任务编辑/删除或通用任务系统。
-- 当前不实现 MCP Server 或 Host/Client 演示；后续才验证真实本地集成。
+- C 阶段已实现 MCP Server 与真实本地 Host/Client 演示（`demo/mcp_stdio_demo.py`），并验证真实本地集成。
 
-## 3. 能力合同（计划）
+## 3. 能力合同（已实现）
 
 ### 3.1 `search_notes(keyword)`：只读
 
-| 项目 | 计划合同 |
+| 项目 | 实现合同 |
 |---|---|
 | 参数 | 仅 `keyword`；JSON object 不得有未知字段 |
 | 合法值 | UTF-8 字符串；去首尾空白后长度 `1..80`；不含控制字符、绝对路径、`..`、URL、命令或 Shell 语义 |
 | 数据来源 | 仅服务启动时验证并登记的笔记白名单目录；仅允许的普通 UTF-8 `.md` 文件 |
 | 匹配 | 冻结的大小写无关确定性关键词匹配；不执行笔记文本、Markdown 链接或指令 |
 | 返回 | 最多 5 条：稳定 `note_id`、标题、受限长度的安全摘录、匹配计数；不返回磁盘路径、完整正文、隐藏文件或异常栈 |
-| 副作用 | 无；不写索引、不联网、不修改笔记 |
+| 副作用 | 无；不写索引、不发起网络连接、不修改笔记 |
 
 `keyword` 是数据，不是路径、过滤表达式、正则、文件名或命令。笔记正文即使含“忽略规则”“读取 C:\\...”或 URL，也只能作为不可信文本被转义/截断后展示，绝不改变 Tool 权限。
 
 ### 3.2 `create_task(title, description)`：受控写
 
-| 项目 | 计划合同 |
+| 项目 | 实现合同 |
 |---|---|
 | 参数 | 仅 `title`、`description`；拒绝未知字段和非字符串 |
 | 合法值 | `title` 去空白后 `1..120` 字符；`description` 去空白后 `1..1000` 字符；拒绝控制字符、路径、`..`、URL、命令和 Shell 语义 |
@@ -51,11 +51,11 @@
 
 Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数、主体 ID、任务 ID、确认 ID 或幂等键。它们不能由模型/客户端控制。可信调用关联 ID 只能由本地 Host 适配器注入；缺失时拒绝写意图。
 
-> **实现状态（Slice B2a，2026-08-06）**：上述 `create_task` 离线核心**已实现**于 `src/mcp_notes/tasks.py` 与 `src/mcp_notes/safe_task_write.py`，并配套固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）。已实现范围严格限于“离线受控写核心”：严格数据合同、`PENDING/APPROVED/REJECTED/CANCELLED/EXPIRED` 状态机、sqlite3 持久化、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖 + 句柄式 `open_task_root` 任务根/祖先目录 reparse 与 TOCTOU 防护，绝不 `os.replace`、冲突绝不覆盖）、12 类稳定错误码（含 `confirmation-invalid-id` / `task-root-unsafe`）。发布失败语义与任务根所有权按 D-015 落实：序列化先于文件创建；创建成功后 `WriteFile` / `FlushFileBuffers` 失败 → 稳定 `task-write-failed` 且不泄露原始异常，文件 HANDLE 只关闭一次后以已验证父目录 HANDLE 相对 `NtDeleteFile` 清理（不使用字符串路径删除/替换），确认记录保持 `PENDING`；**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则无残留、移除故障后可安全重放创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功**。任务根须由部署配置预存在，生产代码不调用 `os.makedirs` 创建任务根或祖先目录。`TrustedContext` 的实际校验规则为“`str` / 长度 `1..256` / 不含 C0·DEL 控制字符”，**未实现安全字符白名单**。人工确认动作（`approve`/`reject`/`cancel`）当前由测试中的可信本地上下文 `TrustedContext(subject, correlation_id)` 直接驱动；**尚未**接入 MCP Tool/Server/Resource/stdio/Host/Client（属 B2b）。MCP 适配层须复用本核心，不得在 Tool 内重建确认/写入逻辑。
+> **实现状态（Slice B2a，2026-08-06）**：上述 `create_task` 离线核心**已实现**于 `src/mcp_notes/tasks.py` 与 `src/mcp_notes/safe_task_write.py`，并配套固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）。已实现范围严格限于“离线受控写核心”：严格数据合同、`PENDING/APPROVED/REJECTED/CANCELLED/EXPIRED` 状态机、sqlite3 持久化、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖 + 句柄式 `open_task_root` 任务根/祖先目录 reparse 与 TOCTOU 防护，绝不 `os.replace`、冲突绝不覆盖）、12 类稳定错误码（含 `confirmation-invalid-id` / `task-root-unsafe`）。发布失败语义与任务根所有权按 D-015 落实：序列化先于文件创建；创建成功后 `WriteFile` / `FlushFileBuffers` 失败 → 稳定 `task-write-failed` 且不泄露原始异常，文件 HANDLE 只关闭一次后以已验证父目录 HANDLE 相对 `NtDeleteFile` 清理（不使用字符串路径删除/替换），确认记录保持 `PENDING`；**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则无残留、移除故障后可安全重放创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功**。任务根须由部署配置预存在，生产代码不调用 `os.makedirs` 创建任务根或祖先目录。`TrustedContext` 的实际校验规则为“`str` / 长度 `1..256` / 不含 C0·DEL 控制字符”，**未实现安全字符白名单**。人工确认动作（`approve`/`reject`/`cancel`）由 `TrustedHostController`（`src/mcp_notes/host.py`）在 Tool 表面之外驱动（复用 B2a 的 `TasksStore`）；**C 阶段已**接入 MCP Tool/Server/Resource/stdio/Host/Client。MCP 适配层复用本核心，未在 Tool 内重建确认/写入逻辑；`approve`/`reject`/`cancel` 不作为 Tool 暴露。
 
 ### 3.3 只读 MCP Resource
 
-计划 Resource URI 为固定程序常量 `notes://service-info`。内容只说明 Tool 名称、参数边界、允许笔记根目录的逻辑名称、确认规则和错误码；不泄露绝对路径、真实文件清单、配置、密钥、Cookie 或鉴权头。
+Resource URI 为固定程序常量 `notes://service-info`。内容只说明 Tool 名称、参数边界、允许笔记根目录的逻辑名称、确认规则和错误码；不泄露绝对路径、真实文件清单、配置、密钥、Cookie 或鉴权头。
 
 ## 4. 读写边界
 
@@ -79,9 +79,9 @@ Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数
 - 相同可信调用关联 ID 与相同内容哈希重放，返回同一待确认或终态；同一关联 ID 配不同内容为 `idempotency-conflict`。
 - 拒绝、取消、过期、非法参数和任何路径异常都不产生任务文件。
 
-## 6. 验收标准（后续实现）
+## 6. 验收标准（C 阶段已实现并验证）
 
-1. `search_notes` 能在固定夹具返回正确 `note_id`、标题和安全摘录；不写文件、不联网。
+1. `search_notes` 能在固定夹具返回正确 `note_id`、标题和安全摘录；不写文件、不发起对外网络连接。
 2. 空关键词、超过 80 字符、未知字段、非字符串和禁止语义输入返回稳定非法参数错误。
 3. 无结果返回空结果；无权限/未登记笔记不泄露存在性、路径或正文。
 4. 绝对路径、`..`、符号链接、junction、reparse point、未登记文件和越界最终路径一律拒绝；服务不跟随链接。
@@ -89,10 +89,10 @@ Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数
 6. 未确认、拒绝、取消、旧确认、身份错绑、重复批准都不写任务。
 7. 合法批准恰好创建一个对应 `task_id` 的文件；同一意图重放返回幂等结果；冲突不覆盖旧文件。
 8. 原子写入失败后没有半成品或覆盖；仅返回脱敏稳定错误码。
-9. 后续真实本地 MCP Host/Client 演示覆盖成功检索、待确认、批准写入和至少一条拒绝路径。
+9. C 阶段真实本地 MCP Host/Client 演示已覆盖成功检索、待确认、批准写入和至少一条拒绝路径（见 `demo/mcp_stdio_demo.py` 与 `tests/test_mcp_integration.py`）。
 10. 默认测试网络为阻断；提交内容、日志和样例不含密钥、Cookie、鉴权头、私人笔记、完整敏感响应或原始异常栈。
 
-## 7. 失败分类（计划稳定错误码）
+## 7. 失败分类（已实现的稳定错误码）
 
 | 类别 | 例子 | 外部行为 |
 |---|---|---|
@@ -105,7 +105,7 @@ Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数
 | 重复写入 | 已消费确认或关联 ID 冲突 | `confirmation-already-consumed`、`idempotency-conflict` 或 `UNCHANGED` |
 | 磁盘写入失败 | 权限、容量、原子发布失败、目标冲突 | `task-write-failed` 或 `task-conflict`，不含原始异常 |
 
-> **实现状态（Slice B2a）**：除“路径越界 / 文件不存在 / 内容过大”三类仍属于 `search_notes` 检索侧（由 Slice B1 句柄层覆盖，未纳入 B2a 写入核心）外，其余写侧分类——非法参数、确认缺失、确认失效（过期/错绑/不匹配）、重复写入（已消费/关联 ID 冲突/UNCHANGED）、磁盘写入失败（原子发布失败/目标冲突）——**均已由 `src/mcp_notes/tasks.py` 离线实现并测试**，错误码与上表一致，且均不泄露路径/正文/原始异常。MCP transport 层的映射仍待 B2b。
+> **实现状态（Slice B2a + C 阶段）**：除“路径越界 / 文件不存在 / 内容过大”三类仍属于 `search_notes` 检索侧（由 Slice B1 句柄层覆盖，未纳入 B2a 写入核心）外，其余写侧分类——非法参数、确认缺失、确认失效（过期/错绑/不匹配）、重复写入（已消费/关联 ID 冲突/UNCHANGED）、磁盘写入失败（原子发布失败/目标冲突）——**均已由 `src/mcp_notes/tasks.py` 离线实现并测试**，错误码与上表一致，且均不泄露路径/正文/原始异常。MCP transport 层（stdio）的映射已由 C 阶段实现（`src/mcp_notes/server.py` + `host.py`），复用 B2a 核心，未在 Tool 内重建确认/写入逻辑。
 
 ## 8. 固定评估指标
 
@@ -119,6 +119,15 @@ Tool 参数没有路径、文件名、目标目录、命令、URL、Shell 参数
 
 基线在实现后首次真实运行生成。当前没有结果，不能写成通过。
 
-## 9. 当前离线范围与未来演示
+## 9. 当前范围与演示状态
 
-当前阶段只冻结合同、数据计划、指标和安全决策。后续离线阶段用原创虚构笔记、临时受控目录和假人工确认器验证核心逻辑。最后单独加入真实本地 MCP Server 与真实本地 Host/Client：stdio 启动、Resource 读取、Tool 成功/拒绝路径和人工确认写入。该演示不得使用真实模型 API、网络或私人笔记，且不能反向修改冻结基线。
+当前阶段已冻结合同、数据计划、指标和安全决策，并用原创虚构笔记、临时受控目录与可信本地 Host 验证核心逻辑。C 阶段已加入真实本地 MCP Server 与真实本地 Host/Client：stdio 启动、Resource 读取、Tool 成功/拒绝路径和人工确认写入（见 `demo/mcp_stdio_demo.py`）。该演示未使用真实模型 API 或私人笔记，运行时只用本地 stdio 管道、不发起对外网络连接，且未反向修改冻结基线。
+
+## 10. known-limitations-for-D（C 阶段已知边界，待 D 阶段处理）
+
+- `TrustedContext` 仍仅做“`str` / 长度 `1..256` / 不含 C0·DEL 控制字符”校验，**未实现安全字符白名单**；`subject` 来自部署配置（`MCP_NOTES_SUBJECT`，默认固定测试主体），无更严格的运行时身份绑定（如进程/会话凭证）。
+- 单进程、非并发、非多用户；`TasksStore` 连接为每 handler 重建，未做连接池或跨进程并发控制。
+- 仅 Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` no-replace 发布路径经实机验证；跨平台一致性（非 Windows 的等价原子无覆盖发布）待 D 阶段补。
+- 真实 Host 支持面（第三方 MCP Client 兼容性、传输扩展如 SSE/HTTP）未在 C 阶段评估。
+- 公开部署、生产多用户身份、并发负载、真实模型质量不在本次范围。
+- 固定评估目前以原创虚构夹具 + 11 例 C 阶段离线评估 + 20 项 stdio 集成测试 + 2 项入口/配置测试 + 8 项演示断言覆盖；完整 40 例计划套件（`evals/cases` / `evals/results` 基线）仍未实施，可在 D 阶段补齐。

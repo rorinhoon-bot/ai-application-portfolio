@@ -1,8 +1,8 @@
 # P3 固定离线评估方案
 
-- 版本：v0.2（Slice A / B1 / B2a 离线核心已落地；40 例集成套件与 MCP 运行仍属 B2b）
+- 版本：v0.3（Slice A / B1 / B2a 离线核心已落地；C 阶段已完成 MCP 真实本地 stdio 集成与固定离线评估）
 - 日期：2026-08-01（B2a 更新 2026-08-02）
-- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）；**Slice B2a 已落地受控写核心固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）**。完整的 40 例固定套件、`evals/cases`、`evals/results` 基线与 MCP 运行仍未实施（属 B2b）。
+- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）；**Slice B2a 已落地受控写核心固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）**。完整的 40 例固定套件、`evals/cases`、`evals/results` 基线仍未实施；**MCP 真实本地 stdio 运行已由 C 阶段以 `evals/gold/c-phase-v1.json`（11 场景）+ `evals/run_c_phase_eval.py` + `tests/test_mcp_integration.py`（**20 项** stdio 集成测试）+ `tests/test_server_entry.py`（**2 项**入口 / 配置测试）+ `demo/mcp_stdio_demo.py`（8 项成功 + 失败演示）落地并验证**（属 C 阶段；D-018 修复后计数已更新）。
 
 ## 1. 数据边界与快照
 
@@ -39,9 +39,11 @@
 | 10. 网络阻断与敏感扫描 | 3 | socket/HTTP 尝试拦截、日志/结果扫描、Git 样例扫描 |
 | **总计** | **40** | 成功、失败、安全与协议路径 |
 
-第 9 类仅在核心逻辑和离线测试通过后才执行真实本地 stdio Host/Client。当前不能声称它已完成。
+第 9 类已由 C 阶段以真实本地 stdio Host/Client 执行并验证（`tests/test_mcp_integration.py` + `demo/mcp_stdio_demo.py` + `evals/run_c_phase_eval.py`）。
 
-> **B2a 已落地（2026-08-06）**：计划分类 6（确认缺失/批准/拒绝/取消）、7（旧确认/身份错绑/重复批准/重复写入）、8（幂等/冲突/原子失败）的受控写核心已由固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）+ `tests/test_create_task.py`（53 项，含 3 项“创建成功后写入失败”故障注入回归、3 项冲突只读转换失败回归与 1 项删除失败回归）离线覆盖，并配套网络阻断与敏感扫描。上述 40 例仍是未来 B2b 集成（含真实 Host/Client、Resource、检索侧路径/链接案例）的完整目标，未因 B2a 提前宣称完成。
+> **B2a 已落地（2026-08-06）**：计划分类 6（确认缺失/批准/拒绝/取消）、7（旧确认/身份错绑/重复批准/重复写入）、8（幂等/冲突/原子失败）的受控写核心已由固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）+ `tests/test_create_task.py`（53 项，含 3 项“创建成功后写入失败”故障注入回归、3 项冲突只读转换失败回归与 1 项删除失败回归）离线覆盖，并配套网络阻断与敏感扫描。上述 40 例仍是完整目标，未因 B2a 提前宣称完成；**其中第 9 类（MCP Host/Client 集成）已由 C 阶段真实实现并验证，第 6/7/8 类的成功/失败/身份/过期路径在 C 阶段经 `TrustedHostController` + stdio 集成测试再次覆盖**。
+
+> **C 阶段固定离线评估（已落地，2026-08-02）**：新增 `evals/gold/c-phase-v1.json`（11 场景固定期望）与 `evals/run_c_phase_eval.py`（v2 进程内 `Client(build_server(config))` 对比金标准），全部通过；并新增 `tests/test_mcp_integration.py`（**20 项**真实 stdio 子进程集成测试，父进程与 Server 子进程均默认阻断外部网络，全部通过）、`tests/test_server_entry.py`（**2 项**入口 / 配置测试：生产入口不创建任务根、默认笔记根指向仓库夹具）与 `demo/mcp_stdio_demo.py`（真实 stdio 子进程 8 项成功 + 失败演示全部通过）。11 例覆盖：tools 列表不含确认动作、search 成功（命中 2）/ 非法关键词、create 返回 PENDING（`^task-[0-9a-f]{16}$` / `^conf-[0-9a-f]{16}$`）/ 非法标题、Host approve→发布文件、reject/cancel 终态、未知确认 `confirmation-required`、跨部署主体的 Host 批准 `confirmation-identity-mismatch`（D-018 后由“另一部署主体的 Host”驱动，不再伪造上下文）。20 项集成测试另覆盖：4 项 Tool 参数脱敏（非字符串 / 未知字段 / 缺必填 → 稳定 `invalid-arguments`，响应不含 Pydantic 文本 / URL / 堆栈）、2 项重放幂等（同内容 → 同 `task_id`/`confirmation_id`；不同内容 → 相互独立）、跨主体 Host approve/reject/cancel 全拒绝、2 项子进程网络阻断（外部地址被拒、回环不被该机制拦截）。评估只用原创虚构夹具，不读私人笔记、不调模型；运行时只用本地 stdio 管道、不发起对外网络连接；不泄露路径/正文/原始异常。
 
 ## 3. 金标准与判定
 

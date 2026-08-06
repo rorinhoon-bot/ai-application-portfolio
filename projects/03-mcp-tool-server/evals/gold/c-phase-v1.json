@@ -1,0 +1,50 @@
+{
+  "name": "P3 C 阶段离线固定评估（v1）",
+  "transport": "stdio / 本地（评估用 in-process v2 MCP Client(Server)，确定性、离线）",
+  "fixtures": "evals/fixtures/notes-v1（原创虚构，不含密钥 / Cookie / 鉴权头 / 绝对路径）",
+  "model": "无（不调用任何真实模型 API）",
+  "network": "默认阻断（不联网；仅本地 stdio / 文件系统）",
+  "expectations": {
+    "tools": ["search_notes", "create_task"],
+    "confirmation_actions_exposed": false,
+    "resource": "notes://service-info",
+    "search_success": {
+      "keyword": "检索",
+      "status": "ok",
+      "total_matched": 2
+    },
+    "search_invalid": {
+      "keyword": "..",
+      "status": "error",
+      "error_code": "invalid-arguments"
+    },
+    "create_pending": {
+      "status": "pending",
+      "task_id_pattern": "^task-[0-9a-f]{16}$",
+      "confirmation_id_pattern": "^conf-[0-9a-f]{16}$"
+    },
+    "create_invalid": {
+      "title": "",
+      "status": "error",
+      "error_code": "invalid-arguments"
+    },
+    "host_approve": {
+      "outcome": "created",
+      "publishes_file": true
+    },
+    "host_reject": {
+      "outcome": "rejected",
+      "publishes_file": false
+    },
+    "host_cancel": {
+      "outcome": "cancelled",
+      "publishes_file": false
+    },
+    "host_unknown": {
+      "error_code": "confirmation-required"
+    },
+    "host_identity_mismatch": {
+      "error_code": "confirmation-identity-mismatch"
+    }
+  }
+}

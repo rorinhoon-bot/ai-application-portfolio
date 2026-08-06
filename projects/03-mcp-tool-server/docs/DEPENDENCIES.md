@@ -1,58 +1,95 @@
-# P3 依赖提案
+# P3 依赖清单（已安装，C 阶段）
 
-- 版本：v0.1（提案，未批准安装）
-- 日期：2026-08-01
-- 当前动作：不安装、不创建 `.venv`、不写 `requirements*.txt`、不访问网络。
+- 版本：v0.3（已批准安装、已锁定、已验证）
+- 日期：2026-08-06
+- 状态：**已安装并验证通过**。`mcp==2.0.0` 为唯一生产直接依赖；另有 29 个传递依赖，
+  全部来自锁文件 `requirements.lock.txt`。Python 实际运行环境 **3.13.14**（Windows）；
+  安装后 `.venv` 实际大小 **74.6 MiB（78.2 MB）**。
 
 ## 1. 原则
 
-P3 当前只做规划。后续实现应优先使用 CPython 标准库：`pathlib`、`os`、`sqlite3`、`hashlib`、`json`、`tempfile`、`logging` 和 `unittest.mock`。标准库不列为 pip 依赖。
-
-唯一预期生产直接依赖是 MCP Python SDK；它提供协议 Server、Tool、Resource 和后续本地 Client 集成所需接口。当前离线环境没有可信包元数据或 wheel，因此不能编造 SDK 的版本、Python 3.14 支持、许可证、传递依赖或磁盘占用。以下内容是待核实提案，不能用于安装。
+- 项目自有代码仅依赖标准库 + `mcp` SDK；其余 29 个均为 `mcp` 的传递依赖，按锁文件固定。
+- 标准库（`pathlib` / `os` / `sqlite3` / `hashlib` / `json` / `tempfile` / `unicodedata` 等）
+  不列为 pip 依赖。
+- 运行时只用 **stdio** 本地传输；`mcp` 携带的 HTTP / SSE / ASGI 相关传递依赖（httpx2 /
+  uvicorn / starlette / sse-starlette / h11 / python-multipart / truststore 等）随 SDK
+  一并安装，但本项目 stdio 路径不触发它们；测试中的父进程与 Server 子进程均默认阻断
+  外部网络（仅测试环境开关 `NETWORK_ACCESS_BLOCKED_IN_TESTS=1` 启用），生产网络能力不变。
+- 不引入模型供应商 SDK、Agent / 多智能体、向量库 / Embedding、Web 框架（除 SDK 自带 ASGI
+  外）、云数据库、ORM、任务队列等（见第 5 节）。
 
 ## 2. 生产直接依赖
 
-| 包 | 精确版本 | 用途 | 必要性 | Python 3.14 兼容性证据 | 许可证 | 预计磁盘影响 |
-|---|---|---|---|---|---|---|
-| `mcp` | `待核实；不得以浮动版本安装` | MCP Server、Tool、Resource、stdio transport、后续本地 Client 集成 | P3 协议作品核心；不用 SDK 无法证明真实 MCP 互通 | 待核实：下一阶段须取得所选精确版本的官方 PyPI 元数据、Windows wheel/构建说明，并在独立 CPython 3.14 `.venv` wheel-only dry-run 与最小 Server/Client 测试验证 | 待核实：以所选版本发布包 `License-Expression` 和上游 LICENSE 为准 | 待核实：先做 `pip --dry-run --only-binary=:all:`，记录下载 wheel 与安装后 `.venv` 大小 |
+| 包 | 精确版本 | 用途 | 必要性 | Python 3.13 / Windows 兼容性 | 许可证 |
+|---|---|---|---|---|---|
+| `mcp` | `2.0.0` | MCP Server / Tool / Resource / stdio transport / 本地 Client 集成（v2 高层 `MCPServer`） | P3 协议作品核心；不用 SDK 无法证明真实 MCP 互通 | 官方元数据 `requires-python >=3.10`，含 Windows wheel；已在本地 CPython 3.13.14 验证 stdio Server/Client 互通 | MIT |
 
-### 选择说明
+## 3. 传递依赖（29 个，源自 `requirements.lock.txt`）
 
-- 不在本阶段猜测 `mcp` 版本号。精确版本必须来自下一阶段可复核的官方元数据，随后写入锁文件与本表。
-- 先检查 SDK 是否支持所需 Tool/Resource 与 stdio；若不能满足 Windows 路径安全或本地 Host/Client 演示，停止并重新决策，不临时换包。
-- MCP SDK 不能替代 Schema、路径安全、Human-in-the-loop、幂等或文件原子写入；这些是项目自有代码与测试责任。
+> Bootstrap 包 `pip` / `setuptools` / `wheel` 由 venv 包管理器提供，不计入下表、不写入锁文件。
 
-## 3. 开发直接依赖
+| 包 | 精确版本 | 许可证 | 用途（mcp SDK 内） | Python 3.13 / Windows 兼容 |
+|---|---|---|---|---|
+| `mcp-types` | `2.0.0` | MIT | MCP 协议数据类型（Server/Client 共用） | 随 mcp 2.0.0 |
+| `pydantic` | `2.13.4` | MIT | SDK 参数 / 结果数据校验 | >=3.10，Windows OK |
+| `pydantic_core` | `2.46.4` | MIT | pydantic 校验引擎 | >=3.10，Windows OK |
+| `typing_inspection` | `0.4.2` | MIT | pydantic 类型内省 | >=3.10，Windows OK |
+| `typing_extensions` | `4.16.0` | PSF-2.0 | typing 向后移植 | 全平台 |
+| `annotated-types` | `0.8.0` | MIT | pydantic 注解类型支持 | >=3.8，Windows OK |
+| `anyio` | `4.14.2` | MIT | 异步 I/O（SDK / starlette） | >=3.9，Windows OK |
+| `attrs` | `26.1.0` | MIT | opentelemetry / referencing 支持 | >=3.7，Windows OK |
+| `click` | `8.4.2` | BSD-3-Clause | SDK CLI 入口 | >=3.9，Windows OK |
+| `colorama` | `0.4.6` | MIT | Windows 终端颜色 | 全平台 |
+| `cryptography` | `50.0.0` | Apache-2.0 OR BSD-3-Clause | TLS / 安全传输（SDK auth 路径） | >=3.10，Windows OK（含原生 wheel） |
+| `cffi` | `2.1.1` | MIT-0 | cryptography 的 C 绑定 | >=3.8，Windows OK（含原生 wheel） |
+| `pycparser` | `3.0` | BSD-3-Clause | cffi 依赖（C 头解析） | 全平台 |
+| `idna` | `3.18` | BSD-3-Clause | 域名编码（httpx） | 全平台 |
+| `httpx2` | `2.9.1` | BSD-3-Clause | 异步 HTTP 客户端（SDK streamable-http 客户端） | >=3.10，Windows OK |
+| `httpcore2` | `2.9.1` | BSD-3-Clause | HTTP 核心（httpx2 依赖） | >=3.10，Windows OK |
+| `h11` | `0.16.0` | MIT | HTTP/1.1 解析（SDK HTTP 传输） | 全平台 |
+| `python-multipart` | `0.0.32` | Apache-2.0 | 表单解析（SDK HTTP 传输） | >=3.8，Windows OK |
+| `starlette` | `1.4.1` | BSD-3-Clause | ASGI 框架（SDK HTTP 传输） | >=3.9，Windows OK |
+| `sse-starlette` | `3.4.8` | BSD-3-Clause | SSE（SDK streamable-http） | >=3.8，Windows OK |
+| `uvicorn` | `0.52.1` | BSD-3-Clause | ASGI 服务器（SDK HTTP 传输） | >=3.9，Windows OK |
+| `truststore` | `0.10.4` | MIT | 平台信任库（SDK HTTPS 验证） | >=3.10，Windows OK |
+| `jsonschema` | `4.26.0` | MIT | JSON Schema 校验（SDK） | >=3.9，Windows OK |
+| `jsonschema-specifications` | `2025.9.1` | MIT | JSON Schema 规范数据 | >=3.9，Windows OK |
+| `referencing` | `0.37.0` | MIT | JSON 引用解析（jsonschema） | >=3.9，Windows OK |
+| `rpds-py` | `2026.6.3` | MIT | 持久化数据结构（referencing / jsonschema） | >=3.10，Windows OK（含原生 wheel） |
+| `opentelemetry-api` | `1.44.0` | Apache-2.0 | 追踪 / 遥测 API（SDK 可选） | >=3.9，Windows OK |
+| `PyJWT` | `2.13.0` | MIT | JWT 鉴权（SDK auth 路径） | >=3.8，Windows OK |
+| `pywin32` | `312` | PSF | Windows 原生 API（SDK / uvicorn Windows 支持） | Windows 专用 |
 
-| 包 | 精确版本 | 用途 | 必要性 | Python 3.14 兼容性证据 | 许可证 | 预计磁盘影响 |
-|---|---|---|---|---|---|---|
-| `pytest` | `9.1.1`（候选） | 离线单元、集成、安全和固定评估测试 | 仓库完成标准要求自动测试 | P2 在同一仓库的 CPython 3.14.3 独立环境已验证 `pytest==9.1.1`，P2 依赖记录还注明官方元数据声明 `>=3.10` 并列出 Python 3.14/Windows；P3 仍须独立验证 | MIT（P2 已核实；P3 安装前仍复核所下载包） | 待核实：P3 的最终依赖树由 MCP SDK 版本决定，不能从 P2 环境推算 |
+## 4. 兼容性结论
 
-不提案 formatter、linter、HTTP 测试库或数据库 ORM。若后续需要，必须先新建决策和依赖条目；当前不默认扩展。
+- 实际运行环境：CPython **3.13.14**（Windows）。`mcp==2.0.0` 官方元数据声明
+  `requires-python >=3.10`，并提供 Windows wheel；其余传递依赖均声明支持 3.10+ 且含
+  Windows 构建。`pywin32` 为 Windows 专用（本项目运行平台即 Windows，符合）。
+- 验证方式：在 P3 独立 `.venv` 安装锁文件全部条目，`python -m pip check` **无 warning、
+  无 broken requirements**；`compileall` 通过；`unittest discover` 全部通过；`demo` 与
+  固定 `eval` 全部通过（见各文档验证记录）。
+- 磁盘占用：安装后 `.venv` 实际 **74.6 MiB（78.2 MB）**。
 
-## 4. 传递依赖
-
-`mcp` 的传递依赖当前为待核实，不能假定为空，也不能从网上记忆填写。下一阶段批准后必须：
-
-1. 固定生产与开发直接版本。
-2. 在 P3 独立 `.venv` 进行 `--dry-run --only-binary=:all:`。
-3. 导出全部传递依赖的精确版本、wheel 类型、许可证来源、Python 3.14/Windows 兼容性证据和磁盘大小。
-4. 拒绝未知许可证、无可接受 Windows 构建、源码构建需求或未解释的网络客户端。
-5. 生成可复现锁文件，再安装并运行 `pip check` 与离线安全烟雾测试。
-
-在这些步骤完成前，生产、开发和传递依赖均未安装，也没有兼容性结论。
-
-## 5. 明确不引入
+## 5. 明确不引入（应用层）
 
 | 类型 | 不引入原因 |
 |---|---|
-| 模型供应商 SDK、`httpx`、网页抓取 | 当前不调用模型、不访问网络、不读取 URL；加入会扩大密钥与网络面 |
+| 模型供应商 SDK、`httpx`/`httpx2` 主动调用、网页抓取 | 当前不调用模型、不主动访问网络、不读取 URL；加入会扩大密钥与网络面（HTTP 相关传递依赖仅随 SDK 被动安装，stdio 路径不触发） |
 | Agent、多智能体、LangGraph、AutoGen、CrewAI | P3 验证 MCP 工具边界，不需要自主规划或多角色协作 |
 | 向量库、Embedding、Reranker | 小型固定笔记集用确定性关键词检索即可，且更容易验证路径和注入边界 |
-| Web 框架、前端 UI | 后续演示是本地 stdio MCP Host/Client，不公开 HTTP 服务 |
-| PostgreSQL、Redis、云数据库 | 不需要网络数据库服务；计划仅在必要时用标准库 `sqlite3` 保存本地确认与幂等状态 |
+| 公开 Web 框架 / 前端 UI | 当前演示是本地 stdio MCP Host/Client，不公开 HTTP 服务（SDK 自带的 ASGI/uvicorn 仅 SDK HTTP 传输路径使用，非本项目主动启用） |
+| PostgreSQL、Redis、云数据库 | 不需要网络数据库服务；仅用标准库 `sqlite3` 保存本地确认与幂等状态 |
 | ORM、任务队列、消息代理 | 单机、单服务、人工确认场景没有并发分布式需求 |
 
-## 6. 下一阶段安装批准边界
+## 6. 锁文件与复验
 
-另行批准后，允许的最小动作应限于：创建 `projects/03-mcp-tool-server/.venv`、下载/安装本表最终核实的 wheel、生成锁文件、执行 `pip check` 和不联网的本地测试。批准不包含真实模型、真实笔记、网络检索、公开部署、系统 Python 修改或未列依赖。
+- 锁文件：`requirements.lock.txt`（mcp==2.0.0 + 29 传递依赖，精确版本）。
+- 复验命令（仅本地、离线测试）：
+  - `.venv\Scripts\python.exe -m compileall -q src tests demo evals`
+  - `.venv\Scripts\python.exe -m unittest discover -s tests`
+  - `.venv\Scripts\python.exe evals\run_c_phase_eval.py`
+  - `.venv\Scripts\python.exe demo\mcp_stdio_demo.py`
+  - `.venv\Scripts\python.exe -m pip check`
+- 批准边界（与历史决策一致）：仅创建 `projects/03-mcp-tool-server/.venv`、安装锁文件
+  wheel、生成锁文件、执行 `pip check` 与本地离线测试；不包含真实模型、真实笔记、
+  网络检索、公开部署、系统 Python 修改或未列依赖。

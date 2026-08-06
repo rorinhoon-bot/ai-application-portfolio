@@ -482,6 +482,59 @@ class TasksStore:
             confirmation_id, trusted_context, "CANCELLED", "cancel", "cancelled"
         )
 
+    def lookup_context(self, confirmation_id) -> Optional["TrustedContext"]:
+        """受控本地只读：按已知 confirmation_id 取回存储的 subject / correlation_id，
+        重建 `TrustedContext` 供本地可信 Host 控制器在 Tool 外批准 / 拒绝 / 取消。
+
+        仅从服务自有持久化记录派生——correlation_id 由本服务生成并落库，绝不使用
+        Tool 参数、模型文本、MCP 请求字段或客户端自报值。未知 / 非法 / 损坏输入
+        一律返回 None（不回显任意输入、不泄露路径 / 正文）。
+
+        注意：本方法返回**记录中的 subject**，仅供内部/测试参考；生产 Host 必须
+        使用 `lookup_correlation_id` + 自身 `self._subject` 重建上下文，绝不直接信任
+        记录中的 subject 作为授权主体（见 P0-4 / D-018）。
+        """
+        if not _validate_confirmation_id(confirmation_id):
+            return None
+        try:
+            row = self._conn.execute(
+                "SELECT subject, correlation_id FROM confirmations "
+                "WHERE confirmation_id=?",
+                (confirmation_id,),
+            ).fetchone()
+        except sqlite3.Error:
+            return None
+        if row is None:
+            return None
+        subject, corr = row
+        try:
+            return TrustedContext(subject, corr)
+        except TaskPublishError:
+            # 存储数据异常（不应发生）：失败关闭，不泄露
+            return None
+
+    def lookup_correlation_id(self, confirmation_id) -> Optional[str]:
+        """受控本地只读：按已知 confirmation_id 仅取回存储的 correlation_id。
+
+        供本地可信 Host 控制器在 Tool 外批准 / 拒绝 / 取消时，与**自身配置的**
+        `self._subject` 重建 `TrustedContext`（P0-4）：身份绑定的 subject 来自 Host
+        受控配置，绝不取用记录中的 subject 作为授权主体。未知 / 非法 / 损坏输入
+        一律返回 None（不回显任意输入、不泄露路径 / 正文）。
+        """
+        if not _validate_confirmation_id(confirmation_id):
+            return None
+        try:
+            row = self._conn.execute(
+                "SELECT correlation_id FROM confirmations "
+                "WHERE confirmation_id=?",
+                (confirmation_id,),
+            ).fetchone()
+        except sqlite3.Error:
+            return None
+        if row is None:
+            return None
+        return row[0]
+
     # ------------------------------------------------------------------ #
     # 内部
     # ------------------------------------------------------------------ #

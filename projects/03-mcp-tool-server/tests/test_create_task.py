@@ -342,9 +342,10 @@ class TestNetworkBlockExplicit(NetworkBlockedTestCase):
     def test_socket_blocked_during_operations(self):
         import socket
 
-        from _network_block import _blocked
+        from _network_block import _blocked, _blocked_connect
 
-        self.assertIs(socket.socket, _blocked)
+        self.assertIs(socket.socket.connect, _blocked_connect)
+        self.assertIs(socket.create_connection, _blocked)
         store, _ = _make_store()
         try:
             tc = TrustedContext("local-user", "c-net")
