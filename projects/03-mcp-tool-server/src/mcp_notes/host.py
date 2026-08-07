@@ -31,6 +31,7 @@ from .tasks import (
     TaskResult,
     TasksStore,
     TrustedContext,
+    _valid_correlation_id,
     _valid_subject,
 )
 
@@ -59,6 +60,10 @@ class TrustedHostController:
         """
         corr = self._store.lookup_correlation_id(confirmation_id)
         if corr is None:
+            return None
+        # P0-1：取回的 correlation_id 必须经核心格式校验；损坏/旧格式（非 64 位小写
+        # 十六进制）→ 失败关闭，绝不写文件、不泄露原始值。
+        if not _valid_correlation_id(corr):
             return None
         try:
             return TrustedContext(self._subject, corr)

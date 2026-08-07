@@ -11,7 +11,7 @@
         {
           "op": "approve",
           "subject": "local-user",
-          "correlation_id": "c-unconfirmed",
+          "correlation_id": "0000000000000000000000000000000000000000000000000000000000000000",
           "confirmation_id": "conf-0000000000000000",
           "expect": {"outcome": "error", "error_code": "confirmation-required", "file_count": 0}
         }
@@ -27,14 +27,14 @@
           "title": "设计 MCP 工具服务接口",
           "description": "明确 search_notes 与 create_task 的 JSON Schema 与权限边界。",
           "subject": "local-user",
-          "correlation_id": "c-approved",
+          "correlation_id": "1111111111111111111111111111111111111111111111111111111111111111",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-approved",
+          "correlation_id": "1111111111111111111111111111111111111111111111111111111111111111",
           "expect": {"outcome": "created", "file_count": 1}
         }
       ]
@@ -49,14 +49,14 @@
           "title": "整理检索评估集",
           "description": "汇总 20 条固定检索问题与金标准。",
           "subject": "local-user",
-          "correlation_id": "c-rejected",
+          "correlation_id": "2222222222222222222222222222222222222222222222222222222222222222",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "reject",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-rejected",
+          "correlation_id": "2222222222222222222222222222222222222222222222222222222222222222",
           "expect": {"outcome": "rejected", "file_count": 0}
         }
       ]
@@ -71,14 +71,14 @@
           "title": "编写路径安全说明",
           "description": "说明句柄级打开如何抵御 reparse point 跟随。",
           "subject": "local-user",
-          "correlation_id": "c-cancelled",
+          "correlation_id": "3333333333333333333333333333333333333333333333333333333333333333",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "cancel",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-cancelled",
+          "correlation_id": "3333333333333333333333333333333333333333333333333333333333333333",
           "expect": {"outcome": "cancelled", "file_count": 0}
         }
       ]
@@ -93,14 +93,14 @@
           "title": "归档已完成任务",
           "description": "把已批准任务移入月度归档目录。",
           "subject": "local-user",
-          "correlation_id": "c-expired",
+          "correlation_id": "4444444444444444444444444444444444444444444444444444444444444444",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-expired",
+          "correlation_id": "4444444444444444444444444444444444444444444444444444444444444444",
           "advance": 700,
           "expect": {"outcome": "error", "error_code": "confirmation-expired", "file_count": 0}
         }
@@ -116,14 +116,14 @@
           "title": "更新部署文档",
           "description": "补充本地 stdio 启动步骤。",
           "subject": "user-A",
-          "correlation_id": "c-idm",
+          "correlation_id": "5555555555555555555555555555555555555555555555555555555555555555",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "user-B",
-          "correlation_id": "c-idm",
+          "correlation_id": "5555555555555555555555555555555555555555555555555555555555555555",
           "expect": {"outcome": "error", "error_code": "confirmation-identity-mismatch", "file_count": 0}
         }
       ]
@@ -138,7 +138,7 @@
           "title": "任务初版草稿",
           "description": "第一版任务描述。",
           "subject": "local-user",
-          "correlation_id": "c-content",
+          "correlation_id": "6666666666666666666666666666666666666666666666666666666666666666",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
@@ -146,14 +146,14 @@
           "title": "任务改版草稿",
           "description": "第二版任务描述，内容不同。",
           "subject": "local-user",
-          "correlation_id": "c-content",
+          "correlation_id": "6666666666666666666666666666666666666666666666666666666666666666",
           "expect": {"outcome": "error", "error_code": "idempotency-conflict", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-content",
+          "correlation_id": "6666666666666666666666666666666666666666666666666666666666666666",
           "expect": {"outcome": "created", "file_count": 1}
         }
       ]
@@ -168,7 +168,7 @@
           "title": "复查索引构建流程",
           "description": "确认枚举缓冲区解析的硬边界。",
           "subject": "local-user",
-          "correlation_id": "c-dupreq",
+          "correlation_id": "7777777777777777777777777777777777777777777777777777777777777777",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
@@ -176,14 +176,14 @@
           "title": "复查索引构建流程",
           "description": "确认枚举缓冲区解析的硬边界。",
           "subject": "local-user",
-          "correlation_id": "c-dupreq",
+          "correlation_id": "7777777777777777777777777777777777777777777777777777777777777777",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 1,
           "subject": "local-user",
-          "correlation_id": "c-dupreq",
+          "correlation_id": "7777777777777777777777777777777777777777777777777777777777777777",
           "expect": {"outcome": "created", "file_count": 1}
         }
       ]
@@ -198,21 +198,21 @@
           "title": "整理测试夹具",
           "description": "准备原创虚构笔记与任务数据。",
           "subject": "local-user",
-          "correlation_id": "c-dupapp",
+          "correlation_id": "8888888888888888888888888888888888888888888888888888888888888888",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-dupapp",
+          "correlation_id": "8888888888888888888888888888888888888888888888888888888888888888",
           "expect": {"outcome": "created", "file_count": 1}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-dupapp",
+          "correlation_id": "8888888888888888888888888888888888888888888888888888888888888888",
           "expect": {"outcome": "unchanged", "error_code": "confirmation-already-consumed", "file_count": 1}
         }
       ]
@@ -227,14 +227,14 @@
           "title": "复核受控写边界",
           "description": "确认过期判断顺序不覆盖已批准记录。",
           "subject": "local-user",
-          "correlation_id": "c-dupapp-exp",
+          "correlation_id": "9999999999999999999999999999999999999999999999999999999999999999",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-dupapp-exp",
+          "correlation_id": "9999999999999999999999999999999999999999999999999999999999999999",
           "expect": {"outcome": "created", "file_count": 1}
         },
         {
@@ -242,7 +242,7 @@
           "confirmation_ref": 0,
           "advance": 700,
           "subject": "local-user",
-          "correlation_id": "c-dupapp-exp",
+          "correlation_id": "9999999999999999999999999999999999999999999999999999999999999999",
           "expect": {"outcome": "unchanged", "error_code": "confirmation-already-consumed", "file_count": 1}
         }
       ]
@@ -257,7 +257,7 @@
           "title": "生成发布检查清单",
           "description": "列出提交前必查项。",
           "subject": "local-user",
-          "correlation_id": "c-conflict",
+          "correlation_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
@@ -266,13 +266,13 @@
           "title": "旧任务占位",
           "content_hash": "stale-hash-0001",
           "subject": "local-user",
-          "correlation_id": "c-conflict"
+          "correlation_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-conflict",
+          "correlation_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "expect": {"outcome": "error", "error_code": "task-conflict", "file_count": 1, "stale_hash": "stale-hash-0001"}
         }
       ]
@@ -288,14 +288,14 @@
           "title": "编写回归测试",
           "description": "覆盖状态机与发布边界。",
           "subject": "local-user",
-          "correlation_id": "c-atomic",
+          "correlation_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           "expect": {"outcome": "pending", "file_count": 0}
         },
         {
           "op": "approve",
           "confirmation_ref": 0,
           "subject": "local-user",
-          "correlation_id": "c-atomic",
+          "correlation_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           "expect": {"outcome": "error", "error_code": "task-write-failed", "file_count": 0}
         }
       ]

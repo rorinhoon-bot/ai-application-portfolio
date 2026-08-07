@@ -54,8 +54,9 @@ class ServerConfigEntryTests(NetworkBlockedTestCase):
         self.assertIsNotNone(server)
 
     def test_default_notes_root_points_to_fixtures(self):
-        # 不传 MCP_NOTES_NOTES_ROOT → 默认指向仓库 evals/fixtures/notes-v1 且真实存在
-        config = ServerConfig.from_env({})
+        # 不传 MCP_NOTES_NOTES_ROOT → 默认指向仓库 evals/fixtures/notes-v1 且真实存在；
+        # subject 为必填，须显式提供（P0-2：无默认主体）
+        config = ServerConfig.from_env({"MCP_NOTES_SUBJECT": "p3-local-service"})
         self.assertTrue(
             config.notes_root.endswith(os.path.join("evals", "fixtures", "notes-v1"))
         )
@@ -67,3 +68,15 @@ class ServerConfigEntryTests(NetworkBlockedTestCase):
         # D-1 配置启动失败关闭：subject 含空格等非法字符 → from_env 抛受控错误
         with self.assertRaises(TaskPublishError):
             ServerConfig.from_env({"MCP_NOTES_SUBJECT": "bad subject"})
+
+    def test_from_env_missing_subject_fails_closed(self):
+        # P0-2 ⑤：缺失 MCP_NOTES_SUBJECT 必须失败关闭（不再回退默认主体）
+        with self.assertRaises(TaskPublishError):
+            ServerConfig.from_env({})
+
+    def test_direct_construct_invalid_subject_fails_closed(self):
+        # P0-2 ⑥：直接构造非法 subject 不得绕过 __post_init__ 校验
+        with self.assertRaises(TaskPublishError):
+            ServerConfig(
+                db_path="x.db", task_root="t", notes_root="n", subject="bad subject"
+            )

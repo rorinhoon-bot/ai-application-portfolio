@@ -123,7 +123,7 @@ def _check_context(trusted_context) -> Optional[str]:
         return INVALID_ARGUMENTS
     if not _valid_subject(trusted_context.subject):
         return INVALID_ARGUMENTS
-    if not _valid_trusted_value(trusted_context.correlation_id):
+    if not _valid_correlation_id(trusted_context.correlation_id):
         return INVALID_ARGUMENTS
     return None
 
@@ -141,16 +141,17 @@ class TrustedContext:
 
     D-1 构造即校验：subject 必须符合精确字符白名单
     `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（首字符字母/数字，总长 1..128）；
-    correlation_id 须为 str、长度 1.._TRUSTED_MAX、不含控制字符（其真实规范格式为
-    服务端按 NFKC 派生的 64 位小写十六进制 `^[0-9a-f]{64}$`，由 server 派生处守卫）。
-    非法值抛受控的 `TaskPublishError(INVALID_ARGUMENTS)`，绝不抛原始 TypeError 或泄露异常。
+    correlation_id 必须匹配服务端按 NFKC 派生的 64 位小写十六进制
+    `^[0-9a-f]{64}$`（无前缀），构造即强制校验；correlation_id 由服务端 `TasksStore`
+    / `server` 派生落库，客户端永远不能直接提供或覆盖。subject 或 correlation_id
+    不合法抛受控的 `TaskPublishError(INVALID_ARGUMENTS)`，绝不抛原始 TypeError 或泄露异常。
     """
 
     subject: str
     correlation_id: str
 
     def __init__(self, subject, correlation_id):
-        if not _valid_subject(subject) or not _valid_trusted_value(correlation_id):
+        if not _valid_subject(subject) or not _valid_correlation_id(correlation_id):
             raise TaskPublishError(INVALID_ARGUMENTS)
         object.__setattr__(self, "subject", subject)
         object.__setattr__(self, "correlation_id", correlation_id)

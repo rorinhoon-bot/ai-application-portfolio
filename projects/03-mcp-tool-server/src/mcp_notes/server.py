@@ -94,7 +94,8 @@ class ServerConfig:
     """Server 受控本地配置（绝不含客户端可控字段）。
 
     subject 固定为服务身份，须符合 D-1 精确字符白名单
-    `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（缺失/非法在 `from_env` 失败关闭）；
+    `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（必须由 `MCP_NOTES_SUBJECT` 提供，无默认值；
+    缺失/非法在构造期失败关闭）；
     correlation_id 由 Server 运行时本地派生，不在此配置。
     task_root 必须由部署配置预存在（见 D-015）；本模块**绝不**创建任务根或任何祖先目录。`server.main()` 仅创建部署配置指定的 SQLite 状态库父目录（`os.path.dirname(db_path)`），绝不创建 `task_root`。
     """
@@ -106,13 +107,20 @@ class ServerConfig:
     service_name: str = _SERVICE_NAME
     version: str = _SERVICE_VERSION
 
+    def __post_init__(self):
+        # P0-2：subject 必须符合精确字符白名单（D-1）；缺失/非法在构造期失败关闭，
+        # 不回退默认主体、不泄露路径/正文/原始异常。
+        if not _valid_subject(self.subject):
+            raise TaskPublishError(INVALID_ARGUMENTS)
+
     @classmethod
     def from_env(cls, environ: Optional[dict] = None) -> "ServerConfig":
         """从环境变量读取配置，缺省使用虚构相对路径（指向仓库内虚构夹具）。
 
-        不读写真实私人笔记；notes_root 默认真实指向本仓库 `evals/fixtures/notes-v1`
-        （原创虚构数据），task_root / db_path 默认在 `.mcp-notes/` 下，须由部署配置
-        预存在（入口不创建任务根）。
+        `MCP_NOTES_SUBJECT` 为必填：缺失时抛受控 `TaskPublishError(INVALID_ARGUMENTS)`，
+        不再回退默认主体（P0-2）。不读写真实私人笔记；notes_root 默认真实指向本仓库
+        `evals/fixtures/notes-v1`（原创虚构数据），task_root / db_path 默认在
+        `.mcp-notes/` 下，须由部署配置预存在（入口不创建任务根）。
         """
         env = environ if environ is not None else dict(os.environ)
         pkg_dir = os.path.dirname(os.path.abspath(__file__))
@@ -124,11 +132,8 @@ class ServerConfig:
             db_path=env.get("MCP_NOTES_DB_PATH", os.path.join(".mcp-notes", "control.db")),
             task_root=env.get("MCP_NOTES_TASK_ROOT", os.path.join(".mcp-notes", "tasks")),
             notes_root=env.get("MCP_NOTES_NOTES_ROOT", default_notes),
-            subject=env.get("MCP_NOTES_SUBJECT", "p3-local-service"),
+            subject=env.get("MCP_NOTES_SUBJECT"),
         )
-        # D-1 配置启动失败关闭：subject 必须符合精确字符白名单，缺失/非法不启动 Server
-        if not _valid_subject(config.subject):
-            raise TaskPublishError(INVALID_ARGUMENTS)
         return config
 
 

@@ -237,7 +237,7 @@ class TestIllegalParams(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("local-user", "c-params")
+        self.tc = TrustedContext("local-user", "0" * 64)
 
     def _expect_invalid(self, title, description):
         res = self.store.create_task(title, description, self.tc)
@@ -281,7 +281,7 @@ class TestIllegalParams(NetworkBlockedTestCase):
     def test_empty_subject(self):
         # P1-5：构造即校验，非法 subject 抛受控 TaskPublishError(invalid-arguments)
         with self.assertRaises(TaskPublishError) as cm:
-            TrustedContext("", "c-x")
+            TrustedContext("", "1" * 64)
         self.assertEqual(cm.exception.code, INVALID_ARGUMENTS)
 
     def test_empty_correlation_id(self):
@@ -297,7 +297,7 @@ class TestNoFileWithoutConfirmation(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("local-user", "c-nofile")
+        self.tc = TrustedContext("local-user", "2" * 64)
 
     def test_create_does_not_write_file(self):
         res = self.store.create_task("草稿标题", "草稿描述内容。", self.tc)
@@ -348,7 +348,7 @@ class TestNetworkBlockExplicit(NetworkBlockedTestCase):
         self.assertIs(socket.create_connection, _blocked)
         store, _ = _make_store()
         try:
-            tc = TrustedContext("local-user", "c-net")
+            tc = TrustedContext("local-user", "3" * 64)
             r1 = store.create_task("网络标题", "网络描述内容。", tc)
             r2 = store.approve(r1.confirmation_id, tc)
             self.assertIn(r2.outcome, ("created", "unchanged"))
@@ -406,10 +406,10 @@ class TestCorrelationBinding(NetworkBlockedTestCase):
         self.addCleanup(self.store.close)
 
     def test_same_subject_diff_correlation_rejected(self):
-        tc1 = TrustedContext("u", "c-1")
+        tc1 = TrustedContext("u", "b" * 64)
         r = self.store.create_task("标题", "描述内容。", tc1)
         self.assertEqual(r.outcome, "pending")
-        tc2 = TrustedContext("u", "c-2")  # 同 subject 不同 correlation_id
+        tc2 = TrustedContext("u", "c" * 64)  # 同 subject 不同 correlation_id
         for op in ("approve", "reject", "cancel"):
             res = getattr(self.store, op)(r.confirmation_id, tc2)
             self.assertEqual(
@@ -419,7 +419,7 @@ class TestCorrelationBinding(NetworkBlockedTestCase):
         self.assertEqual(_count_task_files(self.task_root), 0)
 
     def test_matching_correlation_approves(self):
-        tc = TrustedContext("u", "c-1")
+        tc = TrustedContext("u", "b" * 64)
         r = self.store.create_task("标题", "描述内容。", tc)
         res = self.store.approve(r.confirmation_id, tc)
         self.assertEqual(res.outcome, "created")
@@ -437,7 +437,7 @@ class TestAlreadyConsumedNotExpired(NetworkBlockedTestCase):
             os.path.join(tmp, "s.sqlite"), os.path.join(tmp, "t"), clock=clock
         )
         try:
-            tc = TrustedContext("u", "c-p02a")
+            tc = TrustedContext("u", "5" * 64)
             r = store.create_task("标题", "描述内容。", tc)
             self.assertEqual(store.approve(r.confirmation_id, tc).outcome, "created")
             clock.advance(700)  # 超过十分钟有效期
@@ -463,7 +463,7 @@ class TestAlreadyConsumedNotExpired(NetworkBlockedTestCase):
             os.path.join(tmp, "s.sqlite"), os.path.join(tmp, "t"), clock=clock
         )
         try:
-            tc = TrustedContext("u", "c-p02b")
+            tc = TrustedContext("u", "6" * 64)
             r = store.create_task("标题", "描述内容。", tc)
             self.assertEqual(store.approve(r.confirmation_id, tc).outcome, "created")
             res = store.reject(r.confirmation_id, tc)
@@ -480,7 +480,7 @@ class TestNoReplacePublish(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("u", "c-norep")
+        self.tc = TrustedContext("u", "7" * 64)
 
     def test_race_target_appears_at_publish(self):
         r = self.store.create_task("race 标题", "race 描述内容。", self.tc)
@@ -514,7 +514,7 @@ class TestTaskRootSafety(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("u", "c-root")
+        self.tc = TrustedContext("u", "8" * 64)
 
     def test_native_unavailable_fails_closed(self):
         # 非 Windows / 原生不可用 → 失败关闭、不写文件
@@ -592,31 +592,61 @@ class TestTrustedContextValidation(NetworkBlockedTestCase):
             TrustedContext("u", "c" * 300)
 
     def test_valid(self):
-        tc = TrustedContext("local-user", "corr-1")
+        tc = TrustedContext("local-user", "d" * 64)
         self.assertEqual(tc.subject, "local-user")
-        self.assertEqual(tc.correlation_id, "corr-1")
+        self.assertEqual(tc.correlation_id, "d" * 64)
 
     # ---- D-1 精确身份格式：subject 字符白名单 ----
 
     def test_subject_with_space_rejected(self):
         with self.assertRaises(TaskPublishError):
-            TrustedContext("bad subject", "c-1")
+            TrustedContext("bad subject", "b" * 64)
 
     def test_subject_with_cjk_rejected(self):
         with self.assertRaises(TaskPublishError):
-            TrustedContext("用户", "c-1")
+            TrustedContext("用户", "b" * 64)
 
     def test_subject_leading_hyphen_rejected(self):
         with self.assertRaises(TaskPublishError):
-            TrustedContext("-bad", "c-1")
+            TrustedContext("-bad", "b" * 64)
 
     def test_subject_too_long_rejected(self):
         with self.assertRaises(TaskPublishError):
-            TrustedContext("a" * 129, "c-1")
+            TrustedContext("a" * 129, "b" * 64)
 
     def test_subject_special_chars_valid(self):
-        tc = TrustedContext("a.b_c-d", "corr-2")
+        tc = TrustedContext("a.b_c-d", "e" * 64)
         self.assertEqual(tc.subject, "a.b_c-d")
+
+    # ---- D-1 修正（P0-1）：correlation_id 在核心类型层强制 ^[0-9a-f]{64}$ ----
+
+    def test_illegal_correlation_id_rejected(self):
+        # ① 非 64 位小写十六进制的 correlation_id 必须在构造期被拒
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("good", "c-1")  # 旧格式非 64-hex
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("good", "C" * 64)  # 大写非法
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("good", "g" + "0" * 63)  # 含非 hex 字符
+
+    def test_64hex_correlation_id_accepted(self):
+        # ② 合法 64 位小写十六进制 correlation_id 被接受
+        tc = TrustedContext("good", "f" * 64)
+        self.assertEqual(tc.subject, "good")
+        self.assertEqual(tc.correlation_id, "f" * 64)
+
+    def test_create_task_blocks_illegal_correlation_id(self):
+        # ③ TasksStore.create_task 不能经“直接构造的非法 correlation_id”到达；
+        # 核心类型层强制格式，非法 correlation_id 在 TrustedContext 构造期即失败。
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("good", "not-64-hex")
+        # 合法 correlation_id 仍可比正常创建 PENDING（对照组）
+        store, task_root = _make_store()
+        self.addCleanup(store.close)
+        tc = TrustedContext("good", "f" * 64)
+        res = store.create_task("标题", "描述内容。", tc)
+        self.assertEqual(res.outcome, "pending")
+        self.assertEqual(_count_task_files(task_root), 0)
 
 
 class TestConfirmationIdNoEcho(NetworkBlockedTestCase):
@@ -626,7 +656,7 @@ class TestConfirmationIdNoEcho(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("u", "c-conf")
+        self.tc = TrustedContext("u", "4" * 64)
 
     def _assert_no_echo(self, res):
         self.assertEqual(res.error_code, CONFIRMATION_INVALID_ID)
@@ -665,7 +695,7 @@ class TestWriteFailureAfterCreate(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("u", "c-wfail")
+        self.tc = TrustedContext("u", "9" * 64)
 
     def _payload(self, task_id):
         return {
@@ -763,7 +793,7 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
         super().setUp()
         self.store, self.task_root = _make_store()
         self.addCleanup(self.store.close)
-        self.tc = TrustedContext("u", "c-conflict-readonly")
+        self.tc = TrustedContext("u", "a" * 64)
 
     def _make_conflict_file(self, task_id, content_hash):
         path = os.path.join(self.task_root, task_id + ".json")

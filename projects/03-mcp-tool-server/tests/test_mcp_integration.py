@@ -363,7 +363,7 @@ class HostControllerTests(NetworkBlockedTestCase):
                 super().tearDown()
 
     def _create(self, title="复习任务", desc="每天复习一小时"):
-        ctx = TrustedContext(self._subject, "c" * 32)
+        ctx = TrustedContext(self._subject, "c" * 64)
         res = self._store.create_task(title, desc, ctx)
         self.assertEqual(res.outcome, "pending")
         return res
@@ -398,7 +398,7 @@ class HostControllerTests(NetworkBlockedTestCase):
         # （P0-4：身份绑定的 subject 来自 Host 受控配置，绝不取用记录中的 subject）
         store_b = TasksStore(self._db, self._tasks)
         res = store_b.create_task(
-            "错绑标题", "错绑描述", TrustedContext("service-B", "c" * 32)
+            "错绑标题", "错绑描述", TrustedContext("service-B", "c" * 64)
         )
         store_b.close()
         self.assertEqual(res.outcome, "pending")
@@ -414,7 +414,7 @@ class HostControllerTests(NetworkBlockedTestCase):
         # service-A 的 Host 对 service-B 记录 reject / cancel 同样 identity-mismatch
         store_b = TasksStore(self._db, self._tasks)
         res = store_b.create_task(
-            "错绑标题2", "错绑描述2", TrustedContext("service-B", "d" * 32)
+            "错绑标题2", "错绑描述2", TrustedContext("service-B", "d" * 64)
         )
         store_b.close()
         self.assertEqual(res.outcome, "pending")
@@ -437,6 +437,24 @@ class HostControllerTests(NetworkBlockedTestCase):
         # D-1：Host 配置 subject 非法（含空格）→ 构造即失败关闭
         with self.assertRaises(TaskPublishError):
             TrustedHostController(self._db, self._tasks, "bad subject")
+
+    def test_host_rejects_corrupted_persisted_correlation_id(self):
+        # P0-1 ④：Host 取回的 correlation_id 若损坏/旧格式，必须失败关闭，
+        # 不写任务文件、不泄露原始值。
+        res = self._create()  # 合法 correlation_id（"c" * 64）
+        # 直接篡改持久化记录中的 correlation_id 为旧格式 "c-1"
+        cur = self._store._conn.cursor()
+        cur.execute(
+            "UPDATE confirmations SET correlation_id=? WHERE confirmation_id=?",
+            ("c-1", res.confirmation_id),
+        )
+        self._store._conn.commit()
+        ap = self._host.approve(res.confirmation_id)
+        # 失败关闭：返回错误，绝不写任务文件
+        self.assertEqual(ap.outcome, "error")
+        self.assertFalse(
+            os.path.exists(os.path.join(self._tasks, res.task_id + ".json"))
+        )
 
 
 if __name__ == "__main__":

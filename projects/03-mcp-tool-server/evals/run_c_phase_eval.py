@@ -160,7 +160,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
 
     # Host 拒绝
     store2 = TasksStore(db_path, task_root)
-    ctx2 = TrustedContext(_SUBJECT, "b" * 32)
+    ctx2 = TrustedContext(_SUBJECT, "b" * 64)
     res2 = store2.create_task("拒绝任务", "描述", ctx2)
     host2 = TrustedHostController(db_path, task_root, _SUBJECT)
     rj = host2.reject(res2.confirmation_id)
@@ -176,7 +176,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
 
     # Host 取消
     store3 = TasksStore(db_path, task_root)
-    ctx3 = TrustedContext(_SUBJECT, "d" * 32)
+    ctx3 = TrustedContext(_SUBJECT, "d" * 64)
     res3 = store3.create_task("取消任务", "描述", ctx3)
     host3 = TrustedHostController(db_path, task_root, _SUBJECT)
     cx = host3.cancel(res3.confirmation_id)
@@ -203,7 +203,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
 
     # Host 身份错绑：记录属于 _SUBJECT，另一部署主体的 Host 不得批准（P0-4）
     store5 = TasksStore(db_path, task_root)
-    ctx5 = TrustedContext(_SUBJECT, "e" * 32)
+    ctx5 = TrustedContext(_SUBJECT, "e" * 64)
     res5 = store5.create_task("错绑任务", "描述", ctx5)
     host5 = TrustedHostController(db_path, task_root, "service-B-subject")
     mm = host5.approve(res5.confirmation_id)
