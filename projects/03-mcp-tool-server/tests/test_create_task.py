@@ -547,6 +547,23 @@ class TestTaskRootSafety(NetworkBlockedTestCase):
         self.assertEqual(res.error_code, TASK_ROOT_UNSAFE)
         self.assertEqual(_count_task_files(self.task_root), 0)
 
+    def test_existing_file_reparse_fails_root_unsafe(self):
+        # D-2 §2/§3：已存在目标为 reparse/非普通文件时，读取失败必须映射
+        # task-root-unsafe（而非 task-conflict）。先令 _nt_create_file 报 NameCollision
+        # （模拟目标已存在），再令 _read_existing_json 内的 _nt_open 抛 NotAllowedReparse
+        # （模拟 reparse 目标），期望稳定 task-root-unsafe、不写文件。
+        with mock.patch(
+            "mcp_notes.safe_task_write._nt_create_file",
+            side_effect=safe_task_write.NameCollision(),
+        ), mock.patch(
+            "mcp_notes.safe_task_write._nt_open",
+            side_effect=safe_task_write.NotAllowedReparse(),
+        ):
+            r = self.store.create_task("标题", "描述内容。", self.tc)
+            res = self.store.approve(r.confirmation_id, self.tc)
+        self.assertEqual(res.error_code, TASK_ROOT_UNSAFE)
+        self.assertEqual(_count_task_files(self.task_root), 0)
+
     def test_task_id_injection_rejected(self):
         # 越权路径 / 非法 task_id 直接被安全层拒绝，不写文件
         with self.assertRaises(safe_task_write.SafeWriteError) as cm:

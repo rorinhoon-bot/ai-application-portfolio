@@ -25,29 +25,39 @@ from __future__ import annotations
 import ctypes
 import ctypes.wintypes as wintypes
 import json
-import msvcrt
 import os
 import re
+import sys
 
-from .safe_open import (
-    OBJ_DONT_REPARSE,
-    IO_STATUS_BLOCK,
-    NotAllowedReparse,
-    NotARegularFile,
-    OBJECT_ATTRIBUTES,
-    PathEscape,
-    UNICODE_STRING,
-    UnsafeOpenUnavailable,
-    _NATIVE_AVAILABLE,
-    _close,
-    _nt_open,
-    _validate_component,
-    configure_root,
-    IoError,
-    kernel32,
-    ntdll,
-    verify_native_support,
-)
+# Windows-only 导入：仅在 Windows 上导入，使 POSIX 上 `import safe_task_write` 不崩
+# （满足 D-2 “POSIX 发布核心可导入”，见 docs/D-2-design.md §2）。Windows 原生实现逻辑
+# 仍保留在本模块内，以复用现有 164 测试基线的 mock 路径（不破坏兼容性）；POSIX 发布
+# 核心独立为 safe_task_write_posix.py。调用方签名（publish_task_file）不变。
+if sys.platform == "win32":
+    import msvcrt
+    from .safe_open import (
+        OBJ_DONT_REPARSE,
+        IO_STATUS_BLOCK,
+        NotAllowedReparse,
+        NotARegularFile,
+        OBJECT_ATTRIBUTES,
+        PathEscape,
+        UNICODE_STRING,
+        UnsafeOpenUnavailable,
+        _NATIVE_AVAILABLE,
+        _close,
+        _nt_open,
+        _validate_component,
+        configure_root,
+        IoError,
+        kernel32,
+        ntdll,
+        verify_native_support,
+    )
+else:
+    # POSIX 发布核心（纯 stdlib，不依赖 Windows-only safe_open）
+    from . import safe_task_write_posix as _posix_mod
+    _posix_publish = _posix_mod.publish_task_file
 
 # 任务文件 id 形态（与 tasks.py 一致）
 TASK_ID_RE = re.compile(r"^[A-Za-z0-9-]{4,64}$")
@@ -242,8 +252,9 @@ def _nt_create_file(parent_handle: int, name: str, disposition: int) -> int:
 def _read_existing_json(parent_handle: int, name: str):
     """相对父 HANDLE 打开已存在文件并读取 JSON（OBJ_DONT_REPARSE）。
 
-    `_nt_open` 阶段的 reparse / 路径非法 / IO / 非普通文件 → 返回 None（交由上层按
-    conflict 保守处理，绝不覆盖）。已验证 HANDLE → fd 的只读转换（open_osfhandle）、
+    `_nt_open` 阶段的 reparse / 路径非法 / IO / 非普通文件 → 抛 `SafeWriteError(
+    TASK_ROOT_UNSAFE)`（D-2：目标不安全，不再保守归为 task-conflict）。已验证 HANDLE →
+    fd 的只读转换（open_osfhandle）、
     fdopen / read / 关闭 阶段的任何异常 → 一律映射为稳定 `SafeWriteError(
     TASK_WRITE_FAILED)`，**绝不上抛原始 OSError / 系统细节**。
 
@@ -255,7 +266,10 @@ def _read_existing_json(parent_handle: int, name: str):
     try:
         fh = _nt_open(parent_handle, name, is_dir=False)
     except (NotAllowedReparse, PathEscape, IoError, NotARegularFile):
-        return None
+        # D-2 §2/§3：目标为 reparse / 路径非法 / IO / 非普通文件 → 目标不安全，
+        # 按 task-root-unsafe 失败关闭（不再保守归为 task-conflict）。JSON 解码失败
+        # （脏内容）不在此处处理，由后续分支返回 None 并归为 task-conflict。
+        raise SafeWriteError(TASK_ROOT_UNSAFE)
     # 进入统一资源所有权作用域（_nt_open 已成功，fh 由本函数持有）。
     fh_owned = True   # open_osfhandle 成功前 fh 仍归本函数所有
     fd = -1           # open_osfhandle 结果；-1 = 未分配或已转交文件对象
@@ -413,6 +427,9 @@ def publish_task_file(task_root: str, task_id: str, payload: dict) -> str:
     且 0 字节 / 半成品文件由句柄原生 delete-on-close 清理，绝不残留；HANDLE 由
     `_write_handle` 内部恰好关闭一次，本函数不再 `_close(fh)`。
     """
+    if sys.platform != "win32":
+        # POSIX 分支：纯 stdlib openat + fstat + fsync（见 safe_task_write_posix）
+        return _posix_publish(task_root, task_id, payload)
     if not TASK_ID_RE.match(task_id):
         raise SafeWriteError(TASK_INVALID_ID)
     # 序列化在创建之前完成：序列化失败不创建任何文件（无半成品、无残留）
