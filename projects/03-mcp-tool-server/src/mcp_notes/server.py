@@ -29,6 +29,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 import unicodedata
 from dataclasses import dataclass
 from typing import Callable, Optional, Sequence
@@ -361,14 +362,20 @@ def main() -> None:
     时由底层句柄级安全层以 `task-root-unsafe` 失败关闭；`server.main()` 仅创建部署配置指定的 SQLite 状态库父目录（`os.makedirs(os.path.dirname(db_path), exist_ok=True)`），绝不创建 `task_root` 或其祖先目录。task_root 必须预存在，缺失 / 越界 / reparse / 原生不可用时仍以 `task-root-unsafe` 失败关闭。
     仅测试环境（NETWORK_ACCESS_BLOCKED_IN_TESTS=1）为 Server 子进程启用网络阻断。
     """
-    config = ServerConfig.from_env()
-    # 仅测试环境：为 Server 子进程启用外部网络阻断；生产不受影响
-    maybe_install_network_block()
-    # 注意：此处不创建 task_root；其预存在性由 safe_task_write 句柄层在发布时校验。
-    # 创建部署配置指定的 SQLite 状态库父目录（仅此目录；绝不创建 task_root 或其祖先目录）。
-    db_dir = os.path.dirname(os.path.abspath(config.db_path)) or "."
-    os.makedirs(db_dir, exist_ok=True)
-    server = build_server(config)
+    try:
+        config = ServerConfig.from_env()
+        # 仅测试环境：为 Server 子进程启用外部网络阻断；生产不受影响
+        maybe_install_network_block()
+        # 注意：此处不创建 task_root；其预存在性由 safe_task_write 句柄层在发布时校验。
+        # 创建部署配置指定的 SQLite 状态库父目录（仅此目录；绝不创建 task_root 或其祖先目录）。
+        db_dir = os.path.dirname(os.path.abspath(config.db_path)) or "."
+        os.makedirs(db_dir, exist_ok=True)
+        server = build_server(config)
+    except TaskPublishError:
+        # 配置期受控失败（如缺失/非法 subject）：失败关闭，但 stdout 保持空、
+        # stderr 仅输出稳定错误码、非零退出；禁止回显路径/正文/异常堆栈（P0-2 入口泄露修复）。
+        sys.stderr.write("invalid-arguments\n")
+        sys.exit(2)
     server.run(transport="stdio")
 
 

@@ -7,6 +7,7 @@
 
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -80,3 +81,24 @@ class ServerConfigEntryTests(NetworkBlockedTestCase):
             ServerConfig(
                 db_path="x.db", task_root="t", notes_root="n", subject="bad subject"
             )
+
+    def test_entry_missing_subject_fails_closed_without_leak(self):
+        # P0-2 入口泄露修复：缺失 MCP_NOTES_SUBJECT 时，`python -m mcp_notes.server`
+        # 必须失败关闭且不泄露路径 / server.py / 堆栈；stdout 为空、stderr 仅含
+        # 稳定码、非零退出。
+        env = dict(os.environ)
+        env.pop("MCP_NOTES_SUBJECT", None)  # 强制缺失
+        env["PYTHONPATH"] = _SRC + os.pathsep + env.get("PYTHONPATH", "")
+        proc = subprocess.run(
+            [sys.executable, "-m", "mcp_notes.server"],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        self.assertNotEqual(0, proc.returncode)
+        self.assertEqual("", proc.stdout)
+        self.assertIn("invalid-arguments", proc.stderr)
+        # 禁止泄露绝对路径、源码文件名或异常堆栈
+        for forbidden in ("server.py", "Traceback", 'File "', _ROOT, "TaskPublishError"):
+            self.assertNotIn(forbidden, proc.stderr)
