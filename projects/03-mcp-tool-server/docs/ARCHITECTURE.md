@@ -140,3 +140,16 @@ C 阶段已在纯 Python 离线核心之上完成 MCP SDK 适配层：Server（`
 - **测试期网络阻断（父进程 + Server 子进程）**：`src/mcp_notes/_network_block.py` 是唯一实现（回环感知），由 `tests/_network_block.py` 与 `server.main()` 共用；`main()` 仅在 `NETWORK_ACCESS_BLOCKED_IN_TESTS=1` 时安装，阻断 DNS 与外部 socket/HTTP，放行 stdio 管道与本地回环。这是**测试开关**，不改变生产网络能力，也不引入 HTTP transport。
 - **测试与评估**：`tests/test_mcp_integration.py`（**20 项** stdio 集成测试，父进程与 Server 子进程均默认阻断外部网络）+ `tests/test_server_entry.py`（**2 项**入口 / 配置测试）+ `evals/gold/c-phase-v1.json` / `evals/run_c_phase_eval.py`（11 例固定离线评估）+ `demo/mcp_stdio_demo.py`（8 项成功 + 失败演示），全部通过；`discover -s tests` 总计 **149 项**（145 执行通过 + 4 链接测试默认跳过）。
 - **known-limitations-for-D**：`SafeMCPServer` 依赖 SDK v2 `_handle_call_tool` 的内部结构，SDK 升级需回归；`correlation_id` 内容派生使其在同主体下可预测（取舍见 DECISIONS D-018）；`TrustedContext` 仍仅做“`str`/长度 1..256/无 C0·DEL 控制字符”校验，未实现安全字符白名单；`subject` 来自部署配置但无更严格运行时身份绑定；网络阻断是测试期 monkeypatch 而非 OS 级沙箱；单进程、非并发、非多用户；仅 Windows 原生 no-replace 发布经实机验证，跨平台一致性待 D；真实 Host 支持面与公开部署不在本次范围。
+
+## 7. D 阶段计划（规划，待逐片实现）
+
+D 阶段在 §6 末 known-limitations-for-D 范围内做加固与补齐，不扩大 C 阶段安全合同（§3/§4）。
+- 依赖闸门：唯一直接生产依赖 `mcp==2.0.0` 不变；不新增任何依赖；transport 扩展复用 SDK 已含 `starlette`/`uvicorn`/`httpx`，仅允许本地回环绑定，绝不允许公网监听。
+- 切片顺序：**D-1 身份格式与安全字符白名单 → D-2 跨平台原子发布一致性 → D-3 唯一身份来源与信任边界 → D-4 并发/多用户隔离 → D-5 真实 Host 支持面/传输扩展 → D-6 补齐评估基线**；公开部署不在默认范围。
+- D-2 收紧：POSIX 方案必须 fd 链式 `openat(dir_fd, O_NOFOLLOW)` + `fstat` 逐级验证，**禁止字符串路径回退、禁止用 `realpath` 做安全判断**（realpath 非路径安全权威，`O_NOFOLLOW` 只覆盖单次打开组件）；平台缺能力稳定 `task-root-unsafe` 失败关闭；真实 symlink/junction 夹具须用户单独批准，未批准不创建不运行。
+- D-3 收紧：先定唯一身份来源与信任边界，缺失/不可用稳定失败关闭，不停在“部署配置/进程凭证”未决二选一。
+- D-4 收紧：并发安全靠**事务条件更新**（`PENDING`→终态一次），**不把连接池/WAL 当并发安全**；跨进程并发批准同一 confirmation 仅一个发布，其余返回稳定已消费结果且绝不写第二个文件；多用户确认记录/任务文件/审计事件均隔离。
+- D-6 收紧：**40 例为总数且包含既有 11 例 C 基线**（即新增 29 例），保留并重跑既有 11 例结果，不改写。
+- 每片小步实现、独立测试、固定评估、交 Codex 复核；详细验收标准与统一验证闸门见 PRD §11。
+- 统一验证闸门（每片必保留并复跑 C 基线）：`unittest` 149 项、20 项 stdio 集成、2 项入口/配置、C 评估 11/11、stdio 演示 8/8、`pip check`、`git diff --check` 全绿；任何切片不得降低基线计数。
+- 不变约束：不把模型输出/笔记正文/客户端输入当作路径·命令·URL·写入授权；`task_root` 仍须部署配置预存在，生产代码不创建任务根；`correlation_id` 仍由服务端确定性派生，客户端不能直接提供或覆盖，`approve`/`reject`/`cancel` 仍绝不暴露为 Tool。

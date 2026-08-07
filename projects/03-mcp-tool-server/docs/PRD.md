@@ -131,3 +131,42 @@ Resource URI 为固定程序常量 `notes://service-info`。内容只说明 Tool
 - 真实 Host 支持面（第三方 MCP Client 兼容性、传输扩展如 SSE/HTTP）未在 C 阶段评估。
 - 公开部署、生产多用户身份、并发负载、真实模型质量不在本次范围。
 - 固定评估目前以原创虚构夹具 + 11 例 C 阶段离线评估 + 20 项 stdio 集成测试 + 2 项入口/配置测试 + 8 项演示断言覆盖；完整 40 例计划套件（`evals/cases` / `evals/results` 基线）仍未实施，可在 D 阶段补齐。
+
+## 11. D 阶段计划（规划中，待逐片实现与 Codex 复核）
+
+D 阶段不扩大 C 阶段已冻结的安全合同与读写边界（§3 / §4），只在 §10 的 known-limitations 范围内做加固与补齐。原则：每片小步实现、独立测试、固定评估、交 Codex 复核；不新增运行时依赖；不把模型输出 / 笔记正文 / 客户端输入当作路径·命令·URL·写入授权。
+
+### 11.1 依赖闸门
+- 唯一直接生产依赖 `mcp==2.0.0` 及其 29 个传递依赖不变；D 阶段**不新增任何依赖**。
+- 任何 transport 扩展（如 SSE / streamable-HTTP）必须复用 SDK 已含的 `starlette` / `uvicorn` / `httpx` 等传递依赖，不得新增；若确需新依赖，先走 Codex 依赖批准闸门（见 `docs/DEPENDENCIES.md`）。
+
+### 11.2 切片与量化验收标准
+| 切片 | 目标 | 量化验收标准 | 风险 / 前置 |
+|---|---|---|---|
+| **D-1 身份格式与安全字符白名单** | 给 `TrustedContext.subject` / `correlation_id` 实现精确身份格式校验（当前仅拦 C0·DEL 控制字符） | 定义并落地精确身份格式：① `subject` 精确格式 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（首字符字母/数字，后续 0..127 个字母/数字/`.`/`_`/`-`，总长 1..128）；非法字符（空格、CJK、控制字符、注入字符等）或长度越界在**配置启动时**即稳定失败关闭；② `correlation_id` 必须符合服务端派生格式 `^[0-9a-f]{64}$`（由 `_derive_correlation_id` 经 `hashlib.sha256(...).hexdigest()` 产生，无前缀），客户端永远不能直接提供或覆盖（Tool 参数中不含该字段，Host 只从 `TasksStore.lookup_correlation_id(confirmation_id)` 取得）；③ Tool 参数 `title`/`description` 非法或构造 `TrustedContext` 失败时稳定返回 `invalid-arguments`，不泄露格式细节；④ 完全保留 C 阶段合同（服务端按 NFKC 规范化 title/description 确定性派生 correlation_id；Tool 外 Host 自身受控 subject 审批）。`tests/test_create_task.py` 与 `tests/test_mcp_integration.py` 新增回归覆盖：subject 非法字符拒收、超长 subject 拒收、配置启动缺失/非法 subject 失败关闭、correlation_id 无法从客户端注入；既有 B2a 金标准（ASCII 测试主体）与 C 阶段 11 例评估不受影响 | 低；改 `tasks.py` 校验 + `host.py` / `server.py` 派生点 |
+| **D-2 跨平台原子发布一致性** | 非 Windows 的等价 no-replace 发布（fd 链式 `openat`+`O_NOFOLLOW`+`fstat`） | 新增 POSIX 分支：从**受控根目录 fd** 开始，每一级目录都用**已验证父 fd** 经 `openat(dir_fd=..., O_NOFOLLOW)` 打开，再 `fstat` 验证其确为目录且未 reparse/junction；最终文件也相对**已验证父 fd** 用 `open(O_CREAT\|O_EXCL\|O_NOFOLLOW)` 创建。禁止任何字符串路径回退，禁止把 `realpath` 用于安全判断（`realpath` 不能作为路径安全权威，`O_NOFOLLOW` 只覆盖单次打开组件）。平台缺少必要能力（如无法获取根 fd / 不支持 `O_NOFOLLOW` / `openat` 不可用）时稳定 `task-root-unsafe` 失败关闭。新增跨平台测试（Linux/macOS runner 或 WSL 实机），发布失败语义与 Windows 一致。**真实 symlink/junction 夹具须先获用户单独批准**；未批准时绝不创建、绝不运行。未来测试覆盖明确为四类：最终文件链接逃逸、祖先目录链接逃逸、检查后祖先替换（TOCTOU）、目标已存在冲突不覆盖 | 中；需 CI 矩阵 / 实机；不降级字符串路径方案 |
+| **D-3 唯一身份来源与信任边界** | 先确定唯一身份来源、信任边界、缺失/不可用时的失败关闭行为 | **先定**唯一身份来源（不得停在“部署配置 / 进程凭证”这种未决二选一）与信任边界：明确是谁在断言 subject、该断言在何种边界内可信、subject 缺失 / 不可用时如何失败关闭（配置启动即 `invalid-config` / `task-root-unsafe` 类稳定码，不回退默认主体）；多主体并存时的隔离语义。DoD 必须包含：身份来源单一可审计、配置缺失稳定失败关闭、回归覆盖缺失/不可用/切换来源 | 中；涉及配置与部署文档 |
+| **D-4 并发 / 多用户隔离** | 跨进程并发与多用户隔离（事务条件更新，非连接池/WAL） | DoD 必须要求：① 确认消费使用**事务中的条件更新**，只允许 `PENDING` → 终态一次（SQL `UPDATE ... WHERE status='PENDING'` 影响行数判定）；② 跨进程并发批准同一 confirmation 时，**只允许一个发布**（其余返回 `confirmation-already-consumed` 且绝不写第二个文件）；③ 其他调用返回稳定已消费结果且绝不写第二个文件；④ 多用户之间确认记录、任务文件、审计事件均隔离（按 subject 分隔，不串号）。**不得把“连接池 / WAL”描述为并发安全方案**（它们只是 IO 吞吐，不提供原子消费）。并发竞态测试（多进程同时消费同一 confirmation → 仅一个成功发布）为 DoD 必过项 | 高；需仔细设计事务/锁 |
+| **D-5 真实 Host 支持面 / 传输扩展** | 第三方 MCP Client 兼容与可选 SSE/HTTP | 传输扩展**默认关闭**，仅允许**本地回环绑定**（`127.0.0.1`/`::1`），**绝不允许公网监听**；复用 SDK 已含 `starlette`/`uvicorn` 提供 SSE/streamable-HTTP 入口（不新增依赖）；`list_tools` / 协议兼容性冒烟；`approve`/`reject`/`cancel` **仍绝不暴露为 Tool**，`correlation_id` 仍只来自服务端持久化记录。公网监听视为安全违规，必须在配置与测试中显式禁止并断言 | 中；复用 SDK 已含依赖 |
+| **D-6 补齐评估基线** | 固定离线评估扩展到 40 例 | **总数 40 例，包含既有 11 例 C 阶段基线**（即新增 29 例）；保留 `evals/gold/c-phase-v1.json` 与 `evals/run_c_phase_eval.py` 的 11 例既有结果，**不改写既有结果**；新增 `evals/cases/`、`evals/results/` 基线，脚本支持加载全部 40 例；通过率 / 安全拒绝率 / 未授权写入数 / 幂等正确率均达 §8 目标 | 低；纯评估扩展，不碰安全逻辑 |
+| 公开部署 | 生产多用户身份、并发负载、真实模型质量 | **不在 D 阶段默认范围**：当前安全模型依赖本地可信边界、不对外暴露写权限；若要做需独立风险评估与 Codex 批准 | 高；推迟 |
+
+### 11.3 推荐起点
+建议从 **D-1 身份格式与安全字符白名单** 起步：最内聚、最贴近已通过 Codex 复核的安全核心、低风险、易补测试，且立刻消除 §10 中“未实现安全字符白名单”的明确缺口。随后按 D-2 → D-3 → D-4 → D-5 → D-6 推进；D-4 / D-5 视需要再排期。
+
+### 11.4 每片完成定义
+- 新环境按 README 启动；核心测试通过（总 149 + 本片新增）。
+- 本片固定评估有基线与结果；失败路径已验证。
+- 架构 / 取舍能被解释；不引入密钥 / 私密数据 / 大模型文件进 Git。
+- 每片独立提交并交 Codex 复核；**不 push**，直到 P3 全部阶段完成（用户决定统一处理）。
+
+### 11.5 统一验证闸门（每片必保留并复跑 C 基线）
+每实现一个 D 切片，除本片新增测试外，**必须保留并复跑 C 阶段基线**，全部通过方可提交：
+- `unittest` 当前 **149 项**全绿（后续仅按新增测试增长，不破坏既有）；
+- **20 项** stdio 集成测试（`tests/test_mcp_integration.py`）；
+- **2 项** 入口 / 配置测试（`tests/test_server_entry.py`）；
+- C 阶段评估 **11/11**（`evals/run_c_phase_eval.py`）；
+- stdio 演示 **8/8**（`demo/mcp_stdio_demo.py`）；
+- `python -m pip check` → 无 broken requirements、无 `Ignoring invalid distribution` 警告；
+- `git diff --check` 通过。
+任何切片不得降低上述基线计数或放宽 `pip check` / 空白检查。

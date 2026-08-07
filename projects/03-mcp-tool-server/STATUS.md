@@ -2,7 +2,7 @@
 
 - 状态：`in_progress`
 - 当前唯一目标：完成 Slice A（search_notes 纯标准库数据合同、索引、离线检索与单测）与 Slice B1（句柄级路径安全索引），并已离线验证。
-- 当前阶段：`Slice A 实现与离线验证完成；Slice B1 句柄级路径安全索引已实现并离线验证；Slice B2a 离线 create_task 受控写核心已实现并离线验证；Slice C 阶段（MCP Server/Resource/Host/Client 真实本地 stdio 接入）已实现并验证，仅待 Codex 统一复核，保持未提交`
+- 当前阶段：`Slice A 实现与离线验证完成；Slice B1 句柄级路径安全索引已实现并离线验证；Slice B2a 离线 create_task 受控写核心已实现并离线验证；Slice C 阶段（MCP Server/Resource/Host/Client 真实本地 stdio 接入）已实现并验证，已本地提交 `94dd90d`（Codex 安全核心复核通过）；D 阶段进入规划，见 DECISIONS **D-019** 与 PRD §11`
 - 已完成：
   - 从 P2 最终验收提交 `ba9f061891fed3c4920f5cb922e77d247d6cce83` 创建独立分支 `codex/p3-local-mcp-tool-service`。
   - 固定场景为“本地 MCP 笔记检索与受控任务创建服务”。
@@ -62,4 +62,4 @@
   - 链接专项测试（T7–T10）默认跳过，即使设置 `P3_ALLOW_FS_LINK_FIXTURES=1` 也仅为未实现门控占位（真实 symlink / junction 夹具尚不可用，按授权禁止创建或运行）；预期行为为拒绝/构建失败（任何 reparse → `not-allowed-reparse` → `index-build-failed`），而非跳过。
   - 未读取私人笔记、未调用模型、未产生费用、未部署；运行时只用本地 stdio 管道、不发起对外网络连接，测试中父进程与 Server 子进程均默认阻断外部网络（`NETWORK_ACCESS_BLOCKED_IN_TESTS=1`，放行 stdio 与本地回环）。
 - 已完成（C 阶段 Codex 复核未通过后的 P0/P1 一次性修复，2026-08-06，见 DECISIONS **D-018**）：P0-1 生产入口不再创建任务根；P0-2 Tool 参数失败经 `SafeMCPServer` 统一脱敏为稳定 `invalid-arguments`；P0-3 `correlation_id` 改为内容派生 SHA-256 以获得重放幂等（取舍已记录）；P0-4 删除 `approve_with_context`，Host 只绑定自身配置主体；P0-5 stdio Server 子进程也默认阻断外部网络；P1-1 默认 `notes_root` 指向仓库夹具；P1-2 重写 `docs/DEPENDENCIES.md`；P1-3 清理 7 份文档残留规划语；P1-4 清理 `.venv` 的 `~ip` 无效发行版；P1-5 更正网络口径。全部保持未暂存、未提交，等待 Codex 一次复核。
-- 下一阶段（D 阶段，待单独批准）：C 阶段已完成 MCP 真实本地 stdio 接入并完成 D-018 修复（复用 B2a 离线核心，仅待 Codex 统一复核后提交）；D 阶段范围见各文档 known-limitations-for-D（如：安全字符白名单、更严格身份绑定、并发 / 多用户、跨平台一致性、真实 Host 支持面、公开部署评估等）。
+- D 阶段（规划中，2026-08-07，见 DECISIONS **D-019** 与 PRD §11）：在 known-limitations-for-D 范围内做 6 个切片——D-1 身份格式与安全字符白名单 → D-2 跨平台原子发布一致性（fd 链式 openat+O_NOFOLLOW+fstat，禁 realpath/字符串回退，真实 symlink 夹具须单独批准）→ D-3 唯一身份来源与信任边界 → D-4 并发/多用户隔离（事务条件更新，非连接池/WAL）→ D-5 真实 Host 支持面/传输扩展（默认关闭、仅本地回环、绝不允许公网监听）→ D-6 补齐评估基线（40 例总数含既有 11 例 C 基线）；公开部署不在默认范围。依赖闸门：不新增运行时依赖。统一验证闸门：每片保留并复跑 C 基线（unittest 149 项 / 20 集成 / 2 入口 / 评估 11/11 / 演示 8/8 / pip check / git diff --check）。推荐起点 D-1。

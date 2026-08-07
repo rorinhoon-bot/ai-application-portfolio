@@ -203,4 +203,13 @@
 - 原因：五项 P0 都是“文档承诺与代码实际不一致”或“安全边界可被调用方绕过”的真问题（自建任务根破坏预存在根不变量、Pydantic 文本外泄内部实现、重放放大待确认写、Host 可传任意主体、子进程未受网络约束）。修在 C 阶段内比带进 D 阶段成本更低，也避免 D 阶段在错误基线上继续叠加。
 - 边界：不新增任何依赖（`SafeMCPServer` 只用 SDK 已有符号，未 fork SDK）；不改 B2a 安全核心（`tasks.py` 仅**新增** `lookup_correlation_id`，`safe_task_write.py` 零改动）；不进入 D 阶段；不 push / 不建 PR；保持未暂存、未提交，等 Codex 一次复核。
 - 结果（2026-08-06 完整复跑）：`compileall` 通过；stdlib `unittest` 总计 **149 项**（145 执行通过 + 4 链接测试默认跳过），其中 `tests/test_mcp_integration.py` **20 项** stdio 集成测试、`tests/test_server_entry.py` **2 项**入口 / 配置测试；`evals/run_c_phase_eval.py` **11 例**全部通过；`demo/mcp_stdio_demo.py` **8 项**断言全部通过；`python -m pip check` → `No broken requirements found.`（无 `Ignoring invalid distribution` 警告）；`git diff --check` 通过；`git diff --cached --quiet` 通过（暂存区为空）；改动全部保持未暂存、未提交。
+
+## D-019：D 阶段范围与切片排序决策（规划）
+
+- 状态：accepted（规划）
+- 日期：2026-08-07
+- 背景：C 阶段已本地提交 `94dd90d`（`feat(p3): add local mcp stdio integration`，22 文件），并经 Codex 安全核心复核通过；用户决定进入 D 阶段，但先定计划再小步实现，且不立即 push（等 P3 全部完成后再统一处理 push / PR）。
+- 决定：D 阶段在 known-limitations-for-D 范围内做 6 个加固 / 补齐切片，验收标准已收紧（见 PRD §11 / ARCHITECTURE §7）：① D-1 身份格式与安全字符白名单——`subject` 精确字符集+长度上限、配置启动非法/缺失即失败关闭，`correlation_id` 必须匹配服务端派生格式 `^[0-9a-f]{64}$`（无前缀）、客户端永远不能提供或覆盖，完全保留 C 阶段合同；② D-2 跨平台原子发布——fd 链式 `openat(dir_fd,O_NOFOLLOW)`+`fstat` 逐级验证，禁止字符串路径回退与 `realpath` 安全判断，平台缺能力稳定 `task-root-unsafe`，真实 symlink/junction 夹具须用户单独批准；③ D-3 先定唯一身份来源与信任边界、缺失/不可用失败关闭，不停在“部署配置/进程凭证”未决二选一；④ D-4 并发靠事务条件更新（`PENDING`→终态一次），不把连接池/WAL 当并发安全，跨进程并发批准仅一个发布、绝不写第二个文件、多用户隔离；⑤ D-5 传输扩展默认关闭、仅本地回环、绝不允许公网监听，`approve/reject/cancel` 仍绝不暴露为 Tool；⑥ D-6 补齐评估基线——**40 例为总数且含既有 11 例 C 基线**（新增 29 例），保留并重跑既有结果不改写。公开部署列为不在默认范围。依赖闸门：不新增运行时依赖，transport 扩展复用 SDK 已含传递依赖。推荐起点 D-1。
+- 边界：不扩大 C 阶段已冻结安全合同与读写边界；不把模型输出/笔记正文/客户端输入当作路径·命令·URL·写入授权；`task_root` 仍须部署配置预存在；每片独立提交并交 Codex 复核；不 push 直到 P3 全部完成；每片必须保留并复跑 C 阶段基线（unittest 149 项、20 集成、2 入口、评估 11/11、演示 8/8、`pip check`、`git diff --check`）且不降低计数。
+- 结果：本决策仅记录规划，尚未实现任何 D 切片；实现将在后续逐片进行并各自验证、提交、交 Codex 复核。
 - known-limitations-for-D：`SafeMCPServer` 依赖 SDK v2 `_handle_call_tool` 的内部结构，SDK 升级需回归；`correlation_id` 内容派生使其在同主体下可预测（见上文取舍）；`TrustedContext` 仍未实现安全字符白名单；网络阻断是测试期 monkeypatch 而非 OS 级沙箱；仍为单进程、非并发、非多用户，仅 Windows 原生发布路径经实机验证。
