@@ -77,6 +77,15 @@ _TRUSTED_MAX = 256
 # 服务生成的 confirmation_id 严格格式（P1-6）：conf- + 16 位十六进制。
 _CONFIRMATION_ID_RE = re.compile(r"^conf-[0-9a-f]{16}$")
 
+# D-1 精确身份格式：
+#   subject      —— 受控配置身份，首字符须为字母/数字，其后 0..127 个
+#                  字母/数字/`.`/`_`/`-`，总长 1..128。
+#   correlation_id —— 由服务端按 NFKC 规范化的 title/description 派生的 64 位小写
+#                  十六进制（hashlib.sha256(...).hexdigest()），无前缀；客户端永远
+#                  不能直接提供或覆盖它。
+_SUBJECT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_CORRELATION_ID_RE = re.compile(r"^[0-9a-f]{64}$")
+
 
 def _valid_trusted_value(value) -> bool:
     """TrustedContext.subject / correlation_id 的严格边界校验。"""
@@ -91,11 +100,28 @@ def _valid_trusted_value(value) -> bool:
     return True
 
 
+def _valid_subject(value) -> bool:
+    """D-1: subject 精确字符白名单。
+
+    首字符须为字母/数字，其后 0..127 个字母/数字/`.`/`_`/`-`，总长 1..128。
+    """
+    if not isinstance(value, str):
+        return False
+    return bool(_SUBJECT_RE.match(value))
+
+
+def _valid_correlation_id(value) -> bool:
+    """D-1: correlation_id 须为服务端按 NFKC 派生的 64 位小写十六进制（无前缀）。"""
+    if not isinstance(value, str):
+        return False
+    return bool(_CORRELATION_ID_RE.match(value))
+
+
 def _check_context(trusted_context) -> Optional[str]:
     """校验可信上下文是否合法；非法返回稳定 INVALID_ARGUMENTS（不抛异常）。"""
     if not isinstance(trusted_context, TrustedContext):
         return INVALID_ARGUMENTS
-    if not _valid_trusted_value(trusted_context.subject):
+    if not _valid_subject(trusted_context.subject):
         return INVALID_ARGUMENTS
     if not _valid_trusted_value(trusted_context.correlation_id):
         return INVALID_ARGUMENTS
@@ -113,16 +139,18 @@ def _validate_confirmation_id(confirmation_id) -> bool:
 class TrustedContext:
     """可信本地边界注入的主体与调用关联 ID（非 Tool 参数，不由模型 / 客户端控制）。
 
-    构造即校验：subject / correlation_id 必须为非空 str，长度 1.._TRUSTED_MAX，
-    且不含控制字符。非法值（如 `TrustedContext(123, 456)`）抛受控的
-    `TaskPublishError(INVALID_ARGUMENTS)`，绝不抛原始 TypeError 或泄露异常。
+    D-1 构造即校验：subject 必须符合精确字符白名单
+    `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（首字符字母/数字，总长 1..128）；
+    correlation_id 须为 str、长度 1.._TRUSTED_MAX、不含控制字符（其真实规范格式为
+    服务端按 NFKC 派生的 64 位小写十六进制 `^[0-9a-f]{64}$`，由 server 派生处守卫）。
+    非法值抛受控的 `TaskPublishError(INVALID_ARGUMENTS)`，绝不抛原始 TypeError 或泄露异常。
     """
 
     subject: str
     correlation_id: str
 
     def __init__(self, subject, correlation_id):
-        if not _valid_trusted_value(subject) or not _valid_trusted_value(correlation_id):
+        if not _valid_subject(subject) or not _valid_trusted_value(correlation_id):
             raise TaskPublishError(INVALID_ARGUMENTS)
         object.__setattr__(self, "subject", subject)
         object.__setattr__(self, "correlation_id", correlation_id)

@@ -26,20 +26,28 @@ from typing import Optional
 
 from .tasks import (
     CONFIRMATION_REQUIRED,
+    INVALID_ARGUMENTS,
+    TaskPublishError,
     TaskResult,
     TasksStore,
     TrustedContext,
+    _valid_subject,
 )
 
 
 class TrustedHostController:
     """本地可信 Host 控制器：在 Tool 外完成一次确认消费。
 
-    身份绑定的 subject 来自 Host 受控配置（`self._subject`），correlation_id 来自
-    服务自有持久化记录；不接收任何客户端可控身份。
+    身份绑定的 subject 来自 Host 受控配置（`self._subject`），须符合 D-1 精确字符
+    白名单 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（缺失/非法在构造时失败关闭）；
+    correlation_id 来自服务自有持久化记录（64 位小写十六进制派生）；不接收任何
+    客户端可控身份。
     """
 
     def __init__(self, db_path: str, task_root: str, subject: str, clock=None):
+        # D-1 配置启动失败关闭：subject 必须符合精确字符白名单，缺失/非法不构建控制器
+        if not _valid_subject(subject):
+            raise TaskPublishError(INVALID_ARGUMENTS)
         self._store = TasksStore(db_path, task_root, clock)
         self._subject = subject
 

@@ -16,7 +16,7 @@ _SRC = os.path.join(_ROOT, "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
-from mcp_notes.server import ServerConfig, build_server  # noqa: E402
+from mcp_notes.server import ServerConfig, TaskPublishError, build_server  # noqa: E402
 
 _TESTS = os.path.dirname(__file__)
 if _TESTS not in sys.path:
@@ -62,3 +62,8 @@ class ServerConfigEntryTests(NetworkBlockedTestCase):
         self.assertTrue(os.path.isdir(config.notes_root))
         md_files = [n for n in os.listdir(config.notes_root) if n.endswith(".md")]
         self.assertGreaterEqual(len(md_files), 1)
+
+    def test_invalid_subject_fails_closed_at_config(self):
+        # D-1 配置启动失败关闭：subject 含空格等非法字符 → from_env 抛受控错误
+        with self.assertRaises(TaskPublishError):
+            ServerConfig.from_env({"MCP_NOTES_SUBJECT": "bad subject"})

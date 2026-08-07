@@ -33,11 +33,14 @@ from mcp.client import Client  # noqa: E402
 from mcp.client.stdio import StdioServerParameters, stdio_client  # noqa: E402
 
 from mcp_notes.host import TrustedHostController  # noqa: E402
+from mcp_notes.server import _derive_correlation_id  # noqa: E402
 from mcp_notes.tasks import (  # noqa: E402
     CONFIRMATION_IDENTITY_MISMATCH,
     CONFIRMATION_REQUIRED,
+    TaskPublishError,
     TasksStore,
     TrustedContext,
+    _valid_correlation_id,
 )
 
 _TESTS = os.path.dirname(__file__)
@@ -325,6 +328,17 @@ class StdioMCPIntegrationTests(NetworkBlockedTestCase):
         self.assertNotIn("BLOCKED", proc.stdout)
 
 
+    def test_derived_correlation_id_format(self):
+        # D-1：correlation_id 必须是服务端按 NFKC 派生的 64 位小写十六进制（无前缀）
+        cid = _derive_correlation_id("Title", "Description")
+        self.assertTrue(_valid_correlation_id(cid))
+        self.assertEqual(len(cid), 64)
+        # 相同规范化内容重放 → 相同 correlation_id（P0-3 幂等）
+        self.assertEqual(cid, _derive_correlation_id("Title", "Description"))
+        # 不同内容 → 不同 correlation_id → 独立意图
+        self.assertNotEqual(cid, _derive_correlation_id("Title", "Other"))
+
+
 class HostControllerTests(NetworkBlockedTestCase):
     """本地可信 Host 控制器（Tool 外批准 / 拒绝 / 取消）集成测试。"""
 
@@ -418,6 +432,11 @@ class HostControllerTests(NetworkBlockedTestCase):
         ap = self._host.approve("conf-0000000000000000")
         self.assertEqual(ap.outcome, "error")
         self.assertEqual(ap.error_code, CONFIRMATION_REQUIRED)
+
+    def test_host_invalid_subject_fails_closed(self):
+        # D-1：Host 配置 subject 非法（含空格）→ 构造即失败关闭
+        with self.assertRaises(TaskPublishError):
+            TrustedHostController(self._db, self._tasks, "bad subject")
 
 
 if __name__ == "__main__":

@@ -212,4 +212,17 @@
 - 决定：D 阶段在 known-limitations-for-D 范围内做 6 个加固 / 补齐切片，验收标准已收紧（见 PRD §11 / ARCHITECTURE §7）：① D-1 身份格式与安全字符白名单——`subject` 精确字符集+长度上限、配置启动非法/缺失即失败关闭，`correlation_id` 必须匹配服务端派生格式 `^[0-9a-f]{64}$`（无前缀）、客户端永远不能提供或覆盖，完全保留 C 阶段合同；② D-2 跨平台原子发布——fd 链式 `openat(dir_fd,O_NOFOLLOW)`+`fstat` 逐级验证，禁止字符串路径回退与 `realpath` 安全判断，平台缺能力稳定 `task-root-unsafe`，真实 symlink/junction 夹具须用户单独批准；③ D-3 先定唯一身份来源与信任边界、缺失/不可用失败关闭，不停在“部署配置/进程凭证”未决二选一；④ D-4 并发靠事务条件更新（`PENDING`→终态一次），不把连接池/WAL 当并发安全，跨进程并发批准仅一个发布、绝不写第二个文件、多用户隔离；⑤ D-5 传输扩展默认关闭、仅本地回环、绝不允许公网监听，`approve/reject/cancel` 仍绝不暴露为 Tool；⑥ D-6 补齐评估基线——**40 例为总数且含既有 11 例 C 基线**（新增 29 例），保留并重跑既有结果不改写。公开部署列为不在默认范围。依赖闸门：不新增运行时依赖，transport 扩展复用 SDK 已含传递依赖。推荐起点 D-1。
 - 边界：不扩大 C 阶段已冻结安全合同与读写边界；不把模型输出/笔记正文/客户端输入当作路径·命令·URL·写入授权；`task_root` 仍须部署配置预存在；每片独立提交并交 Codex 复核；不 push 直到 P3 全部完成；每片必须保留并复跑 C 阶段基线（unittest 149 项、20 集成、2 入口、评估 11/11、演示 8/8、`pip check`、`git diff --check`）且不降低计数。
 - 结果：本决策仅记录规划，尚未实现任何 D 切片；实现将在后续逐片进行并各自验证、提交、交 Codex 复核。
-- known-limitations-for-D：`SafeMCPServer` 依赖 SDK v2 `_handle_call_tool` 的内部结构，SDK 升级需回归；`correlation_id` 内容派生使其在同主体下可预测（见上文取舍）；`TrustedContext` 仍未实现安全字符白名单；网络阻断是测试期 monkeypatch 而非 OS 级沙箱；仍为单进程、非并发、非多用户，仅 Windows 原生发布路径经实机验证。
+- known-limitations-for-D：`SafeMCPServer` 依赖 SDK v2 `_handle_call_tool` 的内部结构，SDK 升级需回归；`correlation_id` 内容派生使其在同主体下可预测（见上文取舍）；**`TrustedContext` 安全字符白名单已由 D-1 实现（见 D-020）**；网络阻断是测试期 monkeypatch 而非 OS 级沙箱；仍为单进程、非并发、非多用户，仅 Windows 原生发布路径经实机验证。
+
+## D-020：D-1 身份格式与安全字符白名单（已实现）
+
+- 状态：accepted（已实现）
+- 日期：2026-08-07
+- 背景：D 阶段起点切片（D-019 ①）。C 阶段 `TrustedContext` 仅做 `str`/长度 `1..256`/无 C0·DEL 控制字符校验，任意 Unicode（含空格、CJK、注入字符）均被接受；`correlation_id` 格式未在类型层约束。D-1 收紧为精确身份格式，且不破坏 C 阶段 11 例评估与 §11.5 基线。
+- 决定：
+  - subject 精确字符白名单 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（首字符字母/数字，总长 1..128）；在 `TrustedContext.__init__`、`TasksStore._check_context`、`server.ServerConfig.from_env`（配置启动失败关闭）、`host.TrustedHostController.__init__`（配置启动失败关闭）四处统一校验。非法/缺失 subject 在配置启动即失败关闭（抛受控 `TaskPublishError(INVALID_ARGUMENTS)`，不泄露路径/正文）。
+  - correlation_id 规范格式 `^[0-9a-f]{64}$`（服务端 `hashlib.sha256(...).hexdigest()` 派生，无前缀）；`_derive_correlation_id` 与存储记录均产出该格式。客户端永远不能直接提供或覆盖 correlation_id：它不是 Tool 参数，Server 仅本地派生、Host 仅从 `TasksStore.lookup_correlation_id(confirmation_id)` 取回。在 `server.create_task_tool` 派生后加 `_valid_correlation_id` 契约守卫。
+  - **关键边界取舍**：`TrustedContext.__init__` 对 correlation_id 保留宽松校验（str/长度/无控制字符），**不**强制 `^[0-9a-f]{64}$`。原因：C 阶段 11 例评估与既有集成/核心单测使用虚构 correlation_id（如 `"b"*32`、`"c-1"`、`"c"*32`）直接构造 `TrustedContext`，这些夹具不走真实服务端派生；若在类型层强制 64-hex 将破坏“C 11 例评估与 §11.5 基线不变”的硬约束。因此 64-hex 契约仅在真实服务端派生边界（`server.create_task_tool`）守卫，满足“correlation_id 必须来自服务端派生、客户端不可注入”的安全意图，同时保留 C 基线。
+  - 回归新增 8 项：subject 空格/CJK/前导连字符/超长拒收、合法特殊字符通过；`_derive_correlation_id` 输出 64-hex 且同内容幂等、不同内容独立；Host 非法 subject 构造失败关闭；`ServerConfig.from_env` 非法 subject 配置启动失败关闭。
+- 边界：不新增任何依赖；不改 B2a 安全核心与 C 阶段已冻结合同；不进入 D-2 及以后；不 push / 不建 PR；保持与 C 基线计数一致（仅按新增测试增长）。
+- 结果（2026-08-07 完整复跑）：`compileall` 通过；stdlib `unittest` 总计 **157 项**（153 执行通过 + 4 链接测试默认跳过，较 C 阶段 149 净增 8）；`tests/test_mcp_integration.py` **20 项** + `tests/test_server_entry.py` **3 项**（原 2 + D-1 新增 1） + `evals/run_c_phase_eval.py` **11 例** + `demo/mcp_stdio_demo.py` **8 项**断言全部通过；`python -m pip check` → `No broken requirements found.`；`git diff --check` 通过；本地提交（未 push）。

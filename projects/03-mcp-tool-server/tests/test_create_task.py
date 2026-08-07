@@ -567,7 +567,7 @@ class TestTaskRootSafety(NetworkBlockedTestCase):
 
 
 class TestTrustedContextValidation(NetworkBlockedTestCase):
-    """P1-5：TrustedContext.subject / correlation_id 严格校验。"""
+    """P1-5 / D-1：TrustedContext.subject / correlation_id 严格校验（D-1 为 subject 精确字符白名单）。"""
 
     def test_invalid_subject_type(self):
         with self.assertRaises(TaskPublishError) as cm:
@@ -595,6 +595,28 @@ class TestTrustedContextValidation(NetworkBlockedTestCase):
         tc = TrustedContext("local-user", "corr-1")
         self.assertEqual(tc.subject, "local-user")
         self.assertEqual(tc.correlation_id, "corr-1")
+
+    # ---- D-1 精确身份格式：subject 字符白名单 ----
+
+    def test_subject_with_space_rejected(self):
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("bad subject", "c-1")
+
+    def test_subject_with_cjk_rejected(self):
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("用户", "c-1")
+
+    def test_subject_leading_hyphen_rejected(self):
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("-bad", "c-1")
+
+    def test_subject_too_long_rejected(self):
+        with self.assertRaises(TaskPublishError):
+            TrustedContext("a" * 129, "c-1")
+
+    def test_subject_special_chars_valid(self):
+        tc = TrustedContext("a.b_c-d", "corr-2")
+        self.assertEqual(tc.subject, "a.b_c-d")
 
 
 class TestConfirmationIdNoEcho(NetworkBlockedTestCase):

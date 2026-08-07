@@ -57,6 +57,8 @@ from .tasks import (
     TaskPublishError,
     TasksStore,
     TrustedContext,
+    _valid_correlation_id,
+    _valid_subject,
 )
 
 _SERVICE_NAME = "p3-local-notes"
@@ -91,7 +93,9 @@ def _derive_correlation_id(title: str, description: str) -> str:
 class ServerConfig:
     """Server 受控本地配置（绝不含客户端可控字段）。
 
-    subject 固定为服务身份；correlation_id 由 Server 运行时本地派生，不在此配置。
+    subject 固定为服务身份，须符合 D-1 精确字符白名单
+    `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（缺失/非法在 `from_env` 失败关闭）；
+    correlation_id 由 Server 运行时本地派生，不在此配置。
     task_root 必须由部署配置预存在（见 D-015）；本模块**绝不**创建任务根或任何祖先目录。`server.main()` 仅创建部署配置指定的 SQLite 状态库父目录（`os.path.dirname(db_path)`），绝不创建 `task_root`。
     """
 
@@ -116,12 +120,16 @@ class ServerConfig:
         default_notes = os.path.abspath(
             os.path.join(pkg_dir, "..", "..", "evals", "fixtures", "notes-v1")
         )
-        return cls(
+        config = cls(
             db_path=env.get("MCP_NOTES_DB_PATH", os.path.join(".mcp-notes", "control.db")),
             task_root=env.get("MCP_NOTES_TASK_ROOT", os.path.join(".mcp-notes", "tasks")),
             notes_root=env.get("MCP_NOTES_NOTES_ROOT", default_notes),
             subject=env.get("MCP_NOTES_SUBJECT", "p3-local-service"),
         )
+        # D-1 配置启动失败关闭：subject 必须符合精确字符白名单，缺失/非法不启动 Server
+        if not _valid_subject(config.subject):
+            raise TaskPublishError(INVALID_ARGUMENTS)
+        return config
 
 
 def _hit_to_dict(hit: SearchHit) -> dict:
@@ -257,6 +265,10 @@ def build_server(config: ServerConfig) -> SafeMCPServer:
         # correlation_id 由 Server 按规范化请求内容本地派生（P0-3 幂等），绝不来自
         # Tool 参数 / 客户端 / 模型文本 / MCP 请求字段
         correlation_id = _derive_correlation_id(title, description)
+        # D-1 契约守卫：派生 correlation_id 必为 64 位小写十六进制（sha256.hexdigest）；
+        # 客户端永远不能直接提供或覆盖 correlation_id
+        if not _valid_correlation_id(correlation_id):
+            return _err(INVALID_ARGUMENTS)
         try:
             ctx = TrustedContext(subject, correlation_id)
         except TaskPublishError:
