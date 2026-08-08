@@ -55,25 +55,44 @@ from .safe_task_write import (  # noqa: E402
 
 
 def _posix_supported() -> bool:
-    """能力探测：dir_fd / O_NOFOLLOW / O_DIRECTORY / 目录 fsync 是否可用。
+    """能力探测：逐项确认 open/stat/unlink 支持 dir_fd、stat 支持 follow_symlinks=False、
+    O_NOFOLLOW / O_DIRECTORY / fsync 存在。
 
-    缺失任一 → 调用方应稳定 `task-root-unsafe`，绝不回退字符串路径方案。
+    仅 `bool(os.supports_dir_fd)` 不够——必须逐项确认，否则部分平台能力缺失会在运行时
+    抛 `TypeError`（如某 syscall 不支持 dir_fd）。任一缺失 → 调用方应稳定
+    `task-root-unsafe`，绝不回退字符串路径方案、绝不泄露 TypeError。
     """
-    return (
-        hasattr(os, "open")
-        and hasattr(os, "fstat")
-        and hasattr(os, "fsync")
-        and hasattr(os, "O_NOFOLLOW")
-        and hasattr(os, "O_DIRECTORY")
-        and hasattr(os, "supports_dir_fd")
-        and bool(os.supports_dir_fd)
-    )
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        return False
+    if not hasattr(os, "fsync"):
+        return False
+    # 防御：关键 syscall 属性本身缺失 → 提前稳定失败，避免后续 AttributeError
+    for _name in ("open", "stat", "unlink", "fstat"):
+        if not hasattr(os, _name):
+            return False
+    dir_fd_caps = getattr(os, "supports_dir_fd", ())
+    if os.open not in dir_fd_caps:
+        return False
+    if os.stat not in dir_fd_caps:
+        return False
+    if os.unlink not in dir_fd_caps:
+        return False
+    follow_caps = getattr(os, "supports_follow_symlinks", ())
+    if os.stat not in follow_caps:
+        return False
+    return True
 
 
 # --------------------------------------------------------------------------- #
 # §4 跨平台共同部署前提（D-2-design.md §4）：task_root 由可信部署管理、服务是唯一
 # 写入者、非服务主体无写/改名/删权限。inode 复核仅纵深防御，不替代目录权限隔离。
 # 若部署无法保证该前提，失败清理禁止按名 unlink（避免删除被替换对象）。
+#
+# 重要：`_SINGLE_WRITER` 是**可信部署前提的声明**（由部署方通过环境变量断言），并非
+# 运行时 ACL 验证——本模块不查询系统用户/权限，也不做进程级排他锁。非唯一写入者时
+# 严格禁止按名 unlink（防止删除被替换对象）。真实 POSIX 链接 / TOCTOU 验证须在
+# Linux / WSL 执行（见 D-2-design.md blocked-until-approved），不声称整个 MCP Server 已
+# 跨平台（仅发布核心可按平台分发）。
 # --------------------------------------------------------------------------- #
 
 _SINGLE_WRITER = os.environ.get("P3_TASK_ROOT_SINGLE_WRITER", "1") == "1"
@@ -100,6 +119,8 @@ def _split_root(task_root: str) -> list:
     for comp in comps:
         if comp == "":  # 双 `//`、空段
             raise SafeWriteError(TASK_ROOT_UNSAFE)
+        if "\x00" in comp:  # 含 NUL：非法组件，绝不传入 os.open（避免原始 ValueError / 路径注入）
+            raise SafeWriteError(TASK_ROOT_UNSAFE)
         if comp == "." or comp == "..":  # 当前/上级目录
             raise SafeWriteError(TASK_ROOT_UNSAFE)
     return comps
@@ -113,6 +134,7 @@ def _open_root(task_root: str) -> list:
     绝不回退字符串路径方案。
     """
     comps = _split_root(task_root)
+    fds: list = []  # 预置空：根 fd 打开失败即进入 except 时不会引用未绑定变量
     try:
         try:
             root_fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
@@ -132,10 +154,19 @@ def _open_root(task_root: str) -> list:
             try:
                 st = os.fstat(h)
             except OSError:
-                os.close(h)
+                # fstat 失败：best-effort 关闭 h，稳定 task-root-unsafe；
+                # 关闭失败也绝不泄露原始 OSError / 覆盖稳定错误码
+                try:
+                    os.close(h)
+                except OSError:
+                    pass
                 raise SafeWriteError(TASK_ROOT_UNSAFE)
             if not stat.S_ISDIR(st.st_mode):
-                os.close(h)
+                # 非目录：best-effort 关闭 h，稳定 task-root-unsafe
+                try:
+                    os.close(h)
+                except OSError:
+                    pass
                 raise SafeWriteError(TASK_ROOT_UNSAFE)
             fds.append(h)
             parent = h
@@ -154,18 +185,32 @@ def _open_root(task_root: str) -> list:
 # --------------------------------------------------------------------------- #
 
 def _handle_existing(parent_fd: int, fname: str, payload: dict) -> str:
-    """§3：命中 `EEXIST` 后，用仍持有的 parent_fd 做安全分类。
+    """§3：命中 `EEXIST` 后，用仍持有的 parent_fd 做安全分类（精确错误语义）。
 
-    先 `os.stat(follow_symlinks=False)` 预筛；symlink/目录/FIFO/设备/不可归类 →
-    `task-root-unsafe`；仅常规文件才 `O_NOFOLLOW` 打开 + `fstat`，内容同 →
-    `unchanged`、内容异 → `task-conflict`；权限/IO/读/解码失败 → `task-write-failed`。
+    预筛 `os.stat(follow_symlinks=False)`：
+    - `PermissionError`（权限不足）/ 其他 IO（`OSError` 非 `ELOOP`）→ `task-write-failed`；
+    - `FileNotFoundError`（竞态消失，无法安全归类）/ `ELOOP` / `ValueError`
+      → `task-root-unsafe`。
+    仅常规文件才 `O_NOFOLLOW` 打开：
+    - `PermissionError` / 其他 IO（`OSError` 非 `ELOOP`）→ `task-write-failed`；
+    - `FileNotFoundError` / `ELOOP` → `task-root-unsafe`。
+    symlink/目录/FIFO/设备/类型不一致 → `task-root-unsafe`；内容同 → `unchanged`、
+    内容异 → `task-conflict`；读取/解码失败 → `task-write-failed`。
     """
     # 预筛：不跟随最终组件
     try:
         st = os.stat(fname, dir_fd=parent_fd, follow_symlinks=False)
-    except (OSError, ValueError):
-        # 并发消失 / 无法安全归类
-        raise SafeWriteError(TASK_ROOT_UNSAFE)
+    except PermissionError:
+        raise SafeWriteError(TASK_WRITE_FAILED)      # 权限不足，读取失败
+    except FileNotFoundError:
+        raise SafeWriteError(TASK_ROOT_UNSAFE)        # 竞态消失，无法安全归类
+    except OSError as exc:
+        if getattr(exc, "errno", None) == errno.ELOOP:
+            raise SafeWriteError(TASK_ROOT_UNSAFE)    # 仍为 symlink
+        raise SafeWriteError(TASK_WRITE_FAILED)       # 其他 IO（如 EIO）→ 读取失败
+    except ValueError:
+        raise SafeWriteError(TASK_ROOT_UNSAFE)        # 参数异常，无法安全归类
+
     mode = st.st_mode
     if stat.S_ISLNK(mode):  # 已经是 symlink（follow_symlinks=False 下 S_ISLNK 为真）
         raise SafeWriteError(TASK_ROOT_UNSAFE)
@@ -179,27 +224,36 @@ def _handle_existing(parent_fd: int, fname: str, payload: dict) -> str:
         raise SafeWriteError(TASK_ROOT_UNSAFE)
     if not stat.S_ISREG(mode):
         raise SafeWriteError(TASK_ROOT_UNSAFE)
+
     # 仅常规文件：O_NOFOLLOW 打开（拒绝任何 reparse 跟随）
     try:
         fd = os.open(fname, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=parent_fd)
+    except PermissionError:
+        raise SafeWriteError(TASK_WRITE_FAILED)      # 权限不足，读取失败
+    except FileNotFoundError:
+        raise SafeWriteError(TASK_ROOT_UNSAFE)        # 竞态消失，无法安全归类
     except OSError as exc:
         if getattr(exc, "errno", None) == errno.ELOOP:
-            raise SafeWriteError(TASK_ROOT_UNSAFE)
-        raise SafeWriteError(TASK_ROOT_UNSAFE)
+            raise SafeWriteError(TASK_ROOT_UNSAFE)    # 仍为 symlink
+        raise SafeWriteError(TASK_WRITE_FAILED)       # 其他 IO（如 EIO）→ 读取失败
+
     try:
-        st2 = os.fstat(fd)
+        try:
+            st2 = os.fstat(fd)
+        except OSError:
+            # fstat 失败：读取失败，稳定 task-write-failed，绝不泄露原始 OSError
+            raise SafeWriteError(TASK_WRITE_FAILED)
         if not stat.S_ISREG(st2.st_mode):
             # 打开前后类型不一致
             raise SafeWriteError(TASK_ROOT_UNSAFE)
-        try:
-            data = b""
-            while True:
-                chunk = os.read(fd, 1 << 20)
-                if not chunk:
-                    break
-                data += chunk
-        except OSError:
-            raise SafeWriteError(TASK_WRITE_FAILED)
+        data = b""
+        while True:
+            chunk = os.read(fd, 1 << 20)
+            if not chunk:
+                break
+            data += chunk
+    except OSError:
+        raise SafeWriteError(TASK_WRITE_FAILED)       # 读取失败
     finally:
         try:
             os.close(fd)
@@ -274,12 +328,11 @@ def _cleanup_failed_file(
 def _write_and_fsync(fd: int, parent_fd: int, fname: str, data: bytes) -> None:
     """§4：写全部字节 → 文件 fsync → close → 父目录 fsync 才返回。
 
-    任一写入 / 文件 fsync / close 失败 → 仅 close 一次（不重复 close）+ 身份复核后
-    unlink + 父目录 fsync；父目录 fsync 失败 → 创建未持久化，同样清理；清理成功/失败
-    均映射 `task-write-failed`。
+    文件 fd 只尝试 close 一次（close 失败也绝不重复 close 同一 fd）。任一写入 / 文件
+    fsync / close / 父目录 fsync 失败 → 进入失败清理（身份复核后 unlink + 父目录
+    fsync），映射 `task-write-failed`。
     """
     created_dev = created_ino = None
-    fd_closed = False
     try:
         # 创建成功后立即取身份（fd 已指向新建文件）；即便后续写入/fsync 失败，
         # 也能据此做 inode 复核后安全 unlink，而非保守放弃清理。
@@ -287,18 +340,21 @@ def _write_and_fsync(fd: int, parent_fd: int, fname: str, data: bytes) -> None:
         created_dev, created_ino = cst.st_dev, cst.st_ino
         _write_all(fd, data)
         os.fsync(fd)
-        os.close(fd)  # 成功路径：只在此处关闭一次
-        fd_closed = True
     except OSError:
-        # 写入 / 文件 fsync / close 失败：仅当尚未关闭时才关闭，避免重复 close
-        if not fd_closed:
-            try:
-                os.close(fd)
-            except OSError:
-                pass
+        # 写入 / 文件 fsync 失败：fd 尚未关闭 → 恰好关闭一次后清理
+        try:
+            os.close(fd)
+        except OSError:
+            pass
         _cleanup_failed_file(parent_fd, fname, created_dev, created_ino)
         raise SafeWriteError(TASK_WRITE_FAILED)
-    # 文件已写 + fsync + close；父目录 fsync 失败 → 创建未持久化，清理
+    # 写入与文件 fsync 成功：关闭 fd（仅一次）；关闭失败同样进入清理
+    try:
+        os.close(fd)
+    except OSError:
+        _cleanup_failed_file(parent_fd, fname, created_dev, created_ino)
+        raise SafeWriteError(TASK_WRITE_FAILED)
+    # 父目录 fsync 失败 → 创建未持久化，清理
     try:
         os.fsync(parent_fd)
     except OSError:

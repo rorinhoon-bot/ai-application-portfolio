@@ -19,7 +19,10 @@ from __future__ import annotations
 import errno
 import os
 import stat
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from mcp_notes import safe_task_write_posix as px
@@ -30,6 +33,10 @@ from mcp_notes.safe_task_write import (
     TASK_CONFLICT,
     TASK_WRITE_FAILED,
 )
+
+# 项目根与 src 目录：用于子进程导入（模拟非 Windows 平台），确保不依赖真实 Linux。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_SRC_DIR = str(_PROJECT_ROOT / "src")
 
 
 def _s(mode: int, dev: int = 1, ino: int = 1):
@@ -107,6 +114,87 @@ class TestPosixCapabilityAndPath(unittest.TestCase):
                 px.publish_task_file("/tasks", "../escape", {"content_hash": "h"})
         self.assertEqual(cm.exception.code, TASK_INVALID_ID)
 
+    def test_partial_dir_fd_capability_is_unsafe(self):
+        # P0-3：仅 os.open 支持 dir_fd，stat/unlink 不支持，且 follow_symlinks 不支持
+        # → _posix_supported 必须返回 False（逐项确认，而非仅看 supports_dir_fd 非空）
+        class _PartialOS:
+            O_NOFOLLOW = 0o100000
+            O_DIRECTORY = 1 << 16
+
+            def fsync(self, *a, **k):
+                pass
+
+            def open(self, *a, **k):
+                pass
+
+            def stat(self, *a, **k):
+                pass
+
+            def unlink(self, *a, **k):
+                pass
+
+            supports_dir_fd = {open}
+            supports_follow_symlinks = set()
+
+        with mock.patch.object(px, "os", _PartialOS()):
+            self.assertFalse(px._posix_supported())
+
+    def test_publish_with_partial_caps_is_unsafe_no_typeerror(self):
+        # P0-3：部分 dir_fd 能力存在时，publish_task_file 必须稳定 task-root-unsafe，
+        # 不泄露 TypeError（如某 syscall 不支持 dir_fd 参数）
+        class _PartialOS:
+            O_NOFOLLOW = 0o100000
+            O_DIRECTORY = 1 << 16
+
+            def fsync(self, *a, **k):
+                pass
+
+            def open(self, *a, **k):
+                pass
+
+            def stat(self, *a, **k):
+                pass
+
+            def unlink(self, *a, **k):
+                pass
+
+            supports_dir_fd = {open}
+            supports_follow_symlinks = set()
+
+        with mock.patch.object(px, "os", _PartialOS()):
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
+
+    def test_missing_fstat_capability_is_unsupported(self):
+        # P1-1：缺失 os.fstat 时 _posix_supported 必须 False，publish_task_file 不泄露
+        # AttributeError / TypeError，稳定 task-root-unsafe
+        class _NoFstatOS:
+            O_NOFOLLOW = 0o100000
+            O_DIRECTORY = 1 << 16
+
+            def fsync(self, *a, **k):
+                pass
+
+            def open(self, *a, **k):
+                pass
+
+            def stat(self, *a, **k):
+                pass
+
+            def unlink(self, *a, **k):
+                pass
+
+            # 故意缺失 fstat
+            supports_dir_fd = {open}
+            supports_follow_symlinks = {stat}
+
+        with mock.patch.object(px, "os", _NoFstatOS()):
+            self.assertFalse(px._posix_supported())
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
+
 
 class TestPosixRootWalk(unittest.TestCase):
     """§1：从 / 起逐级 openat + fstat，任何 reparse / 非目录失败关闭。"""
@@ -124,6 +212,42 @@ class TestPosixRootWalk(unittest.TestCase):
         self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
         # 所有已开 fd 应被关闭（/ 与 tasks）
         self.assertEqual(fake.close.call_count, 2)
+
+    def test_open_root_anchor_failure_is_task_root_unsafe(self):
+        # P0-2：根 anchor os.open("/") 失败必须只抛 task-root-unsafe，不得 UnboundLocalError
+        fake = _make_fake_os()
+        fake.open.side_effect = OSError("anchor open failed")
+        with mock.patch.object(px, "os", fake):
+            with self.assertRaises(SafeWriteError) as cm:
+                px._open_root("/tasks")
+        self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
+        # 根 fd 未成功打开即失败：无 fd 被关闭（无未绑定变量异常、无资源泄漏）
+        fake.close.assert_not_called()
+
+    def test_subdir_fstat_failure_and_close_failure_is_task_root_unsafe(self):
+        # P0-3 问题 A：子目录 fstat 失败且关闭该 fd 也失败，最终仍为 task-root-unsafe，
+        # 关闭失败绝不覆盖稳定错误码、绝不泄露原始 OSError
+        fake = _make_fake_os()
+        fake.open.side_effect = [1, 2]  # / 与 tasks
+        fake.fstat.side_effect = [OSError("fstat failed")]  # tasks 组件 fstat 失败
+
+        def _close(fd):
+            if fd == 2:
+                raise OSError("close failed")  # 关闭 tasks fd 也失败
+            return None
+
+        fake.close.side_effect = _close
+        with mock.patch.object(px, "os", fake):
+            with self.assertRaises(SafeWriteError) as cm:
+                px._open_root("/tasks")
+        self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
+
+    def test_nul_component_rejected_as_task_root_unsafe(self):
+        # P0-3 问题 B：含 NUL 的组件被 _split_root 明确拒绝 → task-root-unsafe，
+        # 不进入 os.open（避免原始 ValueError / 路径注入泄露）
+        with self.assertRaises(SafeWriteError) as cm:
+            px._open_root("/bad\x00name")
+        self.assertEqual(cm.exception.code, TASK_ROOT_UNSAFE)
 
 
 class TestPosixEexistClassification(unittest.TestCase):
@@ -200,6 +324,47 @@ class TestPosixEexistClassification(unittest.TestCase):
                 px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
         self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
 
+    def test_existing_stat_permission_is_write_failed(self):
+        # P0-5：预筛 os.stat(follow_symlinks=False) 权限失败 → task-write-failed（非 unsafe）
+        fake = _make_fake_os()
+        self._walk_ok(fake)
+        fake.stat.side_effect = PermissionError("denied")
+        with mock.patch.object(px, "_posix_supported", return_value=True), \
+                mock.patch.object(px, "os", fake):
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
+
+    def test_existing_open_permission_is_write_failed(self):
+        # P0-5：O_NOFOLLOW 打开已存在目标权限失败 → task-write-failed（非 unsafe）
+        fake = _make_fake_os()
+        self._walk_ok(fake)
+        fake.stat.return_value = _s(stat.S_IFREG)  # 预筛通过（常规文件）
+        fake.open.side_effect = [1, 2, FileExistsError(), PermissionError("denied")]
+        with mock.patch.object(px, "_posix_supported", return_value=True), \
+                mock.patch.object(px, "os", fake):
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
+
+    def test_existing_reopen_fstat_failure_is_write_failed(self):
+        # P0-2：已存在常规文件、O_NOFOLLOW 打开成功后 os.fstat(fd) 失败 → task-write-failed，
+        # 不泄露原始 OSError（fd 仍只关闭一次）
+        fake = _make_fake_os()
+        # walk：/ 与 tasks（1 次目录 fstat=S_IFDIR）；文件 EEXIST；重开 fd 3
+        fake.open.side_effect = [1, 2, FileExistsError(), 3]
+        # walk fstat（目录）+ 重开文件 fstat（失败）
+        fake.fstat.side_effect = [_s(stat.S_IFDIR), OSError("fstat failed")]
+        fake.stat.return_value = _s(stat.S_IFREG)  # 预筛通过（常规文件）
+        with mock.patch.object(px, "_posix_supported", return_value=True), \
+                mock.patch.object(px, "os", fake):
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
+        # 重开 fd（3）恰好关闭一次
+        close_3 = [c for c in fake.close.call_args_list if c.args == (3,)]
+        self.assertEqual(len(close_3), 1)
+
 
 class TestPosixCreateAndCleanup(unittest.TestCase):
     """§4：创建成功路径与失败清理合同（含单写入者前提）。"""
@@ -265,6 +430,99 @@ class TestPosixCreateAndCleanup(unittest.TestCase):
                 px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
         self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
         fake.unlink.assert_not_called()
+
+    def test_file_close_failure_closes_fd_once(self):
+        # P0-4：文件 fd 的 os.close 失败时，必须只尝试 close 一次，绝不重复 close 同一
+        # fd；失败清理仍执行，最终映射 task-write-failed
+        fake = _make_fake_os()
+        self._walk_ok(fake)
+        fake.open.side_effect = [1, 2, 3]
+        fake.fstat.side_effect = [
+            _s(stat.S_IFDIR),
+            _s(stat.S_IFREG, dev=1, ino=7),
+        ]
+        fake.stat.return_value = _s(stat.S_IFREG, dev=1, ino=7)
+        # 仅文件 fd（3）的 close 失败；其余 fd 的 close 正常返回
+        def _close(fd):
+            if fd == 3:
+                raise OSError("close failed")
+            return None
+        fake.close.side_effect = _close
+        with mock.patch.object(px, "_posix_supported", return_value=True), \
+                mock.patch.object(px, "os", fake), \
+                mock.patch.object(px, "_SINGLE_WRITER", True):
+            with self.assertRaises(SafeWriteError) as cm:
+                px.publish_task_file("/tasks", "id01", {"content_hash": "h"})
+        self.assertEqual(cm.exception.code, TASK_WRITE_FAILED)
+        # 目标文件 fd（3）恰好被尝试关闭一次（无重复 close）
+        close_3 = [c for c in fake.close.call_args_list if c.args == (3,)]
+        self.assertEqual(len(close_3), 1)
+
+
+# --------------------------------------------------------------------------- #
+# 门面导入契约（P0-1）：非 Windows 分发下不得循环导入、不得 _NATIVE_AVAILABLE
+# NameError。在 Windows 宿主的子进程中伪装 sys.platform='linux' 验证，不依赖真实
+# Linux 或真实链接；Windows 上的既有 mock 路径不受影响。
+# --------------------------------------------------------------------------- #
+
+
+class TestPosixFacadeImportOnNonWindows(unittest.TestCase):
+    """P0-1：非 Windows 平台分发下 import 门面必须成功且分发到 POSIX 实现。"""
+
+    def test_facade_imports_without_cycle_or_native_nameerror(self):
+        script = (
+            "import sys; "
+            "sys.platform = 'linux'; "
+            "import mcp_notes.safe_task_write as stw; "
+            "assert stw.publish_task_file is not None; "
+            "print('IMPORT_OK')"
+        )
+        env = dict(os.environ)
+        env["PYTHONPATH"] = _SRC_DIR + os.pathsep + env.get("PYTHONPATH", "")
+        proc = subprocess.run(
+            [sys.executable, "-c", script],
+            capture_output=True,
+            text=True,
+            cwd=str(_PROJECT_ROOT),
+            env=env,
+        )
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        self.assertIn("IMPORT_OK", proc.stdout)
+
+    def test_facade_open_task_root_on_nonwindows_is_task_root_unsafe(self):
+        # P0-1：非 Windows 直接调用公开 open_task_root() 必须稳定抛
+        # SafeWriteError(TASK_ROOT_UNSAFE)，绝不泄露 _NATIVE_AVAILABLE NameError /
+        # 原始 Traceback。在 Windows 宿主子进程中伪装 sys.platform='linux' 验证，
+        # 不依赖真实 Linux。
+        script = (
+            "import sys\n"
+            "sys.platform = 'linux'\n"
+            "import mcp_notes.safe_task_write as stw\n"
+            "from mcp_notes.safe_task_write import SafeWriteError, TASK_ROOT_UNSAFE\n"
+            "try:\n"
+            "    stw.open_task_root('/tmp')\n"
+            "    print('FAIL_NO_ERROR')\n"
+            "except SafeWriteError as e:\n"
+            "    assert e.code == TASK_ROOT_UNSAFE, e.code\n"
+            "    print('OPENTASKROOT_OK')\n"
+            "except BaseException as e:\n"
+            "    print('FAIL', type(e).__name__, repr(str(e))[:200])\n"
+        )
+        env = dict(os.environ)
+        env["PYTHONPATH"] = _SRC_DIR + os.pathsep + env.get("PYTHONPATH", "")
+        proc = subprocess.run(
+            [sys.executable, "-c", script],
+            capture_output=True,
+            text=True,
+            cwd=str(_PROJECT_ROOT),
+            env=env,
+        )
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        self.assertIn("OPENTASKROOT_OK", proc.stdout)
+        self.assertNotIn("FAIL", proc.stdout)
+        self.assertNotIn("NameError", proc.stdout + proc.stderr)
+        self.assertNotIn("_NATIVE_AVAILABLE", proc.stdout + proc.stderr)
+        self.assertNotIn("Traceback", proc.stdout + proc.stderr)
 
 
 # --------------------------------------------------------------------------- #

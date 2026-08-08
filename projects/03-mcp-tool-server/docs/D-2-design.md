@@ -1,7 +1,7 @@
 # D-2 详细设计：跨平台原子发布一致性（修订版 v5）
 
-> 状态：**设计文档（未提交、未实现代码）**。本文件仅记录 D-2 详细设计与授权准备，供审查；不创建 `safe_task_write_posix.py`、不写任何测试、不修改 `safe_task_write.py` 运行时代码、不触碰 `.workbuddy/`。
-> 硬约束：不进入 D-3、不 push、不建 PR、不新增依赖、不改 P2、不创建/运行真实 symlink 或 junction、不修改现有 164 测试基线、不触碰 `.workbuddy/`、不改其他文档或现有测试。
+> 状态：**v5 为原设计文档；D-2 Windows 可验证实现已存在（提交 `ba17a2d`，未 push）；D-022/D-023 P0/P1 修复均未暂存、未提交，等待 Codex 再复核。** 真实 POSIX 链接专项（D2-L1…D2-L4）仍 blocked-until-approved（仅 Linux/WSL 启用）；不宣称整个 MCP Server 已跨平台（仅发布核心按平台分发）。
+> 当前修复轮约束：只改 D-2；不进入 D-3、不安装依赖、不创建/运行真实 symlink 或 junction、不改 P2、C 核心、MCP Tool/Host、sqlite 状态机、`.workbuddy/`；不 stage/commit/push/PR；变更保持未暂存。
 > 相对 v4 的修订：① §1 POSIX 路径拆分改为**单一规则**（根标记=单个开头 `/`，移除该 `/` 后按单 `/` 分割；拒绝 `//var/tasks`、`/var//tasks`、`/var/tasks/` 尾斜杠、`/var/./tasks`、`/var/../tasks`、相对路径、`task_root="/"` 根本身）；② §4 新增**跨平台共同部署前提**（可信部署管理、非服务主体无写/改名/删权限、服务是唯一写入者、inode 复核仅纵深防御），并收紧失败清理合同（无唯一写入者前提则**禁止按名 unlink**、返回 `task-write-failed` 失败关闭、不承诺零残留/可重试）；③ §5 D2-L2 删除命令 `rm -rf` → `rmdir`，明确 `sub` 为测试刚创建的空目录。
 
 ---
@@ -200,3 +200,18 @@ P3_ALLOW_POSIX_PUBLISH_LINK_FIXTURES=1 $PY -m unittest tests.test_d2_posix_publi
 4. 任何公网 CI 或远程执行环境。
 
 D-2 明确标注：**Windows 模拟测试（unittest.mock 的 syscall-adapter，标注"算法级模拟，非真实链接验证"）可做；真实 POSIX 链接 / TOCTOU 验证 blocked-until-approved**。`PRD.md:147`、`ARCHITECTURE.md:149` 仅概念级，本设计补充后方可进入 D-2 编码。
+
+---
+
+## 实现复核修订（2026-08-07，P0/P1，未提交）
+
+设计 v5 进入实现后，Codex 对 `ba17a2d` 给出 5 项 P0 + 1 项 P1 缺口，已在 D-2 相关文件修复（不进 D-3、不装依赖、不创/跑真实 symlink/junction、不改 P2/C、`.workbuddy/` 不碰、未提交）。要点：
+
+- **P0-1**：核心符号（`TASK_ID_RE`/`TASK_*`/`SafeWriteError`/`NameCollision`）先于平台分发定义；所有 Windows-only 导入与 Nt 绑定移入 `if sys.platform=="win32":` 分支，消除非 Windows 的 `_NATIVE_AVAILABLE` NameError 与门面循环导入；既有 164 mock 路径不变。
+- **P0-2**：`_open_root` 进入 try 前预置 `fds=[]`，根 `os.open("/")` 失败只抛 `task-root-unsafe`，无 `UnboundLocalError`。
+- **P0-3**：能力探测由 `bool(os.supports_dir_fd)` 改为逐项确认 `open`/`stat`/`unlink` 支持 `dir_fd`、`stat` 支持 `follow_symlinks=False`、`O_NOFOLLOW`/`O_DIRECTORY`/`fsync` 存在；任一缺失稳定 `task-root-unsafe`，不泄露 `TypeError`。
+- **P0-4**：文件 fd 只尝试 close 一次（close 失败绝不重复 close 同一 fd）。
+- **P0-5**：`_handle_existing` 精确区分——`FileNotFoundError`/`ELOOP`/symlink/目录/FIFO/设备/类型不一致/无法安全归类 → `task-root-unsafe`；`PermissionError`/其他 IO/读取/解码失败 → `task-write-failed`。
+- **P1**：去除「delete-on-close」「绝不残留」等不实表述，明确 `_SINGLE_WRITER` 是可信部署前提声明（非运行时 ACL 验证），不声称整个 MCP Server 已跨平台；真实 POSIX 链接验证仍 blocked-until-approved。
+
+验证：单测 **191 项**（183 通过 + 8 skip，含 D2-L1…L4 真实链接占位 4 默认 skip）；集成 23、入口 6、create_task 62、posix 26；eval 11/11；demo 8/8；pip check 干净；git diff --check 通过；未暂存。详见 DECISIONS **D-022**。

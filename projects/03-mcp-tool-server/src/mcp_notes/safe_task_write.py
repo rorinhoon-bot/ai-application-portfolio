@@ -29,35 +29,10 @@ import os
 import re
 import sys
 
-# Windows-only 导入：仅在 Windows 上导入，使 POSIX 上 `import safe_task_write` 不崩
-# （满足 D-2 “POSIX 发布核心可导入”，见 docs/D-2-design.md §2）。Windows 原生实现逻辑
-# 仍保留在本模块内，以复用现有 164 测试基线的 mock 路径（不破坏兼容性）；POSIX 发布
-# 核心独立为 safe_task_write_posix.py。调用方签名（publish_task_file）不变。
-if sys.platform == "win32":
-    import msvcrt
-    from .safe_open import (
-        OBJ_DONT_REPARSE,
-        IO_STATUS_BLOCK,
-        NotAllowedReparse,
-        NotARegularFile,
-        OBJECT_ATTRIBUTES,
-        PathEscape,
-        UNICODE_STRING,
-        UnsafeOpenUnavailable,
-        _NATIVE_AVAILABLE,
-        _close,
-        _nt_open,
-        _validate_component,
-        configure_root,
-        IoError,
-        kernel32,
-        ntdll,
-        verify_native_support,
-    )
-else:
-    # POSIX 发布核心（纯 stdlib，不依赖 Windows-only safe_open）
-    from . import safe_task_write_posix as _posix_mod
-    _posix_publish = _posix_mod.publish_task_file
+# --------------------------------------------------------------------------- #
+# 稳定错误类型与常量（最先定义：POSIX 分支 import 本模块时这些符号必须已存在，
+# 否则会循环导入；本块不引用任何 Windows-only 名称，POSIX 上亦安全）。
+# --------------------------------------------------------------------------- #
 
 # 任务文件 id 形态（与 tasks.py 一致）
 TASK_ID_RE = re.compile(r"^[A-Za-z0-9-]{4,64}$")
@@ -82,61 +57,91 @@ class NameCollision(Exception):
 
 
 # --------------------------------------------------------------------------- #
-# NtCreateFile 绑定（仅 Windows 可用）
+# 平台分发：所有 Windows-only 导入与 Nt 绑定只在 win32 分支执行。POSIX 上 import
+# 本模块不会触碰任何 Windows-only 名称（不会触发 _NATIVE_AVAILABLE NameError、可导入）。
+# 既有 164 测试基线直接 mock 本模块的 Windows-only 模块级属性（kernel32/ntdll/msvcrt/
+# _NATIVE_AVAILABLE/_nt_open/_nt_create_file(_fn) 等），这些名称在 win32 分支内仍作为
+# 模块级属性绑定，故 mock 路径不变。
 # --------------------------------------------------------------------------- #
 
-# 访问与创建选项
-FILE_WRITE_DATA = 0x0002
-FILE_READ_ATTRIBUTES = 0x0080
-SYNCHRONIZE = 0x100000
-FILE_NON_DIRECTORY_FILE = 0x0040
-FILE_SYNCHRONOUS_IO_NONALERT = 0x0020
-FILE_CREATE = 0x00000002
-FILE_OPEN = 0x00000001
-FILE_ATTRIBUTE_NORMAL = 0x80
+if sys.platform == "win32":
+    import msvcrt
+    from .safe_open import (
+        OBJ_DONT_REPARSE,
+        IO_STATUS_BLOCK,
+        NotAllowedReparse,
+        NotARegularFile,
+        OBJECT_ATTRIBUTES,
+        PathEscape,
+        UNICODE_STRING,
+        UnsafeOpenUnavailable,
+        _NATIVE_AVAILABLE,
+        _close,
+        _nt_open,
+        _validate_component,
+        configure_root,
+        IoError,
+        kernel32,
+        ntdll,
+        verify_native_support,
+    )
 
-# NTSTATUS
-STATUS_SUCCESS = 0x00000000
-STATUS_OBJECT_NAME_COLLISION = 0xC0000034  # FILE_CREATE 已存在（部分文档 / 旧实现）
-STATUS_OBJECT_NAME_EXISTS = 0xC0000035     # FILE_CREATE 已存在（本机实测返回此值）
-STATUS_REPARSE_POINT_ENCOUNTERED = 0xC00004FA
+    # 访问与创建选项
+    FILE_WRITE_DATA = 0x0002
+    FILE_READ_ATTRIBUTES = 0x0080
+    SYNCHRONIZE = 0x100000
+    FILE_NON_DIRECTORY_FILE = 0x0040
+    FILE_SYNCHRONOUS_IO_NONALERT = 0x0020
+    FILE_CREATE = 0x00000002
+    FILE_OPEN = 0x00000001
+    FILE_ATTRIBUTE_NORMAL = 0x80
 
-if _NATIVE_AVAILABLE:
-    ntdll.NtCreateFile.restype = ctypes.c_long
-    ntdll.NtCreateFile.argtypes = [
-        ctypes.POINTER(wintypes.HANDLE),
-        wintypes.ULONG,                       # DesiredAccess
-        ctypes.POINTER(OBJECT_ATTRIBUTES),
-        ctypes.POINTER(IO_STATUS_BLOCK),
-        ctypes.c_void_p,                      # AllocationSize (PLARGE_INTEGER) - None
-        wintypes.ULONG,                       # FileAttributes
-        wintypes.ULONG,                       # ShareAccess
-        wintypes.ULONG,                       # CreateDisposition
-        wintypes.ULONG,                       # CreateOptions
-        ctypes.c_void_p,                      # EaBuffer
-        wintypes.ULONG,                       # EaLength
-    ]
-    _nt_create_file_fn = ntdll.NtCreateFile
+    # NTSTATUS
+    STATUS_SUCCESS = 0x00000000
+    STATUS_OBJECT_NAME_COLLISION = 0xC0000034  # FILE_CREATE 已存在（部分文档 / 旧实现）
+    STATUS_OBJECT_NAME_EXISTS = 0xC0000035     # FILE_CREATE 已存在（本机实测返回此值）
+    STATUS_REPARSE_POINT_ENCOUNTERED = 0xC00004FA
+
+    if _NATIVE_AVAILABLE:
+        ntdll.NtCreateFile.restype = ctypes.c_long
+        ntdll.NtCreateFile.argtypes = [
+            ctypes.POINTER(wintypes.HANDLE),
+            wintypes.ULONG,                       # DesiredAccess
+            ctypes.POINTER(OBJECT_ATTRIBUTES),
+            ctypes.POINTER(IO_STATUS_BLOCK),
+            ctypes.c_void_p,                      # AllocationSize (PLARGE_INTEGER) - None
+            wintypes.ULONG,                       # FileAttributes
+            wintypes.ULONG,                       # ShareAccess
+            wintypes.ULONG,                       # CreateDisposition
+            wintypes.ULONG,                       # CreateOptions
+            ctypes.c_void_p,                      # EaBuffer
+            wintypes.ULONG,                       # EaLength
+        ]
+        _nt_create_file_fn = ntdll.NtCreateFile
+    else:
+        _nt_create_file_fn = None
+
+    # 写入失败后清理：仅句柄原生操作（NtDeleteFile，相对已验证父目录 HANDLE），
+    # 绝不使用字符串路径 os.remove / os.replace / 任何回退。
+    if _NATIVE_AVAILABLE:
+        kernel32.WriteFile.restype = wintypes.BOOL
+        kernel32.WriteFile.argtypes = [
+            wintypes.HANDLE,                      # hFile
+            ctypes.c_void_p,                      # lpBuffer
+            wintypes.DWORD,                       # nNumberOfBytesToWrite
+            ctypes.POINTER(wintypes.DWORD),       # lpNumberOfBytesWritten
+            ctypes.c_void_p,                      # lpOverlapped
+        ]
+        kernel32.FlushFileBuffers.restype = wintypes.BOOL
+        kernel32.FlushFileBuffers.argtypes = [wintypes.HANDLE]
+
+        ntdll.NtDeleteFile.restype = ctypes.c_long
+        ntdll.NtDeleteFile.argtypes = [ctypes.POINTER(OBJECT_ATTRIBUTES)]
 else:
-    _nt_create_file_fn = None
-
-
-# 写入失败后清理：仅句柄原生操作（NtDeleteFile，相对已验证父目录 HANDLE），
-# 绝不使用字符串路径 os.remove / os.replace / 任何回退。
-if _NATIVE_AVAILABLE:
-    kernel32.WriteFile.restype = wintypes.BOOL
-    kernel32.WriteFile.argtypes = [
-        wintypes.HANDLE,                      # hFile
-        ctypes.c_void_p,                      # lpBuffer
-        wintypes.DWORD,                       # nNumberOfBytesToWrite
-        ctypes.POINTER(wintypes.DWORD),       # lpNumberOfBytesWritten
-        ctypes.c_void_p,                      # lpOverlapped
-    ]
-    kernel32.FlushFileBuffers.restype = wintypes.BOOL
-    kernel32.FlushFileBuffers.argtypes = [wintypes.HANDLE]
-
-    ntdll.NtDeleteFile.restype = ctypes.c_long
-    ntdll.NtDeleteFile.argtypes = [ctypes.POINTER(OBJECT_ATTRIBUTES)]
+    # POSIX 发布核心（纯 stdlib，不依赖 Windows-only safe_open）。本模块核心符号
+    # 已先于本分支定义，故不会被循环导入；Windows 上不 import 本模块，无副作用。
+    from . import safe_task_write_posix as _posix_mod
+    _posix_publish = _posix_mod.publish_task_file
 
 
 # --------------------------------------------------------------------------- #
@@ -149,6 +154,11 @@ def open_task_root(task_root: str) -> list:
     任何 reparse point（symlink / junction）/ 非法根字符串 / 原生不可用 → 失败关闭，
     抛 `SafeWriteError("task-root-unsafe")`，绝不回退字符串路径方案。
     """
+    if sys.platform != "win32":
+        # 非 Windows：原生层不可用 → 失败关闭，绝不触碰 Windows-only 符号
+        # （_NATIVE_AVAILABLE / verify_native_support 仅在 win32 分支绑定），
+        # 绝不回退字符串路径方案。
+        raise SafeWriteError(TASK_ROOT_UNSAFE)
     if not _NATIVE_AVAILABLE or not verify_native_support():
         # 原生不可用 → 失败关闭，绝不回退字符串路径方案
         raise SafeWriteError(TASK_ROOT_UNSAFE)
@@ -349,7 +359,7 @@ def _cleanup_failed_file(parent_handle: int, name: str) -> None:
     派生的 task_id 派生，经 TASK_ID_RE 校验，无路径注入。
 
     ctypes 不会因非零返回值抛异常，因此**必须**显式检查返回 NTSTATUS：仅 `STATUS_SUCCESS`
-    才声明清理成功（无残留）。非成功状态（如 SHARING_VIOLATION / 其他）**不得静默吞掉**：
+    才声明清理成功（目标已删除）。非成功状态（如 SHARING_VIOLATION / 其他）**不得静默吞掉**：
     上抛脱敏稳定 `SafeWriteError(TASK_WRITE_FAILED)`；上层据此失败关闭，**绝不**承诺
     “零残留 / 必可重试”，也绝不把路径或原始 NTSTATUS 文本带回调用方。
     """
@@ -375,7 +385,7 @@ def _cleanup_failed_file(parent_handle: int, name: str) -> None:
         raise SafeWriteError(TASK_WRITE_FAILED)
     st = status & 0xFFFFFFFF
     if st == STATUS_SUCCESS:
-        return  # 清理成功：无残留
+        return  # 清理成功：目标已删除
     # 非成功状态：清理失败，失败关闭；稳定码上抛，不回显 NTSTATUS / 路径
     raise SafeWriteError(TASK_WRITE_FAILED)
 
@@ -424,7 +434,8 @@ def publish_task_file(task_root: str, task_id: str, payload: dict) -> str:
     顺序：先序列化（序列化失败不创建任何文件），再 `open_task_root`（受控根验证），
     再 `NtCreateFile(FILE_CREATE)` 原子无覆盖创建，最后 `_write_handle`（句柄原生写入
     + fsync）。创建成功后任何写入 / 刷新 / 关闭失败映射为 `SafeWriteError("task-write-failed")`，
-    且 0 字节 / 半成品文件由句柄原生 delete-on-close 清理，绝不残留；HANDLE 由
+    且 0 字节 / 半成品文件由相对已验证父 HANDLE 的 NtDeleteFile 清理；清理失败时失败
+    关闭，不承诺零残留或自动重试；HANDLE 由
     `_write_handle` 内部恰好关闭一次，本函数不再 `_close(fh)`。
     """
     if sys.platform != "win32":
@@ -432,7 +443,7 @@ def publish_task_file(task_root: str, task_id: str, payload: dict) -> str:
         return _posix_publish(task_root, task_id, payload)
     if not TASK_ID_RE.match(task_id):
         raise SafeWriteError(TASK_INVALID_ID)
-    # 序列化在创建之前完成：序列化失败不创建任何文件（无半成品、无残留）
+    # 序列化在创建之前完成：序列化失败不创建任何文件（无半成品文件、不落盘）
     try:
         data = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     except (TypeError, ValueError):
@@ -454,7 +465,8 @@ def publish_task_file(task_root: str, task_id: str, payload: dict) -> str:
                 return "unchanged"
             raise SafeWriteError(TASK_CONFLICT)
         # 创建成功后写入；任何写入失败 → SafeWriteError(task-write-failed)，
-        # _write_handle 内部已确保 0 字节文件被 NtDeleteFile 清理，无残留。
+        # _write_handle 内部已确保 0 字节文件由相对已验证父 HANDLE 的 NtDeleteFile
+        # 清理（清理失败则失败关闭，不承诺零残留）。
         # fh 的所有权与关闭由 _write_handle 负责（恰好一次），此处不再 _close(fh)。
         _write_handle(fh, data, root_h, fname)
         return "created"
