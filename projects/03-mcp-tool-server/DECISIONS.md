@@ -331,7 +331,7 @@
 
 ## D-027：D-3 设计包 v3 —— 进程模型改为「每进程一次加载」并收敛不可验收承诺（取代 D-026）
 
-- 状态：accepted（设计包 v3；Codex 第三轮复核 PASS，2026-08-08；核心已实现（仅 Windows 可验证部分，未暂存 / 未提交 / 未 push / 未建 PR，见 D-027-impl）；待 Codex 再复核）
+- 状态：accepted（设计包 v3；Codex 第三轮复核 PASS，2026-08-08；核心已实现（仅 Windows 可验证部分，已由本地提交 d14341d 落地，见 D-027-impl）；本次 Codex 复核中）
 - 日期：2026-08-08
 - 背景：D-026（D-3 设计包 v2）经 Codex 复核判为**需修改、不能进入实现**。Codex 判定**已闭环**的部分（v3 原样保留，不得回退）：① `MCP_NOTES_SUBJECT` 仅作文件读取后的相等性断言、不再后备产生 subject；② `identity.json` schema、4096 B 上限、UTF-8 无 BOM、未知字段拒绝；③ fd/HANDLE 链读取、对已打开对象 `fstat`、能力缺失失败关闭、identity 边界映射 `invalid-arguments` 且不改 D-2 对外语义；④ D-025 已正确标为 superseded；⑤ 工作区符合文档阶段（暂存区空、`git diff --check` 通过）。但**进程模型本身有 2 个 P0**，另有 3 个 P1。本轮仍**只做设计与文档，不写代码、不装依赖、不暂存、不提交、不 push、不建 PR**；不进 D-4 / D-5 / D-6。
 - 决定（逐条对应 Codex 意见）：
@@ -342,11 +342,11 @@
   - **P1-3 —— 清理旧决策引用**：`docs/ARCHITECTURE.md:81` 与 `docs/PRD.md:128` 仍指向已 superseded 的 D-025，本轮改为指向 **D-027 / `docs/D-3-design.md` v3**，并显式标注 D-025(v1) / D-026(v2) 为历史、勿按其实施。
   - **改动面与基线（相对 v2 的增量）**：新增文件与源文件改动范围不变（`identity.py` + `tests/test_identity.py`；仅改 `server.py` / `host.py`）；调用点仍为 `TrustedHostController(` **12 处**、`ServerConfig(` **2 处**，但按适配类型细分并逐处点名（主身份 / **第二受控身份根** / 非 `RuntimeIdentity` 拒绝），其中 `tests/test_mcp_integration.py:439` 的 `"bad subject"` 用例改为「传非 `RuntimeIdentity` → `invalid-arguments`」，**非法 subject 字符串的覆盖迁移到「身份文件内 `subject` 非法 → 加载失败关闭」（测试 C-17），断言强度不降低**；demo / evals **新增受控身份根夹具准备代码**（不再是纯机械替换），demo 子进程 env 由 `MCP_NOTES_SUBJECT` 改设 `MCP_NOTES_IDENTITY_FILE`。DoD 由 11 条增至 12 条：第 4 条改为可验收入口范围、第 9 条强调演示保持分离进程 8/8、**新增第 11 条「进程模型自洽」**（文档 / 测试矩阵 / demo 实际形态三者一致）。回归命令新增 `grep -n "StdioServerParameters" demo/mcp_stdio_demo.py`（必须仍存在，证明演示未被改成单进程）。`contracts.py` / `tasks.py` / `safe_task_write*.py` / sqlite 状态机仍**完全不改**（DoD 第 10 条：D-2 两文件 diff 必须为空）。保 196 基线零删除、评估 11/11、演示 8/8。
 - 边界：同 D-021…D-026（不新增依赖；不改 P2/C 安全核心与 sqlite 状态机；不进 D-4 / D-5 / D-6；不创/跑真实 symlink/junction；不碰 `02-agent-research-workflow/` 与 `.workbuddy/`；不 push / PR / 提交）；D2-L1…D2-L4 仍默认 skip、blocked-until-approved。**待用户单独批准事项（本轮整理为 9 项）**：OS 原生凭证绑定、签名清单/PKI、真实多用户环境、**跨进程身份一致性断言机制（IPC/共享凭据/启动握手）**、真实 symlink/junction 身份根夹具、**为 `host.py` 新增 CLI/服务启动入口**、身份文件移至共享/网络位置、**WSL/Linux/远程 runner 真实 POSIX 验证**、公开部署/网络传输。
-- 结果：`docs/D-3-design.md` 重写为 **v3**（文首含 v3 修订说明表 + 折叠的 v2 历史表；§5 全面重写为 M1 进程模型、新增 §5.3 多身份加载与 §5.4 哨兵定位；§3 稳定码前提收敛；§7.1 调用点适配类型表；§7.2 D/E 组重写、测试总数 27→28；§7.4 DoD 11→12 条；§9 待批准 7→9 项）；同步更新 `DECISIONS.md`（D-026 加被取代标记 + 本条）、`docs/PRD.md`（§10 第 1 条 + §11.2 D-3 行）、`docs/ARCHITECTURE.md`（§2 校验边界注、§6 known-limitations、§7 D-3 收紧行）、`STATUS.md`（阶段行 + v2 历史条目标注 + v3 新条目）。**仍为设计包：未实现、未暂存、未提交、未 push、未建 PR**；Codex 第三轮已 PASS（2026-08-08），设计可进入实现阶段，待用户许可后实现。本轮仅运行文档 / Git 检查（`git diff --check` / `git diff --cached --quiet` / `git diff --name-only` / `git status --short`）。
+- 结果：`docs/D-3-design.md` 重写为 **v3**（文首含 v3 修订说明表 + 折叠的 v2 历史表；§5 全面重写为 M1 进程模型、新增 §5.3 多身份加载与 §5.4 哨兵定位；§3 稳定码前提收敛；§7.1 调用点适配类型表；§7.2 D/E 组重写、测试总数 27→28；§7.4 DoD 11→12 条；§9 待批准 7→9 项）；同步更新 `DECISIONS.md`（D-026 加被取代标记 + 本条）、`docs/PRD.md`（§10 第 1 条 + §11.2 D-3 行）、`docs/ARCHITECTURE.md`（§2 校验边界注、§6 known-limitations、§7 D-3 收紧行）、`STATUS.md`（阶段行 + v2 历史条目标注 + v3 新条目）。**原为设计包：未实现、未暂存、未提交**（D-027 设计阶段历史结果记录）；**D-3 实现已由本地提交 d14341d 落地（未 push、未建 PR；本次 Codex 复核中），见 D-027-impl**。Codex 第三轮已 PASS（2026-08-08），设计可进入实现阶段，用户已许可实现。本轮仅运行文档 / Git 检查（`git diff --check` / `git diff --cached --quiet` / `git diff --name-only` / `git status --short`）。
 
 ## D-027-impl：D-3 唯一身份来源与信任边界 · 实现（v3 设计落地，仅 Windows 可验证核心）
 
-- 状态：accepted（已实现 · 仅 Windows 可验证核心；未暂存 / 未提交 / 未 push / 未建 PR；待 Codex 再复核）
+- 状态：accepted（已实现 · 仅 Windows 可验证核心；已由本地提交 d14341d 落地（未 push、未建 PR）；本次 Codex 复核中）
 - 日期：2026-08-08
 - 背景：D-027（v3 设计）经 Codex 第三轮复核 PASS（2026-08-08），用户经 AskUserQuestion 选择「进入实现（仅 Windows 可验证核心）」。本决定记录实现落地与验证结果；范围严格限定 D-3（不进 D-4/D-5/D-6、不碰 P2/`02-agent-research-workflow`/`.workbuddy`/`safe_task_write*.py`、不 push/不建 PR，待 P3 全部阶段完成统一处理），四类 blocked 事项（真实 symlink/junction、WSL/Linux 实机、跨进程一致性机制、OS 凭证/PKI/多用户/公网部署）继续 skip/占位。
 - 实现：
