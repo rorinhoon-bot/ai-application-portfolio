@@ -1,7 +1,7 @@
 # D-2 详细设计：跨平台原子发布一致性（修订版 v5）
 
-> 状态：**v5 为原设计文档；D-2 Windows 可验证实现已存在（提交 `ba17a2d`，未 push）；D-022/D-023 P0/P1 修复均未暂存、未提交，等待 Codex 再复核。** 真实 POSIX 链接专项（D2-L1…D2-L4）仍 blocked-until-approved（仅 Linux/WSL 启用）；不宣称整个 MCP Server 已跨平台（仅发布核心按平台分发）。
-> 当前修复轮约束：只改 D-2；不进入 D-3、不安装依赖、不创建/运行真实 symlink 或 junction、不改 P2、C 核心、MCP Tool/Host、sqlite 状态机、`.workbuddy/`；不 stage/commit/push/PR；变更保持未暂存。
+> 状态：**v5 为原设计文档；D-2 Windows 可验证实现已存在（提交 `ba17a2d`，未 push）；D-022/D-023 P0/P1 修复已由本地提交 `905886a` 统一落地（未 push），Codex 再复核通过（代码/测试/提交范围全绿），仅文档事实过期已在本提交修正。** 真实 POSIX 链接专项（D2-L1…D2-L4）仍 blocked-until-approved（仅 Linux/WSL 启用）；不宣称整个 MCP Server 已跨平台（仅发布核心按平台分发）。
+> D-022/D-023 修复轮约束（当时，已随 `905886a` 落地）：只改 D-2；不进入 D-3、不安装依赖、不创建/运行真实 symlink 或 junction、不改 P2、C 核心、MCP Tool/Host、sqlite 状态机、`.workbuddy/`；当时不 stage/commit/push/PR、变更保持未暂存，现已由本地提交 `905886a` 统一落地（未 push）。
 > 相对 v4 的修订：① §1 POSIX 路径拆分改为**单一规则**（根标记=单个开头 `/`，移除该 `/` 后按单 `/` 分割；拒绝 `//var/tasks`、`/var//tasks`、`/var/tasks/` 尾斜杠、`/var/./tasks`、`/var/../tasks`、相对路径、`task_root="/"` 根本身）；② §4 新增**跨平台共同部署前提**（可信部署管理、非服务主体无写/改名/删权限、服务是唯一写入者、inode 复核仅纵深防御），并收紧失败清理合同（无唯一写入者前提则**禁止按名 unlink**、返回 `task-write-failed` 失败关闭、不承诺零残留/可重试）；③ §5 D2-L2 删除命令 `rm -rf` → `rmdir`，明确 `sub` 为测试刚创建的空目录。
 
 ---

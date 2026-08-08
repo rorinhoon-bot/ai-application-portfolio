@@ -2,7 +2,7 @@
 
 - 状态：`in_progress`
 - 当前唯一目标：完成 Slice A（search_notes 纯标准库数据合同、索引、离线检索与单测）与 Slice B1（句柄级路径安全索引），并已离线验证。
-- 当前阶段：`Slice A 实现与离线验证完成；Slice B1 句柄级路径安全索引已实现并离线验证；Slice B2a 离线 create_task 受控写核心已实现并离线验证；Slice C 阶段（MCP Server/Resource/Host/Client 真实本地 stdio 接入）已实现并验证，已本地提交 `94dd90d`（Codex 安全核心复核通过）；D-1 身份格式与安全字符白名单已实现并提交修正（经 Codex 复核未过后做修正提交）；D-2 跨平台原子发布一致性已实现「Windows 可验证部分」（POSIX 分支 + Windows `reparse→task-root-unsafe` 收紧 + 算法级/mock 单测；真实 symlink/junction 链接夹具 blocked-until-approved，先写默认 skip 占位、不执行），并**经 Codex 两轮 P0/P1 复核修复（均未提交）**，D-3..D-6 规划中，见 DECISIONS **D-019** / **D-020** / **D-021** / **D-022** / **D-023** 与 PRD §11`
+- 当前阶段：`Slice A 实现与离线验证完成；Slice B1 句柄级路径安全索引已实现并离线验证；Slice B2a 离线 create_task 受控写核心已实现并离线验证；Slice C 阶段（MCP Server/Resource/Host/Client 真实本地 stdio 接入）已实现并验证，已本地提交 `94dd90d`（Codex 安全核心复核通过）；D-1 身份格式与安全字符白名单已实现并提交修正（经 Codex 复核未过后做修正提交）；D-2 跨平台原子发布一致性已实现「Windows 可验证部分」（POSIX 分支 + Windows `reparse→task-root-unsafe` 收紧 + 算法级/mock 单测；真实 symlink/junction 链接夹具 blocked-until-approved，先写默认 skip 占位、不执行），并**经 Codex 两轮 P0/P1 复核修复（已由本地提交 `905886a` 统一落地，未 push）**，D-3..D-6 规划中，见 DECISIONS **D-019** / **D-020** / **D-021** / **D-022** / **D-023** / **D-024** 与 PRD §11`
 - 已完成：
   - 从 P2 最终验收提交 `ba9f061891fed3c4920f5cb922e77d247d6cce83` 创建独立分支 `codex/p3-local-mcp-tool-service`。
   - 固定场景为“本地 MCP 笔记检索与受控任务创建服务”。

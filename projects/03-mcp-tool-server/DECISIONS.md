@@ -268,3 +268,14 @@
   - **P1-2 文档状态纠正**：`docs/D-2-design.md` 顶部由「未实现代码」改为准确表述——v5 为原设计；D-2 Windows 可验证实现已存在（提交 `ba17a2d`，未 push）；D-022 修复未暂存、待 Codex 复核；保留真实链接专项仍 blocked-until-approved、不宣称整个 MCP Server 已跨平台。
 - 边界：同 D-021/D-022（不新增依赖；不改动 P2/C；不进 D-3；不创/跑真实 symlink/junction；不碰 `02-agent-research-workflow/` 与 `.workbuddy/`；不 stage/commit/push/PR）；四类 blocked 事项仍待用户单独批准。
 - 结果（2026-08-07 复跑，未提交）：`compileall` 通过；`discover -s tests` 总计 **196 项**（188 执行通过 + 8 链接测试默认跳过，较 D-1 基线 164 净增 32；其中 D-2 相关 32 项：create_task +1 + posix 31，含 4 真实链接占位 skip）；`tests/test_mcp_integration.py` **23 项** + `tests/test_server_entry.py` **6 项** + `tests/test_create_task.py` **62 项** + `tests/test_safe_publish_posix.py` **31 项**（27 执行 + 4 链接占位跳过，较 D-022 +5） + `evals/run_c_phase_eval.py` **11 例** + `demo/mcp_stdio_demo.py` **8 项**断言全部通过；`python -m pip check` → `No broken requirements found.`；`git diff --check` 通过（仅 CRLF 提示）；`git diff --cached --quiet` 退出 0（未暂存）；敏感扫描（`api_key`/`secret`/`password`/`token`/`sk-`/私钥）无真实凭据（仅 `DECISIONS.md` 误命中函数名 `_has_shell_token`，非密钥）。等待 Codex 再复核。
+
+## D-024：D-2 文档事实修正（纯文档 follow-up，本地提交）
+
+- 背景：Codex 对 D-2 收尾提交 `905886a`（`feat(p3): complete D-2 atomic publish consistency`）复核通过——提交恰 7 文件（524 insertions / 137 deletions，无 P2/`.workbuddy/`/`.venv/`）、`compileall` 通过、`unittest` 196 项（188 通过 + 8 跳过）、评估 11/11、演示 8/8、`pip check` 干净、暂存区空、164 基线 mock 路径全绿、敏感扫描无真实凭据。唯一 P1：`docs/D-2-design.md` 顶部（及 STATUS.md / PRD.md 对应表述）仍写 D-022/D-023「未暂存、未提交」，但已于 `905886a` 落地，文档事实过期。
+- 修复（仅文档，不 amend `905886a`、不动代码/测试、不进 D-3）：
+  - `docs/D-2-design.md` 顶部状态：D-022/D-023 已由本地提交 `905886a` 统一落地（未 push），Codex 再复核通过，文档事实已修正；第 4 行「当前修复轮约束」改为「D-022/D-023 修复轮约束（当时，已随 `905886a` 落地）」。
+  - `STATUS.md` 阶段行：「均未提交」→「已由本地提交 `905886a` 统一落地，未 push」。
+  - `docs/PRD.md` §11 D-2 行：「均未提交」→「已由本地提交 `905886a` 统一落地，未 push」，并补 `D-024` 决策引用。
+  - DECISIONS.md 内 D-022/D-023 带日期的「当时未提交」验证记录**保留为历史**，本条目补记后续已由 `905886a` 统一本地提交。
+- 边界：同 D-021/D-022/D-023（不新增依赖；不改 P2/C/代码/测试；不进 D-3；不创/跑真实 symlink/junction；不碰 `02-agent-research-workflow/` 与 `.workbuddy/`；D2-L1…D2-L4 仍默认 skip、blocked-until-approved）。
+- 结果：纯文档提交（4 文件：DECISIONS.md / STATUS.md / docs/D-2-design.md / docs/PRD.md）；`git diff --check` 通过（仅 CRLF 提示）；`git diff --cached --quiet` 退出 0（仅这 4 文件暂存）；未 push、未建 PR、未 amend `905886a`。
