@@ -33,6 +33,10 @@ from mcp.client import Client  # noqa: E402
 from mcp.client.stdio import StdioServerParameters, stdio_client  # noqa: E402
 
 from mcp_notes.host import TrustedHostController  # noqa: E402
+from mcp_notes.identity import (  # noqa: E402
+    load_runtime_identity,
+    write_identity_file,
+)
 from mcp_notes.server import _derive_correlation_id  # noqa: E402
 from mcp_notes.tasks import (  # noqa: E402
     CONFIRMATION_IDENTITY_MISMATCH,
@@ -67,12 +71,19 @@ class StdioMCPIntegrationTests(NetworkBlockedTestCase):
                         os.path.join(_FIXTURES, name),
                         os.path.join(self._notes, name),
                     )
+        # D-3：受控身份根夹具（Server 子进程经 MCP_NOTES_IDENTITY_FILE 加载）
+        identity_dir = os.path.join(self._tmp, "identity")
+        os.makedirs(identity_dir, exist_ok=True)
+        identity_file = os.path.join(identity_dir, "identity.json")
+        write_identity_file(identity_file, "p3-local-service")
+
         env = dict(os.environ)
         env["PYTHONPATH"] = _SRC
         env["MCP_NOTES_DB_PATH"] = self._db
         env["MCP_NOTES_TASK_ROOT"] = self._tasks
         env["MCP_NOTES_NOTES_ROOT"] = self._notes
-        env["MCP_NOTES_SUBJECT"] = "p3-local-service"
+        env["MCP_NOTES_IDENTITY_FILE"] = identity_file
+        # 注意：不再设置 MCP_NOTES_SUBJECT（受控启动器自身不设，见 D-3 §5.3）
         # P0-5：为 Server 子进程启用外部网络阻断（仅测试环境开关）；父进程已由
         # NetworkBlockedTestCase 阻断。stdio Tool / Resource 仍须正常工作。
         env["NETWORK_ACCESS_BLOCKED_IN_TESTS"] = "1"
@@ -349,8 +360,21 @@ class HostControllerTests(NetworkBlockedTestCase):
         self._db = os.path.join(self._tmp, "control.db")
         os.makedirs(self._tasks, exist_ok=True)
         self._subject = "p3-local-service"
+        # D-3：受控身份根夹具（主身份 + service-A 第二身份根）
+        identity_dir = os.path.join(self._tmp, "identity")
+        os.makedirs(identity_dir, exist_ok=True)
+        main_file = os.path.join(identity_dir, "identity.json")
+        write_identity_file(main_file, self._subject)
+        self._main_identity = load_runtime_identity({}, identity_file_path=main_file)
+
+        service_a_dir = os.path.join(self._tmp, "identity-a")
+        os.makedirs(service_a_dir, exist_ok=True)
+        service_a_file = os.path.join(service_a_dir, "identity.json")
+        write_identity_file(service_a_file, "service-A")
+        self._service_a_identity = load_runtime_identity({}, identity_file_path=service_a_file)
+
         self._store = TasksStore(self._db, self._tasks)
-        self._host = TrustedHostController(self._db, self._tasks, self._subject)
+        self._host = TrustedHostController(self._db, self._tasks, self._main_identity)
 
     def tearDown(self):
         try:
@@ -402,7 +426,7 @@ class HostControllerTests(NetworkBlockedTestCase):
         )
         store_b.close()
         self.assertEqual(res.outcome, "pending")
-        host_a = TrustedHostController(self._db, self._tasks, "service-A")
+        host_a = TrustedHostController(self._db, self._tasks, self._service_a_identity)
         ap = host_a.approve(res.confirmation_id)
         self.assertEqual(ap.error_code, CONFIRMATION_IDENTITY_MISMATCH)
         self.assertFalse(
@@ -418,7 +442,7 @@ class HostControllerTests(NetworkBlockedTestCase):
         )
         store_b.close()
         self.assertEqual(res.outcome, "pending")
-        host_a = TrustedHostController(self._db, self._tasks, "service-A")
+        host_a = TrustedHostController(self._db, self._tasks, self._service_a_identity)
         rj = host_a.reject(res.confirmation_id)
         self.assertEqual(rj.error_code, CONFIRMATION_IDENTITY_MISMATCH)
         cx = host_a.cancel(res.confirmation_id)
@@ -434,7 +458,9 @@ class HostControllerTests(NetworkBlockedTestCase):
         self.assertEqual(ap.error_code, CONFIRMATION_REQUIRED)
 
     def test_host_invalid_subject_fails_closed(self):
-        # D-1：Host 配置 subject 非法（含空格）→ 构造即失败关闭
+        # D-3 §5.1 / §7.2 D-21：生产构造器拒绝裸 str（非 RuntimeIdentity）→ 失败关闭。
+        # 非法 subject 字符串的覆盖已迁移到身份文件内 subject 非法 → 加载失败关闭
+        # （见 tests/test_identity.py C-17），断言强度不降低。
         with self.assertRaises(TaskPublishError):
             TrustedHostController(self._db, self._tasks, "bad subject")
 

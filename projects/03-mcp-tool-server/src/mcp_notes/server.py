@@ -47,6 +47,7 @@ from .contracts import (
     SearchHit,
     validate_keyword,
 )
+from .identity import RuntimeIdentity, load_runtime_identity
 from ._network_block import maybe_install_network_block
 from .search import search_notes
 from .index import build_index, read_note_content
@@ -94,33 +95,41 @@ def _derive_correlation_id(title: str, description: str) -> str:
 class ServerConfig:
     """Server 受控本地配置（绝不含客户端可控字段）。
 
-    subject 固定为服务身份，须符合 D-1 精确字符白名单
-    `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（必须由 `MCP_NOTES_SUBJECT` 提供，无默认值；
-    缺失/非法在构造期失败关闭）；
-    correlation_id 由 Server 运行时本地派生，不在此配置。
-    task_root 必须由部署配置预存在（见 D-015）；本模块**绝不**创建任务根或任何祖先目录。`server.main()` 仅创建部署配置指定的 SQLite 状态库父目录（`os.path.dirname(db_path)`），绝不创建 `task_root`。
+    identity 固定为服务身份（`RuntimeIdentity`），须由 D-3 唯一可信来源 `identity.json`
+    经 `load_runtime_identity()` 加载注入（见 docs/D-3-design.md §1）；生产构造器不再
+    接受裸 `subject: str` 作为可注入入口。`MCP_NOTES_SUBJECT` 仅作可选相等性断言，
+    永不产生值。correlation_id 由 Server 运行时本地派生，不在此配置。
+    task_root 必须由部署配置预存在（见 D-015）；本模块**绝不**创建任务根或任何祖先目录。
+    `server.main()` 仅创建部署配置指定的 SQLite 状态库父目录（`os.path.dirname(db_path)`），
+    绝不创建 `task_root`。
     """
 
     db_path: str
     task_root: str
     notes_root: str
-    subject: str
+    identity: RuntimeIdentity
     service_name: str = _SERVICE_NAME
     version: str = _SERVICE_VERSION
 
     def __post_init__(self):
-        # P0-2：subject 必须符合精确字符白名单（D-1）；缺失/非法在构造期失败关闭，
+        # D-3 §5.1：仅接受 RuntimeIdentity；非 RuntimeIdentity（如裸 str）→ 失败关闭。
+        if not isinstance(self.identity, RuntimeIdentity):
+            raise TaskPublishError(INVALID_ARGUMENTS)
+        # D-1 纵深防御：subject 仍须符合精确字符白名单；缺失/非法在构造期失败关闭，
         # 不回退默认主体、不泄露路径/正文/原始异常。
-        if not _valid_subject(self.subject):
+        if not _valid_subject(self.identity.subject):
             raise TaskPublishError(INVALID_ARGUMENTS)
 
     @classmethod
     def from_env(cls, environ: Optional[dict] = None) -> "ServerConfig":
         """从环境变量读取配置，缺省使用虚构相对路径（指向仓库内虚构夹具）。
 
-        `MCP_NOTES_SUBJECT` 为必填：缺失时抛受控 `TaskPublishError(INVALID_ARGUMENTS)`，
-        不再回退默认主体（P0-2）。不读写真实私人笔记；notes_root 默认真实指向本仓库
-        `evals/fixtures/notes-v1`（原创虚构数据），task_root / db_path 默认在
+        D-3：`MCP_NOTES_IDENTITY_FILE` 指向受控身份文件（由可信部署带外预置），
+        经 `load_runtime_identity()` 在 Server 进程 bootstrap 期加载一次注入 `identity`；
+        缺失 / 非法 schema / 相等性断言失败 → 受控 `TaskPublishError(INVALID_ARGUMENTS)`，
+        `main()` 以稳定码失败关闭（server.py:376-378）。`MCP_NOTES_SUBJECT` 仅作可选
+        相等性断言，永不产生值、不作后备。不读写真实私人笔记；notes_root 默认真实指向
+        本仓库 `evals/fixtures/notes-v1`（原创虚构数据），task_root / db_path 默认在
         `.mcp-notes/` 下，须由部署配置预存在（入口不创建任务根）。
         """
         env = environ if environ is not None else dict(os.environ)
@@ -129,11 +138,15 @@ class ServerConfig:
         default_notes = os.path.abspath(
             os.path.join(pkg_dir, "..", "..", "evals", "fixtures", "notes-v1")
         )
+        # D-3 唯一身份来源：受控身份文件（缺省 <state_dir>/identity.json，与 control.db
+        # 共置；缺省路径下无文件 → 失败关闭，不回退默认主体）。
+        identity_file = env.get("MCP_NOTES_IDENTITY_FILE")
+        identity = load_runtime_identity(env, identity_file_path=identity_file)
         config = cls(
             db_path=env.get("MCP_NOTES_DB_PATH", os.path.join(".mcp-notes", "control.db")),
             task_root=env.get("MCP_NOTES_TASK_ROOT", os.path.join(".mcp-notes", "tasks")),
             notes_root=env.get("MCP_NOTES_NOTES_ROOT", default_notes),
-            subject=env.get("MCP_NOTES_SUBJECT"),
+            identity=identity,
         )
         return config
 
@@ -231,7 +244,7 @@ def build_server(config: ServerConfig) -> SafeMCPServer:
     content_provider: Callable[[NoteIndexEntry], str] = (
         lambda entry: read_note_content(entry, notes_root)
     )
-    subject = config.subject
+    subject = config.identity.subject
 
     server = SafeMCPServer(name=config.service_name)
     server._allowed_args = dict(_TOOL_ARG_SPEC)

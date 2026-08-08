@@ -32,6 +32,10 @@ if _SRC not in sys.path:
 from mcp.client import Client  # noqa: E402
 
 from mcp_notes.host import TrustedHostController  # noqa: E402
+from mcp_notes.identity import (  # noqa: E402
+    load_runtime_identity,
+    write_identity_file,
+)
 from mcp_notes.server import ServerConfig, build_server  # noqa: E402
 from mcp_notes.tasks import (  # noqa: E402
     CONFIRMATION_IDENTITY_MISMATCH,
@@ -67,11 +71,27 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
             if n.endswith(".md"):
                 shutil.copyfile(os.path.join(_FIXTURES, n), os.path.join(notes_root, n))
 
+    # D-3：受控身份根夹具（由可信部署带外预置）
+    identity_dir = os.path.join(tmp, "identity")
+    os.makedirs(identity_dir, exist_ok=True)
+    main_identity_file = os.path.join(identity_dir, "identity.json")
+    write_identity_file(main_identity_file, _SUBJECT)
+
+    # 第二受控身份根（评估第 5 项：身份错绑，见 §5.3）
+    identity_b_dir = os.path.join(tmp, "identity-b")
+    os.makedirs(identity_b_dir, exist_ok=True)
+    service_b_file = os.path.join(identity_b_dir, "identity.json")
+    write_identity_file(service_b_file, "service-B-subject")
+
+    # 经显式路径加载两个身份（父进程自身不设置 MCP_NOTES_SUBJECT，见 §5.3）
+    main_identity = load_runtime_identity({}, identity_file_path=main_identity_file)
+    service_b_identity = load_runtime_identity({}, identity_file_path=service_b_file)
+
     config = ServerConfig(
         db_path=db_path,
         task_root=task_root,
         notes_root=notes_root,
-        subject=_SUBJECT,
+        identity=main_identity,
     )
     server = build_server(config)
     exp = gold["expectations"]
@@ -147,7 +167,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
 
     # Host 批准（Tool 外）→ 发布文件
     ha = exp["host_approve"]
-    host = TrustedHostController(db_path, task_root, _SUBJECT)
+    host = TrustedHostController(db_path, task_root, main_identity)
     ap = host.approve(cid)
     published = os.path.exists(os.path.join(task_root, f"{tid}.json"))
     _check(
@@ -162,7 +182,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
     store2 = TasksStore(db_path, task_root)
     ctx2 = TrustedContext(_SUBJECT, "b" * 64)
     res2 = store2.create_task("拒绝任务", "描述", ctx2)
-    host2 = TrustedHostController(db_path, task_root, _SUBJECT)
+    host2 = TrustedHostController(db_path, task_root, main_identity)
     rj = host2.reject(res2.confirmation_id)
     _check(
         "host_reject",
@@ -178,7 +198,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
     store3 = TasksStore(db_path, task_root)
     ctx3 = TrustedContext(_SUBJECT, "d" * 64)
     res3 = store3.create_task("取消任务", "描述", ctx3)
-    host3 = TrustedHostController(db_path, task_root, _SUBJECT)
+    host3 = TrustedHostController(db_path, task_root, main_identity)
     cx = host3.cancel(res3.confirmation_id)
     _check(
         "host_cancel",
@@ -191,7 +211,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
     store3.close()
 
     # Host 未知确认
-    host4 = TrustedHostController(db_path, task_root, _SUBJECT)
+    host4 = TrustedHostController(db_path, task_root, main_identity)
     un = host4.approve("conf-0000000000000000")
     _check(
         "host_unknown",
@@ -205,7 +225,7 @@ async def _run(tmp: str, gold: dict, results: list) -> None:
     store5 = TasksStore(db_path, task_root)
     ctx5 = TrustedContext(_SUBJECT, "e" * 64)
     res5 = store5.create_task("错绑任务", "描述", ctx5)
-    host5 = TrustedHostController(db_path, task_root, "service-B-subject")
+    host5 = TrustedHostController(db_path, task_root, service_b_identity)
     mm = host5.approve(res5.confirmation_id)
     _check(
         "host_identity_mismatch",

@@ -39,6 +39,10 @@ from mcp.client import Client  # noqa: E402
 from mcp.client.stdio import StdioServerParameters, stdio_client  # noqa: E402
 
 from mcp_notes.host import TrustedHostController  # noqa: E402
+from mcp_notes.identity import (  # noqa: E402
+    load_runtime_identity,
+    write_identity_file,
+)
 
 _SUBJECT = "p3-local-service"
 _FIXTURES = os.path.join(_ROOT, "evals", "fixtures", "notes-v1")
@@ -71,12 +75,29 @@ async def _run(tmp: str) -> dict:
                     os.path.join(_FIXTURES, name), os.path.join(notes_root, name)
                 )
 
+    # D-3：受控身份根夹具（由可信部署带外预置，客户端不可写）
+    identity_dir = os.path.join(tmp, "identity")
+    os.makedirs(identity_dir, exist_ok=True)
+    main_identity_file = os.path.join(identity_dir, "identity.json")
+    write_identity_file(main_identity_file, _SUBJECT)
+
+    # 第二受控身份根（演示身份错绑，见 §5.3）
+    attacker_dir = os.path.join(tmp, "attacker")
+    os.makedirs(attacker_dir, exist_ok=True)
+    attacker_identity_file = os.path.join(attacker_dir, "identity.json")
+    write_identity_file(attacker_identity_file, "attacker-subject")
+
+    # 父进程自身不设置 MCP_NOTES_SUBJECT（§5.3 实现陷阱）；经显式路径加载两个身份
+    main_identity = load_runtime_identity({}, identity_file_path=main_identity_file)
+    attacker_identity = load_runtime_identity({}, identity_file_path=attacker_identity_file)
+
     env = dict(os.environ)
     env["PYTHONPATH"] = _SRC
     env["MCP_NOTES_DB_PATH"] = db_path
     env["MCP_NOTES_TASK_ROOT"] = task_root
     env["MCP_NOTES_NOTES_ROOT"] = notes_root
-    env["MCP_NOTES_SUBJECT"] = _SUBJECT
+    # 受控启动器设置身份文件路径；Server 子进程经此加载（不设 MCP_NOTES_SUBJECT）
+    env["MCP_NOTES_IDENTITY_FILE"] = main_identity_file
 
     results: dict = {}
 
@@ -123,7 +144,7 @@ async def _run(tmp: str) -> dict:
         results["create_invalid"] = json.loads(r.content[0].text)
 
     # 4. Host approve (outside tool surface) -> verify published file
-    host = TrustedHostController(db_path, task_root, _SUBJECT)
+    host = TrustedHostController(db_path, task_root, main_identity)
     cid = created.get("confirmation_id")
     tid = created.get("task_id")
     ap = host.approve(cid)
@@ -134,7 +155,7 @@ async def _run(tmp: str) -> dict:
     host.close()
 
     # 7. Host approve unknown confirmation
-    host2 = TrustedHostController(db_path, task_root, _SUBJECT)
+    host2 = TrustedHostController(db_path, task_root, main_identity)
     ap_unknown = host2.approve("conf-0000000000000000")
     _echo("7. Host.approve(未知 confirmation_id) [失败预期]", ap_unknown)
     results["approve_unknown"] = ap_unknown.outcome
@@ -142,7 +163,7 @@ async def _run(tmp: str) -> dict:
 
     # 8. Host 以错绑 subject 批准已知 confirmation_id（演示身份绑定由 Host 配置强制）
     # 复用同一个 cid；用错误 subject 配置的 Host 批准应被身份绑定拒绝
-    host3 = TrustedHostController(db_path, task_root, "attacker-subject")
+    host3 = TrustedHostController(db_path, task_root, attacker_identity)
     ap_mismatch = host3.approve(cid)
     _echo("8. Host.approve(错绑 subject) [失败预期]", ap_mismatch)
     results["approve_mismatch"] = ap_mismatch.error_code
