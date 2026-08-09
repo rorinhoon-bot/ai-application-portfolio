@@ -4,6 +4,16 @@
 
 目标：实现一个本地 MCP Server（**C 阶段已完成**），提供只读 `search_notes(keyword)`、受控写 `create_task(title, description)` 与一个只读 Resource。服务只能检索配置的笔记白名单目录；任务写入必须经过人工确认，且不能覆盖既有任务。
 
+## GitHub 展示与演示
+
+- **真实证据**：240 项 `unittest`（231 通过、9 项真实链接专项默认跳过）；C 阶段评估 11/11；D-6 固定离线评估 40/40；真实本地 stdio 演示 8/8。
+- **演示入口**：运行 `demo/mcp_stdio_demo.py`，展示 Tool 列表、受控检索、待确认任务、Tool 外批准和失败路径；运行 `evals/run_d6_eval.py` 重放 40 例金标准。
+- **面试学习**：MCP 边界、路径安全、`PUBLISHING` 并发状态机、身份文件和 25 个面试问答见 [LLH_Study.md](LLH_Study.md)。
+- **配置模板**：使用 [.env.example](.env.example) 了解本地配置；任务根与身份文件必须由受控部署预创建，不能提交真实 `.env` 或 `identity.json`。
+- **截图状态**：尚未提交截图。请按仓库根目录 [截图清单](../../docs/GITHUB_PUBLISHING_CHECKLIST.md#4-截图与演示清单) 从真实 stdio 演示和 40/40 评估捕获脱敏截图。
+
+> 公开说明边界：默认是本地 stdio；可选 HTTP 仅本机回环。真实 symlink/junction、Linux/WSL 实机验证、真实多用户/OS 身份、跨主体审计隔离和公开部署均未完成。
+
 ## 当前阶段
 
 - 状态：`completed`（P3 的 Slice A、B1、B2a、C 与 D-1 至 D-6 均已完成并本地提交；当前等待用户决定是否统一 push / 建 PR）。
@@ -15,7 +25,7 @@
   - 根配置门拒绝 `..` / UNC / 设备前缀 / 正斜杠混用 / 相对路径；`UNICODE_STRING.Length/MaximumLength` 按真实 UTF-16LE 字节数计算并拒绝超过 `USHORT` 上限；`IO_STATUS_BLOCK` 的 `Status` 用 32 位 `c_long`、`Information` 用指针宽度 `c_size_t`（不写死 `c_ulonglong`）。
   - 失败关闭与事务语义（§9）：reparse 条目 → `_walk` 抛 `not-allowed-reparse`（不 `continue` 跳过）→ `build_index` 整体失败 `index-build-failed`；超大文件使本次构建失败并丢弃新索引，绝不静默跳过或发布部分结果；构建整体失败不发布部分索引。
   - R0/T0 真实机器 ABI 冒烟（根打开 + 枚举 + 相对文件打开 + FileBasicInfo + FileStandardInfo + HANDLE→fd 读取 + 关闭一次 + 清理临时目录），失败即 `unsafe-open-unavailable`，绝不回退到字符串路径方案；链接专项测试（T7–T10）默认跳过（即使设置 `P3_ALLOW_FS_LINK_FIXTURES=1` 也仅为未实现门控占位，真实链接夹具尚不可用，不创建/不运行真实 symlink / junction；预期为拒绝/构建失败而非跳过）。
-- 已实现（Slice B2a 离线 `create_task` 受控写入核心）：新增 `src/mcp_notes/tasks.py` 与 `src/mcp_notes/safe_task_write.py` —— 纯标准库、离线的受控写核心：`create_task` 严格数据合同（NFKC 归一 + 内含 URL/Shell/路径形态拒绝，`title 1..120` / `description 1..1000`）、PENDING/APPROVED/REJECTED/CANCELLED/EXPIRED 人工确认状态机、sqlite3 持久化（`confirmations`/`idempotency`/`audit` 三表，审计不存正文）、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖，任务根/祖先目录经 `open_task_root` 逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 句柄验证，reparse→失败关闭 `task-root-unsafe`，绝不回退字符串路径；冲突不覆盖）。固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）+ `tests/test_create_task.py`（53 项）。`create_task` 只建待确认意图，不写任务文件；批准在 Tool 外由可信本地上下文（`TrustedContext(subject, correlation_id)`）执行。**B2a 不含 MCP SDK/Server/Resource/stdio/Host/Client；这些已由 C 阶段在复用 B2a 离线核心之上实现**。
+- 已实现（Slice B2a 离线 `create_task` 受控写入核心）：新增 `src/mcp_notes/tasks.py` 与 `src/mcp_notes/safe_task_write.py` —— 纯标准库、离线的受控写核心：`create_task` 严格数据合同（NFKC 归一 + 内含 URL/Shell/路径形态拒绝，`title 1..120` / `description 1..1000`）、sqlite3 持久化（`confirmations`/`idempotency`/`audit` 三表，审计不存正文）、任务文件 no-replace 原子发布（Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` 原子无覆盖，任务根/祖先目录经 `open_task_root` 逐级 `NtOpenFile(OBJ_DONT_REPARSE)` 句柄验证，reparse→失败关闭 `task-root-unsafe`，绝不回退字符串路径；冲突不覆盖）。`create_task` 只建待确认意图，不写任务文件；批准在 Tool 外由可信本地上下文（`TrustedContext(subject, correlation_id)`）执行。**当前最终状态机已由 D-4 收紧为 `PENDING → PUBLISHING → APPROVED`；写入失败不盲目回退 `PENDING`，以当前“GitHub 展示与演示”区和 `docs/COMPLETION_AUDIT.md` 为准。**
   - **任务根须预存在**：生产代码不创建任务根或其祖先目录（已移除 `os.makedirs`），只做句柄链原生验证；根不存在 / 非目录 / reparse / 原生不可用 → 失败关闭 `task-root-unsafe`，不写文件。
   - **创建成功后写入失败的处理**：JSON 序列化先于 `NtCreateFile`；文件创建成功后 `WriteFile` / `FlushFileBuffers` 任一失败 → 稳定 `task-write-failed`（不泄露原始异常），文件 HANDLE 只关闭一次，随后对已验证父目录 HANDLE 相对 `NtDeleteFile` 清理（不使用 `os.remove` / `os.replace`）。经 3 项故障注入回归实测：无最终文件、无半成品 / 临时残留，确认记录保持 `PENDING`，移除故障后重放可成功创建。
   - **发布与状态提交顺序**：文件发布成功后再提交 `APPROVED` 状态；发布失败时确认记录保持 `PENDING`。
@@ -24,9 +34,9 @@
 - 当前没有真实模型调用、真实私人笔记或公开部署；仅运行本地 stdio MCP 进程，全部使用原创虚构离线夹具。网络口径：运行时只用本地 stdio 管道、不发起对外网络连接；测试期的网络阻断由 `NETWORK_ACCESS_BLOCKED_IN_TESTS=1` 开关驱动，是测试约束而非生产能力声明。
 - 计划仅使用原创虚构离线笔记夹具；不读取用户私人笔记。
 
-## Slice A 离线验证
+## 历史 Slice A 离线验证记录
 
-Slice A 仅用 CPython 标准库实现，**无需 `.venv`、无需安装任何依赖**。在任意 Python 3.13/3.14 解释器下即可复跑：
+本节保留 Slice A～C 的历史验证口径（如 149 项测试），用于追溯开发过程；当前完整验证以本 README 顶部的 240 项测试、D-6 40/40、`docs/COMPLETION_AUDIT.md` 和下列演示区为准。Slice A 仅用 CPython 标准库实现，**无需 `.venv`、无需安装任何依赖**。在任意 Python 3.13/3.14 解释器下即可复跑：
 
 ```powershell
 Set-Location projects\03-mcp-tool-server
@@ -47,6 +57,6 @@ python -m unittest discover -s tests -v
 - [关键取舍](DECISIONS.md)
 - [当前状态](STATUS.md)
 
-## 后续（D 阶段）
+## 已知限制与后续工作
 
-C 阶段已完成 MCP 真实本地 stdio 接入（复用 B2a 离线核心，仅待 Codex 统一复核后提交）。D 阶段范围见各文档 known-limitations-for-D：如 `TrustedContext` 安全字符白名单、更严格的运行时身份绑定、并发/多用户、跨平台一致性、真实 Host 支持面、公开部署与完整 40 例计划评估套件补齐。任何阶段都不应把笔记正文、模型输出或客户端输入当作路径、命令、URL 或写入授权。
+P3 的 D-1 至 D-6 已完成并本地提交。仍需单独批准并实施：真实 symlink/junction 专项、Linux/WSL 实机验证、真实多用户/OS 凭证绑定、跨主体审计隔离和公开部署。任何后续阶段都不应把笔记正文、模型输出或客户端输入当作路径、命令、URL 或写入授权。
