@@ -6,10 +6,10 @@
 
 | 项目 | 代码/文档证据 | 公开描述状态 | 截图状态 | 发布判断 |
 |---|---|---|---|---|
-| P0 | README、架构、90 测试、10 例评估、学习手册齐全 | 已补展示区 | 待真实运行后捕获 | 可发布；截图补齐后更适合投递 |
-| P1 | README、架构、检索评估、Streamlit 界面、学习手册齐全 | 已补展示区 | 待真实运行后捕获 | 可发布；模型/索引恢复步骤必须保留 |
+| P0 | README、架构、90 测试、10 例评估、学习手册齐全 | 已补展示区 | 已有真实离线验证输出图；CLI 成功生成图可选 | 可发布 |
+| P1 | README、架构、检索评估、Streamlit 界面、学习手册齐全 | 已补展示区 | 已有 CLI 与 Streamlit 图 | 可发布；模型/索引恢复步骤必须保留 |
 | P2 | README、完成审计、SVG 演示、144 测试、12/12 评估齐全 | 已补展示区 | 已有两张 SVG；可选补 UI/终端图 | 可发布 |
-| P3 | README、完成审计、240 测试、40/40 评估、学习手册齐全 | 已补展示区与 `.env.example` | 待真实 stdio 演示后捕获 | 可发布；真实链接、多用户、公开部署必须标限制 |
+| P3 | README、完成审计、240 测试、40/40 评估、学习手册齐全 | 已补展示区与 `.env.example` | 已有真实 stdio 与 D-6 输出图 | 可发布；真实链接、多用户、公开部署必须标限制 |
 
 ## 2. 静态安全检查结果
 
@@ -47,14 +47,14 @@
 | 编号 | 项目 | 要捕获什么 | 如何产生 | README 放置位置 |
 |---|---|---|---|---|
 | S0-1 | 根目录 | GitHub 首页项目矩阵 | 推送后网页截图 | 仓库首页可选，不必提交图片 |
-| S1-1 | P0 | CLI 成功输出的结构化 JSON 摘要 | 使用虚构材料运行 README 中的 CLI | `projects/00-structured-content-generator/docs/assets/` |
-| S1-2 | P0 | 固定评估或测试通过摘要 | 运行 `pytest -q` 与评估命令 | 同上 |
-| S2-1 | P1 | Streamlit 首页、问题、引用卡片 | 恢复已记录语料/索引后运行本地 UI | `projects/01-cited-rag/docs/assets/` |
-| S2-2 | P1 | “证据不足/拒答”结果 | 使用 README 固定示例 | 同上 |
+| S1-1 | P0 | 已有离线测试与评估证据图 | 2026-08-09 真实 `pytest -q` 输出 + 已提交评估记录 | `projects/00-structured-content-generator/docs/assets/offline-verification.svg` |
+| S1-2 | P0 | 可选：CLI 成功结构化 JSON 摘要 | 使用原创材料和本人 API Key；不可截图 Key | 同上 |
+| S2-1 | P1 | 已有 Streamlit 首页、问题、引用卡片 | 已提交 `docs/images/streamlit-cited-answer.png` | README 已引用 |
+| S2-2 | P1 | 已有 CLI 真实结果 | 已提交 `docs/images/cli-demo.png` | README 已引用 |
 | S3-1 | P2 | 已有工作流 SVG | 已提交 `demo/assets/workflow-overview.svg` | README 已引用 |
 | S3-2 | P2 | 已有离线终端演示 SVG | 已提交 `demo/assets/offline-demo-terminal.svg` | README 已引用 |
-| S4-1 | P3 | stdio 演示 8/8 结果 | `demo/mcp_stdio_demo.py` | `projects/03-mcp-tool-server/docs/assets/` |
-| S4-2 | P3 | D-6 评估 40/40 摘要 | `evals/run_d6_eval.py` | 同上 |
+| S4-1 | P3 | 已有 stdio 演示 8/8 结果 | 2026-08-09 真实 `demo/mcp_stdio_demo.py` 输出 | `projects/03-mcp-tool-server/docs/assets/offline-stdio-demo.svg` |
+| S4-2 | P3 | 已有 D-6 评估 40/40 摘要 | 同一真实运行证据图 | 同上 |
 | S4-3 | P3 | `notes://service-info` 或 Tool 列表脱敏结果 | 真实本地 MCP 演示 | 同上 |
 
 捕获完成后：

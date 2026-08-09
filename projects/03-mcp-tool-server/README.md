@@ -10,7 +10,9 @@
 - **演示入口**：运行 `demo/mcp_stdio_demo.py`，展示 Tool 列表、受控检索、待确认任务、Tool 外批准和失败路径；运行 `evals/run_d6_eval.py` 重放 40 例金标准。
 - **面试学习**：MCP 边界、路径安全、`PUBLISHING` 并发状态机、身份文件和 25 个面试问答见 [LLH_Study.md](LLH_Study.md)。
 - **配置模板**：使用 [.env.example](.env.example) 了解本地配置；任务根与身份文件必须由受控部署预创建，不能提交真实 `.env` 或 `identity.json`。
-- **截图状态**：尚未提交截图。请按仓库根目录 [截图清单](../../docs/GITHUB_PUBLISHING_CHECKLIST.md#4-截图与演示清单) 从真实 stdio 演示和 40/40 评估捕获脱敏截图。
+- **运行证据图**：下图来自 2026-08-09 的真实本地 stdio 演示与 D-6 离线评估；仅保留脱敏结果，不含任务路径、私人笔记或身份文件。
+
+![P3 真实本地 stdio 演示输出](docs/assets/offline-stdio-demo.svg)
 
 > 公开说明边界：默认是本地 stdio；可选 HTTP 仅本机回环。真实 symlink/junction、Linux/WSL 实机验证、真实多用户/OS 身份、跨主体审计隔离和公开部署均未完成。
 

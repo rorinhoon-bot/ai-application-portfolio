@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">P3 local MCP stdio demonstration output</title>
+  <desc id="desc">Rendered from actual local offline stdio demo and D-6 evaluation output on 2026-08-09.</desc>
+  <style>
+    .bg{fill:#08111f}.win{fill:#101827;stroke:#334155;stroke-width:2}.bar{fill:#172033}.dot1{fill:#fb7185}.dot2{fill:#fbbf24}.dot3{fill:#4ade80}.chrome{font:500 18px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#94a3b8}.cmd{font:500 20px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#e2e8f0}.line{font:500 20px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#cbd5e1}.ok{fill:#4ade80}.fail{fill:#fb7185}.foot{font:400 16px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#94a3b8}
+  </style>
+  <rect class="bg" width="1440" height="820"/>
+  <rect class="win" x="35" y="35" width="1370" height="750" rx="18"/>
+  <path class="bar" d="M53 35h1334a18 18 0 0 1 18 18v55H35V53a18 18 0 0 1 18-18z"/>
+  <circle class="dot1" cx="76" cy="72" r="9"/><circle class="dot2" cx="108" cy="72" r="9"/><circle class="dot3" cx="140" cy="72" r="9"/>
+  <text class="chrome" x="720" y="79" text-anchor="middle">PowerShell · P3 local MCP stdio demo</text>
+  <text class="cmd" x="70" y="145">PS&gt; .\.venv\Scripts\python.exe demo\mcp_stdio_demo.py</text>
+  <text class="line" x="70" y="210">tools exposed        : ['create_task', 'search_notes']</text>
+  <text class="line ok" x="70" y="258">approve/reject/cancel not exposed: True</text>
+  <text class="line ok" x="70" y="306">search success hits  : 2</text>
+  <text class="line fail" x="70" y="354">search invalid code  : invalid-arguments</text>
+  <text class="line" x="70" y="402">create pending status: pending</text>
+  <text class="line fail" x="70" y="450">create invalid code  : invalid-arguments</text>
+  <text class="line ok" x="70" y="498">published file exists: True</text>
+  <text class="line fail" x="70" y="546">approve mismatch code: confirmation-identity-mismatch</text>
+  <text class="line ok" x="70" y="606">ALL CHECKS PASSED    : True</text>
+  <text class="cmd" x="70" y="662">PS&gt; .\.venv\Scripts\python.exe evals\run_d6_eval.py</text>
+  <text class="line ok" x="70" y="706">D6 EVAL: scenarios: 40 passed: 40 failed: 0</text>
+  <text class="foot" x="70" y="755">Actual offline run 2026-08-09. Local stdio only; fictional fixtures; no external network, model API, private notes, or absolute path shown.</text>
+</svg>

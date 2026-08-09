@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 700" role="img" aria-labelledby="title desc">
+  <title id="title">P0 offline verification terminal output</title>
+  <desc id="desc">Rendered from actual offline test output on 2026-08-09 and committed evaluation evidence. No model API call was made.</desc>
+  <style>
+    .bg{fill:#08111f}.win{fill:#101827;stroke:#334155;stroke-width:2}.bar{fill:#172033}.dot1{fill:#fb7185}.dot2{fill:#fbbf24}.dot3{fill:#4ade80}.chrome{font:500 18px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#94a3b8}.cmd{font:500 20px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#e2e8f0}.line{font:500 20px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#cbd5e1}.ok{fill:#4ade80}.note{fill:#60a5fa}.foot{font:400 16px 'Cascadia Mono','Microsoft YaHei UI',monospace;fill:#94a3b8}
+  </style>
+  <rect class="bg" width="1440" height="700"/>
+  <rect class="win" x="35" y="35" width="1370" height="630" rx="18"/>
+  <path class="bar" d="M53 35h1334a18 18 0 0 1 18 18v55H35V53a18 18 0 0 1 18-18z"/>
+  <circle class="dot1" cx="76" cy="72" r="9"/><circle class="dot2" cx="108" cy="72" r="9"/><circle class="dot3" cx="140" cy="72" r="9"/>
+  <text class="chrome" x="720" y="79" text-anchor="middle">PowerShell · P0 offline verification</text>
+  <text class="cmd" x="70" y="152">PS&gt; .\.venv\Scripts\python.exe -m pytest -q</text>
+  <text class="line" x="70" y="220">........................................................................ [ 80%]</text>
+  <text class="line" x="70" y="260">..................                                                       [100%]</text>
+  <text class="line ok" x="70" y="320">90 passed in 1.45s</text>
+  <text class="line" x="70" y="398">Saved fixed evaluation evidence:</text>
+  <text class="line note" x="70" y="442">improved_v2 · 10 cases · schema pass rate 100%</text>
+  <text class="line note" x="70" y="482">manual fact-support rate 97.3% (109 / 112)</text>
+  <text class="line" x="70" y="550">network=false for test suite · model_api=false for this verification</text>
+  <text class="foot" x="70" y="625">Evidence source: actual command run 2026-08-09 + committed evaluation records. No API key, private material, or absolute path shown.</text>
+</svg>
