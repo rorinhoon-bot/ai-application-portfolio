@@ -2,7 +2,7 @@
 
 面向 AI 应用开发实习与初级岗位的本地作品集。四个项目均有代码、自动测试、固定评估、架构文档与学习复盘；部分项目使用真实模型或模型资产时有明确的成本、数据和运行边界。
 
-> 发布状态：本地 Git 已完成 P0～P3；尚未配置 GitHub remote，未 push、未建 PR。公开前检查见 [GitHub 发布前审计与截图清单](docs/GITHUB_PUBLISHING_CHECKLIST.md)。
+> 发布状态：P0～P3 已上传至 GitHub `main` 分支；未建 PR。发布前检查与后续维护见 [GitHub 发布审计与截图清单](docs/GITHUB_PUBLISHING_CHECKLIST.md)。
 
 ## 作品导航
 
