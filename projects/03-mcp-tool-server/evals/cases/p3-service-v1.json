@@ -1,0 +1,9 @@
+{
+  "name": "P3 完整离线评估案例 v1",
+  "source_snapshot_id": "p3-fictional-fixtures-v1-d6",
+  "total_cases": 40,
+  "case_ids": [
+    "C01-tools", "C02-no-confirm-tools", "C03-search", "C04-search-invalid", "C05-pending", "C06-create-invalid", "C07-approve", "C08-reject", "C09-cancel", "C10-unknown", "C11-identity-mismatch",
+    "D06-12-valid-pending", "D06-13-pending-no-file", "D06-14-invalid-title", "D06-15-invalid-description", "D06-16-create-replay", "D06-17-idempotency-conflict", "D06-18-approve-created", "D06-19-approve-replay", "D06-20-reject", "D06-21-cancel", "D06-22-expiry", "D06-23-invalid-confirmation", "D06-24-unknown-confirmation", "D06-25-context-mismatch", "D06-26-task-id-shape", "D06-27-approved-state", "D06-28-reject-no-file", "D06-29-cancel-no-file", "D06-30-audit-minimal", "D06-31-path-text-rejected", "D06-32-url-text-rejected", "D06-33-control-text-rejected", "D06-34-publishing-approve-recovery", "D06-35-publishing-reject-safe", "D06-36-error-no-raw-text", "D06-37-invalid-context-rejected", "D06-38-content-hash-stable", "D06-39-network-free-source", "D06-40-case-count"
+  ]
+}

@@ -1,6 +1,6 @@
 # P3：本地 MCP 笔记检索与受控任务创建服务
 
-系统集成作品。规划基线已完成；`search_notes` 的纯标准库核心（数据合同、索引登记、离线检索、单测）已实现并通过离线验证；路径安全、`create_task` 离线核心已实现；**C 阶段已完成 MCP Server / Resource / Host / Client 真实本地 stdio 接入**（`mcp==2.0.0`，本地运行，不调用模型、不读私人笔记；运行时只用本地 stdio 管道、不发起对外网络连接，测试中父进程与 Server 子进程均默认阻断外部网络）。C 阶段已按 Codex 复核意见完成 P0/P1 一次性修复（见 `DECISIONS.md` D-018）。
+系统集成作品。P3 已完成：只读 `search_notes`、受控 `create_task`、Tool 外人工确认、只读 Resource、stdio 与受限本机回环 streamable-HTTP。默认 stdio；HTTP 必须显式开启且只允许 `127.0.0.1`/`::1`，不公开部署、不调模型、不读私人笔记。当前验收：240 项 unittest（231 通过 + 9 默认跳过）、C 评估 11/11、D-6 固定离线评估 40/40、stdio 演示 8/8。
 
 目标：实现一个本地 MCP Server（**C 阶段已完成**），提供只读 `search_notes(keyword)`、受控写 `create_task(title, description)` 与一个只读 Resource。服务只能检索配置的笔记白名单目录；任务写入必须经过人工确认，且不能覆盖既有任务。
 

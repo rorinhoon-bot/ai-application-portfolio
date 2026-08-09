@@ -427,3 +427,9 @@
 - 决定：stdio 保持默认。仅部署配置显式选择 `streamable-http` 时启用 MCP SDK v2 内置 HTTP；只允许 `127.0.0.1` 或 `::1`、端口 `1..65535` 与固定 `/mcp` 端点。SSE、未知 transport、空 transport、`0.0.0.0`、局域网地址和非法端口均复用 `invalid-arguments` 失败关闭。
 - 取舍：不额外启用 legacy SSE，避免重复传输面；不新增依赖，复用已锁定 SDK 的传递依赖。此能力仅服务本机 Host/Client 互通，绝不构成公网部署或多用户授权。
 - 验证：新增 `tests/test_d5_transport.py` 四项测试：默认 stdio、配置拒绝三类、以及真实 127.0.0.1 streamable-HTTP Client 的 `list_tools` 与 `create_task` PENDING 路径。确认 Tool 列表仍只有 `search_notes` / `create_task`，确认动作不暴露。当前总测试 239 项（230 通过 + 9 skip）。
+
+## D-031：D-6 40 例固定离线评估
+
+- 状态：accepted（已实现，待本地提交；不 push、不建 PR）。
+- 决定：40 例是总数，保留并真实复跑 C 阶段既有 11 例，新增 29 例；案例、金标准、运行器和结果基线分别版本化，全部只用原创虚构夹具与临时受控目录。禁止模型输出、真实私人笔记、外网、真实链接夹具进入评估。
+- 验证：`evals/run_d6_eval.py` 真实运行 40/40；`tests/test_d6_eval.py` 自动验证运行器，当前 unittest 240 项（231 通过 + 9 skip）。安全指标：未授权写入 0、敏感泄露 0、外网尝试 0；C 评估 11/11 与 stdio 演示 8/8 保持通过。

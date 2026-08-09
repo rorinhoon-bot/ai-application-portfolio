@@ -2,7 +2,7 @@
 
 - 版本：v0.3（Slice A / B1 / B2a 离线核心已落地；C 阶段已完成 MCP 真实本地 stdio 集成与固定离线评估）
 - 日期：2026-08-01（B2a 更新 2026-08-02）
-- 当前状态：方案已定义；Slice A 已落地 `evals/fixtures/notes-v1/` 原创虚构夹具与 38 项 stdlib 离线单测（含默认网络阻断底座）；**Slice B2a 已落地受控写核心固定金标准 `evals/gold/tasks-core-v1.json`（12 场景）与 `tests/test_create_task.py`（53 项）**。完整的 40 例固定套件、`evals/cases`、`evals/results` 基线仍未实施；**MCP 真实本地 stdio 运行已由 C 阶段以 `evals/gold/c-phase-v1.json`（11 场景）+ `evals/run_c_phase_eval.py` + `tests/test_mcp_integration.py`（**20 项** stdio 集成测试）+ `tests/test_server_entry.py`（**2 项**入口 / 配置测试）+ `demo/mcp_stdio_demo.py`（8 项成功 + 失败演示）落地并验证**（属 C 阶段；D-018 修复后计数已更新；注：20 项 / 2 项为 C 阶段历史基线，当前统一基线 196 项 / 23 集成 / 6 入口，见 STATUS）。
+- 当前状态：D-6 已冻结并真实运行完整 40 例：`evals/cases/p3-service-v1.json`、`evals/gold/p3-service-v1-gold.json`、`evals/run_d6_eval.py` 与 `evals/results/p3-service-v1-baseline.json`。结果为 40/40；其中前 11 例原样复跑 C 阶段金标准，新增 29 例覆盖受控写、身份、PUBLISHING 恢复、参数拒绝和最小审计。所有资料原创、虚构、离线、确定性；不读私人笔记、不调模型、不访问外网。
 
 ## 1. 数据边界与快照
 
