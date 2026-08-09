@@ -767,12 +767,12 @@ class TestWriteFailureAfterCreate(NetworkBlockedTestCase):
         )
         self.assertEqual(_count_task_files(self.task_root), 1)
 
-    def test_approve_write_failure_keeps_pending_and_retry_creates(self):
+    def test_approve_write_failure_keeps_publishing_and_retry_creates(self):
         if not safe_task_write._NATIVE_AVAILABLE:
             self.skipTest("native layer unavailable")
         r = self.store.create_task("标题", "描述内容。", self.tc)
         self.assertEqual(r.outcome, "pending")
-        # 注入刷新失败：approve 返回 task-write-failed，确认记录保持 PENDING
+        # 注入刷新失败：phase 1 已提交，确认记录必须保持 PUBLISHING 失败关闭。
         with mock.patch.object(safe_task_write.kernel32, "FlushFileBuffers", lambda h: 0):
             res = self.store.approve(r.confirmation_id, self.tc)
         self.assertEqual(res.error_code, TASK_WRITE_FAILED)
@@ -781,13 +781,13 @@ class TestWriteFailureAfterCreate(NetworkBlockedTestCase):
         self.assertEqual(_count_task_files(self.task_root), 0)
         self.assertFalse(_has_temp_leftovers(self.task_root))
         self.assertEqual(sorted(os.listdir(self.task_root)), [])
-        # 确认记录保持 PENDING（未提交 APPROVED）
+        # 确认记录不得臆测回滚为 PENDING（未提交 APPROVED）。
         cur = self.store._conn.cursor()
         row = cur.execute(
             "SELECT status FROM confirmations WHERE confirmation_id=?",
             (r.confirmation_id,),
         ).fetchone()
-        self.assertEqual(row[0], "PENDING")
+        self.assertEqual(row[0], "PUBLISHING")
         # 移除故障后重试可成功创建
         res2 = self.store.approve(r.confirmation_id, self.tc)
         self.assertEqual(res2.outcome, "created")
@@ -799,7 +799,7 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
 
     - 冲突只读失败（P0-1）：冲突文件存在 + 原生冒烟完成后，分别注入已验证 HANDLE → fd
       只读转换的 `open_osfhandle` 失败 / `fdopen` 失败 / `read` 失败；`approve` 必须返回
-      稳定码、confirmation 仍 PENDING、无原始异常文本，且**退出 mock 后冲突文件可被立即
+      稳定码、confirmation 保持 PUBLISHING、无原始异常文本，且**退出 mock 后冲突文件可被立即
       删除**（证明 `_read_existing_json` 已精确释放仍归本函数所有的 HANDLE/fd，无遗留锁）。
     - 删除失败（P0-2）：NtCreateFile 成功后写入失败触发清理路径，但 `NtDeleteFile` 返回
       非成功 NTSTATUS；清理失败**不得静默吞掉**，必须返回脱敏稳定 task-write-failed，
@@ -842,13 +842,13 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
         # 不抛原始异常：返回稳定错误码 task-write-failed
         self.assertEqual(res.error_code, TASK_WRITE_FAILED)
         self.assertEqual(res.task_id, r.task_id)
-        # 确认记录保持 PENDING（未提交 APPROVED）
+        # phase 1 已持久化，失败时保留 PUBLISHING（未提交 APPROVED）。
         cur = self.store._conn.cursor()
         row = cur.execute(
             "SELECT status FROM confirmations WHERE confirmation_id=?",
             (r.confirmation_id,),
         ).fetchone()
-        self.assertEqual(row[0], "PENDING")
+        self.assertEqual(row[0], "PUBLISHING")
         # 不泄露原始异常文本（无 "injected-fault" / "OSError"）
         self.assertNotIn("injected-fault", repr(res))
         self.assertNotIn("OSError", repr(res))
@@ -875,7 +875,7 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
             "SELECT status FROM confirmations WHERE confirmation_id=?",
             (r.confirmation_id,),
         ).fetchone()
-        self.assertEqual(row[0], "PENDING")
+        self.assertEqual(row[0], "PUBLISHING")
         self.assertNotIn("injected-fdopen-fault", repr(res))
         self.assertNotIn("OSError", repr(res))
         # 无锁证据：退出 mock 后冲突文件可被立即删除（fd 已精确关闭一次，无遗留锁）
@@ -913,7 +913,7 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
             "SELECT status FROM confirmations WHERE confirmation_id=?",
             (r.confirmation_id,),
         ).fetchone()
-        self.assertEqual(row[0], "PENDING")
+        self.assertEqual(row[0], "PUBLISHING")
         self.assertNotIn("injected-read-fault", repr(res))
         self.assertNotIn("OSError", repr(res))
         # 无锁证据：退出 mock 后冲突文件可被立即删除（真实 fd 已通过 f.close() 释放，无遗留锁）
@@ -938,13 +938,13 @@ class TestConflictReadonlyAndDeleteFailure(NetworkBlockedTestCase):
         # 清理失败不得静默吞掉：返回脱敏稳定码，绝不回显 NTSTATUS / 路径
         self.assertEqual(res.error_code, TASK_WRITE_FAILED)
         self.assertEqual(res.task_id, r.task_id)
-        # 确认记录保持 PENDING（失败关闭，未提交 APPROVED）
+        # 失败关闭：保留 PUBLISHING，绝不猜测清理成功后回退 PENDING。
         cur = self.store._conn.cursor()
         row = cur.execute(
             "SELECT status FROM confirmations WHERE confirmation_id=?",
             (r.confirmation_id,),
         ).fetchone()
-        self.assertEqual(row[0], "PENDING")
+        self.assertEqual(row[0], "PUBLISHING")
         # 审计仅保存稳定码：不得回显原始 NTSTATUS / 路径文本
         body = repr(res) + " " + res.error_code
         self.assertNotIn("0xC0000043", body)

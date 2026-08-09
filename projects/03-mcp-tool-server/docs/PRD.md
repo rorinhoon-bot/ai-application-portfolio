@@ -45,7 +45,7 @@
 | 首次返回 | `PENDING_CONFIRMATION`、服务生成 `task_id`、`confirmation_id`、内容哈希、过期时间；不写任务文件 |
 | 写入前提 | 可信本地人工确认界面显示冻结标题、描述、任务 ID、到期时间后，使用同一主体批准 |
 | 批准结果 | 原子创建受控目录内程序派生的 `<task_id>.json`；**文件发布成功后再提交 `APPROVED` 状态**，返回 `CREATED` 或幂等 `UNCHANGED` |
-| 发布失败 | 确认记录保持 `PENDING`，返回稳定 `task-write-failed`（或 `task-root-unsafe`）；**清理成功（`NtDeleteFile` 返回 `STATUS_SUCCESS`）则磁盘不留最终文件、半成品或临时残留，移除故障后可重放并成功创建；清理失败（非成功 NTSTATUS）则失败关闭，仅返回稳定 `task-write-failed`，不承诺零残留或自动重试成功** |
+| 发布失败 | D-4 两阶段发布后确认记录保持 `PUBLISHING`，返回稳定 `task-write-failed`（或 `task-root-unsafe`）；不由写层稳定码推断“无残留”或回退 `PENDING`。后续只可受控恢复为 `APPROVED`，负向终态不得覆盖。 |
 | 任务根 | 必须是部署配置中**预存在**的受控目录；服务不创建任务根或其祖先目录，仅做句柄链验证，验证不通过 → `task-root-unsafe` |
 | 拒绝/取消 | 返回稳定终态，不写任务文件 |
 
@@ -126,11 +126,11 @@ Resource URI 为固定程序常量 `notes://service-info`。内容只说明 Tool
 ## 10. known-limitations-for-D（C 阶段已知边界，待 D 阶段处理）
 
 - `TrustedContext` 的 `subject`/`correlation_id` 已由 **D-1** 收紧为精确字符白名单（`subject` 须匹配 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`、`correlation_id` 须为服务端派生的 `^[0-9a-f]{64}$`，缺失/非法在配置启动失败关闭）；唯一身份来源已由 D-3 收口为受控身份根下部署预置的 identity.json；MCP_NOTES_SUBJECT 仅作文件安全读取后的可选相等性断言，永不产生或后备 subject。该信任边界由 **D-3** 设计收口，**D-3 实现已由本地提交 `d14341d` 落地（未 push、未建 PR；本次 Codex 复核中）**（见 `docs/D-3-design.md` **v3**、DECISIONS **D-027**；D-025(v1) 与 D-026(v2) 均已 superseded，属历史引用，勿按其实施）。
-- 单进程、非并发、非多用户；`TasksStore` 连接为每 handler 重建，未做连接池或跨进程并发控制。
+- D-4 已实现跨进程确认消费：`BEGIN IMMEDIATE` 写预约、条件 `UPDATE` + `rowcount`、D-2 no-replace 与持久化 `PUBLISHING` 两阶段；WAL/连接池/Python 锁均不作为跨进程正确性方案。真实多用户（多 subject / 多 OS 账户 / per-subject task_root / audit subject 列）仍 blocked-until-approved。
 - 仅 Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` no-replace 发布路径经实机验证；跨平台一致性（非 Windows 的等价原子无覆盖发布）待 D 阶段补。
 - 真实 Host 支持面（第三方 MCP Client 兼容性、传输扩展如 SSE/HTTP）未在 C 阶段评估。
 - 公开部署、生产多用户身份、并发负载、真实模型质量不在本次范围。
-- 固定评估目前以原创虚构夹具 + 11 例 C 阶段离线评估 + **23 项** stdio 集成测试 + **6 项**入口/配置测试 + 8 项演示断言覆盖；完整 40 例计划套件（`evals/cases` / `evals/results` 基线）仍未实施，可在 D 阶段补齐。（注：20 项 / 2 项为历史 C 阶段基线；当前基线为 196 项 / 23 集成 / 6 入口，见 ARCHITECTURE §7。）
+- 固定评估目前以原创虚构夹具 + 11 例 C 阶段离线评估 + **23 项** stdio 集成测试 + **6 项**入口/配置测试 + 8 项演示断言覆盖；完整 40 例计划套件（`evals/cases` / `evals/results` 基线）仍未实施，可在 D 阶段补齐。（注：20 项 / 2 项为历史 C 阶段基线；当前基线为 226 项（217 执行 + 9 skip）/ 23 集成 / 6 入口，见 ARCHITECTURE §7。）
 
 ## 11. D 阶段计划（规划中，待逐片实现与 Codex 复核）
 
@@ -146,7 +146,7 @@ D 阶段不扩大 C 阶段已冻结的安全合同与读写边界（§3 / §4）
 | **D-1 身份格式与安全字符白名单** | 给 `TrustedContext.subject` / `correlation_id` 实现精确身份格式校验（当前仅拦 C0·DEL 控制字符） | 定义并落地精确身份格式：① `subject` 精确格式 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`（首字符字母/数字，后续 0..127 个字母/数字/`.`/`_`/`-`，总长 1..128）；非法字符（空格、CJK、控制字符、注入字符等）或长度越界在**配置启动时**即稳定失败关闭；② `correlation_id` 必须符合服务端派生格式 `^[0-9a-f]{64}$`（由 `_derive_correlation_id` 经 `hashlib.sha256(...).hexdigest()` 产生，无前缀），客户端永远不能直接提供或覆盖（Tool 参数中不含该字段，Host 只从 `TasksStore.lookup_correlation_id(confirmation_id)` 取得）；③ Tool 参数 `title`/`description` 非法或构造 `TrustedContext` 失败时稳定返回 `invalid-arguments`，不泄露格式细节；④ 完全保留 C 阶段合同（服务端按 NFKC 规范化 title/description 确定性派生 correlation_id；Tool 外 Host 自身受控 subject 审批）。`tests/test_create_task.py` 与 `tests/test_mcp_integration.py` 新增回归覆盖：subject 非法字符拒收、超长 subject 拒收、配置启动缺失/非法 subject 失败关闭、correlation_id 无法从客户端注入；既有 B2a 金标准（ASCII 测试主体）与 C 阶段 11 例评估不受影响 | 低；改 `tasks.py` 校验 + `host.py` / `server.py` 派生点 |
 | **D-2 跨平台原子发布一致性** | 非 Windows 的等价 no-replace 发布（fd 链式 `openat`+`O_NOFOLLOW`+`fstat`） | 新增 POSIX 分支：从**受控根目录 fd** 开始，每一级目录都用**已验证父 fd** 经 `openat(dir_fd=..., O_NOFOLLOW)` 打开，再 `fstat` 验证其确为目录且未 reparse/junction；最终文件也相对**已验证父 fd** 用 `open(O_CREAT\|O_EXCL\|O_NOFOLLOW)` 创建。禁止任何字符串路径回退，禁止把 `realpath` 用于安全判断（`realpath` 不能作为路径安全权威，`O_NOFOLLOW` 只覆盖单次打开组件）。平台缺少必要能力（如无法获取根 fd / 不支持 `O_NOFOLLOW` / `openat` 不可用）时稳定 `task-root-unsafe` 失败关闭。新增跨平台测试（Linux/macOS runner 或 WSL 实机），发布失败语义与 Windows 一致。**真实 symlink/junction 夹具须先获用户单独批准**；未批准时绝不创建、绝不运行。未来测试覆盖明确为四类：最终文件链接逃逸、祖先目录链接逃逸、检查后祖先替换（TOCTOU）、目标已存在冲突不覆盖 | 中；需 CI 矩阵 / 实机；不降级字符串路径方案。**（2026-08-07：Windows 可验证部分已实现——新增 `safe_task_write_posix.py` POSIX 分支 + Windows `reparse→task-root-unsafe` 收紧 + 31 项算法级/mock 单测（27 执行 + 4 链接占位 skip）；真实链接夹具 D2-L1…L4 仍为默认 skip 占位，blocked-until-approved；设计见 `docs/D-2-design.md` v5、决策见 DECISIONS D-021；2026-08-07 经 Codex 两轮 P0/P1 复核修复（D-022：5 P0 + 1 P1；D-023：3 P0 + 2 P1，已由本地提交 `905886a` 统一落地，未 push），单测总计 196（188 通过 + 8 skip），决策见 DECISIONS D-022 / D-023 / D-024）** |
 | **D-3 唯一身份来源与信任边界** | 确定唯一身份来源、信任边界、缺失/不可用失败关闭（**设计 v3 已定，已由本地提交 d14341d 落地（未 push、未建 PR；本次 Codex 复核中）**） | **设计 v3**（见 `docs/D-3-design.md` v3、DECISIONS **D-027**；v1/D-025「需修改、3 个 P0」与 v2/D-026「需修改、2 个 P0 + 3 个 P1」均已被取代，勿按其实施）：**唯一值来源 = 受控身份根下部署预置的 `identity.json`，必须存在**；`MCP_NOTES_SUBJECT` **永不产生最终 subject、不作后备**，仅在文件安全读取成功后作可选相等性断言（不等即失败关闭），不变量为「删除该 env 后加载结果逐字节相同」。**安全读取算法**：`<name>` 单组件白名单校验 → fd/HANDLE 链打开身份根（Windows `OBJ_DONT_REPARSE` HANDLE 链 / POSIX `O_NOFOLLOW`+`fstat` fd 链，**只读复用 D-2 原语、零修改 `safe_task_write*.py`**）→ 相对已验证父句柄打开文件 → 对**已打开 fd** 做 `fstat` 类型断言（防检查后替换）→ 限长 4096 B 读取 → 严格 schema（`version==1` / `subject` D-1 白名单 / `subject_kind=="deployment-provisioned"` / 未知键拒绝）；**禁字符串路径读取与 `realpath` 安全判断；能力缺失即失败关闭**。**身份注入 = M1「每进程一次加载」（v3 修正，支持现有分离进程 stdio 演示）**：`load_runtime_identity()` 是无全局状态、可重入的纯加载函数，每个参与进程在自身 bootstrap 处调用一次 → 不可变 `RuntimeIdentity`（私有构造哨兵仅作受信代码内类型/API 防呆，非安全边界）→ 注入本进程 `ServerConfig` 或 `TrustedHostController`，**生产构造器不再接受裸 `str` subject**；单进程内嵌（tests/evals）是 M1 特例。**一致性论据不是「同一对象实例」**（v2 说法已废止，与 spawn 子进程的演示冲突），而是「同一受控身份文件 + 确定性加载算法 ⇒ 同 subject 值」的部署级保证；**跨进程「启动期一致性断言」明确不支持**（无通道、零网络不引入 IPC、两次读取间文件可变），两进程被指向不同文件或文件变动时，唯一保护是请求期 `confirmation-identity-mismatch`。信任边界：subject 从不作为 Tool 参数 / 模型文本 / MCP 消息字段，Host 用自身 `RuntimeIdentity` 重建 `TrustedContext`、记录不提供权威 subject。全部身份失败复用 `invalid-arguments`（**不新增 `identity-unavailable`**），前提收敛为当前可验收的两类入口——`server.main()`（已实现稳定码退出，`server.py:376-378`）与受控启动器（demo/evals/测试夹具）只输出稳定码（DoD 第 4 条 + 测试 27/28；`host.py` 是库类、本轮不新增 `main()`，另有前瞻性条款约束未来 Host 入口）。部署前提：受控身份根客户端不可写、`MCP_NOTES_IDENTITY_FILE` 只来自受控启动器；**客户端可控整个进程环境的部署不在 D-3 信任模型内**。改动面：新增 `identity.py` + `tests/test_identity.py`；仅改 `server.py`/`host.py` 与 `TrustedHostController(`/`ServerConfig(` 调用点（v3 按适配类型细分：主身份 6 / 第二受控身份根 2[`demo/mcp_stdio_demo.py:145`+`evals:208`] / 非 `RuntimeIdentity` 拒绝 1[`tests/test_mcp_integration.py:439`] / `ServerConfig(` 2；demo/evals 新增受控身份根夹具准备代码）；`contracts.py`/`tasks.py`/`safe_task_write*`/sqlite 状态机零修改。多用户 / OS 凭证绑定 / PKI / 跨进程身份一致性（IPC/共享凭据/启动握手）/ 真实链接身份根夹具 / 为 host.py 新增 CLI / 公网部署 列为需用户单独批准（blocked-until-approved；详见 `docs/D-3-design.md` §9）。**当前设计已完成、已实现（仅 Windows 可验证核心）、已由本地提交 d14341d 落地（未 push、未建 PR；本次 Codex 复核中）；不破坏 D-1/D-2 合同与 196 测试基线** | 中；涉及配置与部署文档 |
-| **D-4 并发 / 多用户隔离** | 跨进程并发与多用户隔离（事务条件更新，非连接池/WAL） | DoD 必须要求：① 确认消费使用**事务中的条件更新**，只允许 `PENDING` → 终态一次（SQL `UPDATE ... WHERE status='PENDING'` 影响行数判定）；② 跨进程并发批准同一 confirmation 时，**只允许一个发布**（其余返回 `confirmation-already-consumed` 且绝不写第二个文件）；③ 其他调用返回稳定已消费结果且绝不写第二个文件；④ 多用户之间确认记录、任务文件、审计事件均隔离（按 subject 分隔，不串号）。**不得把“连接池 / WAL”描述为并发安全方案**（它们只是 IO 吞吐，不提供原子消费）。并发竞态测试（多进程同时消费同一 confirmation → 仅一个成功发布）为 DoD 必过项 | 高；需仔细设计事务/锁 |
+| **D-4 并发 / 多用户隔离** | 跨进程并发确认消费（真实多用户仍 blocked） | 已实现：`PENDING → PUBLISHING → APPROVED`；每个终态动作先 `BEGIN IMMEDIATE` 权威重读，条件 `UPDATE` + `rowcount` 为纵深，D-2 no-replace 保证物理文件至多一次。`PUBLISHING` 只能完成 `APPROVED` 或失败关闭，绝不写负向终态；审计在主提交后独立 best-effort 写入。新增 9 个离线确定性回归（含双进程 approve、COMMIT 恢复、PUBLISHING 防负向终态），不用 sleep。真实多用户 / 跨 subject 审计隔离仍 blocked-until-approved。 | 中；实现待本地提交 |
 | **D-5 真实 Host 支持面 / 传输扩展** | 第三方 MCP Client 兼容与可选 SSE/HTTP | 传输扩展**默认关闭**，仅允许**本地回环绑定**（`127.0.0.1`/`::1`），**绝不允许公网监听**；复用 SDK 已含 `starlette`/`uvicorn` 提供 SSE/streamable-HTTP 入口（不新增依赖）；`list_tools` / 协议兼容性冒烟；`approve`/`reject`/`cancel` **仍绝不暴露为 Tool**，`correlation_id` 仍只来自服务端持久化记录。公网监听视为安全违规，必须在配置与测试中显式禁止并断言 | 中；复用 SDK 已含依赖 |
 | **D-6 补齐评估基线** | 固定离线评估扩展到 40 例 | **总数 40 例，包含既有 11 例 C 阶段基线**（即新增 29 例）；保留 `evals/gold/c-phase-v1.json` 与 `evals/run_c_phase_eval.py` 的 11 例既有结果，**不改写既有结果**；新增 `evals/cases/`、`evals/results/` 基线，脚本支持加载全部 40 例；通过率 / 安全拒绝率 / 未授权写入数 / 幂等正确率均达 §8 目标 | 低；纯评估扩展，不碰安全逻辑 |
 | 公开部署 | 生产多用户身份、并发负载、真实模型质量 | **不在 D 阶段默认范围**：当前安全模型依赖本地可信边界、不对外暴露写权限；若要做需独立风险评估与 Codex 批准 | 高；推迟 |
@@ -155,14 +155,14 @@ D 阶段不扩大 C 阶段已冻结的安全合同与读写边界（§3 / §4）
 建议从 **D-1 身份格式与安全字符白名单** 起步：最内聚、最贴近已通过 Codex 复核的安全核心、低风险、易补测试，且立刻消除 §10 中“未实现安全字符白名单”的明确缺口。随后按 D-2 → D-3 → D-4 → D-5 → D-6 推进；D-4 / D-5 视需要再排期。
 
 ### 11.4 每片完成定义
-- 新环境按 README 启动；核心测试通过（总 196 + 本片新增；注：149 为历史 C 阶段基线，D-1 后升 164、D-2 后升 196）。
+- 新环境按 README 启动；核心测试通过（总 235；注：149 为历史 C 阶段基线，D-1 后升 164、D-2 后升 196、D-3 后升 226、D-4 后升 235）。
 - 本片固定评估有基线与结果；失败路径已验证。
 - 架构 / 取舍能被解释；不引入密钥 / 私密数据 / 大模型文件进 Git。
 - 每片独立提交并交 Codex 复核；**不 push**，直到 P3 全部阶段完成（用户决定统一处理）。
 
 ### 11.5 统一验证闸门（每片必保留并复跑当前统一基线）
-每实现一个 D 切片，除本片新增测试外，**必须保留并复跑当前统一基线（196 项 / 23 项集成 / 6 项入口）**，全部通过方可提交（149/20/2 仅为历史 C 阶段基线注释，见各下行）：
-- `unittest` 当前 **196 项**全绿（188 执行通过 + 8 链接测试默认跳过；后续仅按新增测试增长，不破坏既有；注：149 为历史 C 阶段基线，D-1 后升 164、D-2 后升 196）；
+每实现一个 D 切片，除本片新增测试外，**必须保留并复跑当前统一基线（235 项 / 23 项集成 / 6 项入口）**，全部通过方可提交（149/20/2 仅为历史 C 阶段基线注释，见各下行）：
+- `unittest` 当前 **235 项**全绿（226 执行通过 + 9 链接测试默认跳过；后续仅按新增测试增长，不破坏既有；注：149 为历史 C 阶段基线，D-1 后升 164、D-2 后升 196、D-3 后升 226、D-4 后升 235）；
 - **23 项** stdio 集成测试（`tests/test_mcp_integration.py`；注：20 项为历史 C 阶段基线，D-1 后升至 23）；
 - **6 项** 入口 / 配置测试（`tests/test_server_entry.py`；注：2 项为历史 C 阶段基线，D-1 后升至 6）；
 - C 阶段评估 **11/11**（`evals/run_c_phase_eval.py`）；

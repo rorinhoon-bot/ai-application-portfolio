@@ -202,6 +202,21 @@ class TaskPublishError(Exception):
         self.code = code
 
 
+# D-4 的私有连接 seam：测试可以替换这些普通 Python 函数，不能也不应直接替换
+# sqlite3.Connection（C 类型）。BEGIN IMMEDIATE 才是跨进程唯一消费的正确性闸门；
+# busy_timeout 只降低暂时 SQLITE_BUSY 的概率。
+def _make_connection(db_path: str):
+    return sqlite3.connect(db_path)
+
+
+def _commit(conn) -> None:
+    conn.commit()
+
+
+def _close(conn) -> None:
+    conn.close()
+
+
 def _content_hash(title: str, description: str) -> str:
     """内容哈希：规范化标题 + 描述（不含 title/desc 之外的任何绑定）。"""
     return hashlib.sha256(
@@ -238,17 +253,23 @@ class TasksStore:
         self._db_path = db_path
         self._task_root = task_root
         self._clock = clock if clock is not None else time.time
-        self._conn = sqlite3.connect(db_path)
+        self._conn = _make_connection(db_path)
+        self._configure_connection(self._conn)
         self._init_schema()
 
     def close(self) -> None:
         try:
-            self._conn.close()
+            _close(self._conn)
         except sqlite3.Error:
             pass
 
     def _now(self) -> float:
         return self._clock()
+
+    @staticmethod
+    def _configure_connection(conn) -> None:
+        """只缓解 SQLite 忙等待；绝不是并发正确性机制。"""
+        conn.execute("PRAGMA busy_timeout = 5000")
 
     def _init_schema(self) -> None:
         self._conn.executescript(
@@ -390,116 +411,72 @@ class TasksStore:
             raise
 
     def approve(self, confirmation_id, trusted_context) -> TaskResult:
-        """可信本地人工批准一次。成功则 no-replace 原子发布任务文件。
+        """两阶段批准：PENDING→PUBLISHING 提交后才发布，再写 APPROVED。
 
-        状态判断顺序（P0-2）：先处理已消费终态（APPROVED 永远 unchanged +
-        confirmation-already-consumed，不改库、不二次写）；仅 PENDING 且到期才转
-        EXPIRED；REJECTED / CANCELLED / EXPIRED 保持终态（返回 mismatch）。身份绑定
-        （P0-1）要求 subject 与 correlation_id 同时等于创建意图的值。confirmation_id
-        先校验服务生成的严格格式（P1-6），错误结果不得回显任意输入。
+        每个终态动作先 `BEGIN IMMEDIATE`。它取得 SQLite RESERVED 写预约，故不能
+        出现“一个进程已发布，另一个进程把同一记录写成负向终态”的交错；条件 UPDATE
+        和 D-2 no-replace 是纵深防御。发布失败未知是否留有文件，一律保留 PUBLISHING。
         """
         bad = _check_context(trusted_context)
         if bad is not None:
             return TaskResult.error(bad)
         if not _validate_confirmation_id(confirmation_id):
-            # 格式非法 / 未知：稳定错误码，绝不回显原始 confirmation_id
             return TaskResult.error(CONFIRMATION_INVALID_ID)
+        intent = self._begin_for_terminal(confirmation_id, trusted_context)
+        if isinstance(intent, TaskResult):
+            return intent
+        if intent.status == "PUBLISHING":
+            return self._recover_publishing(intent, trusted_context, approve_result=True)
+        if intent.status != "PENDING":
+            self._rollback_quietly()
+            return self._terminal_result(intent, "approve")
+
         now = self._now()
         cur = self._conn.cursor()
         try:
-            row = cur.execute(
-                "SELECT confirmation_id, task_id, subject, correlation_id, content_hash, "
-                "title, description, status, created_at, expires_at FROM confirmations "
-                "WHERE confirmation_id=?",
-                (confirmation_id,),
-            ).fetchone()
-            if row is None:
-                self._audit(cur, "approve_no_record", CONFIRMATION_REQUIRED, None, None)
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_REQUIRED)
-            intent = self._row_to_intent(row)
-            # P0-1：身份绑定 subject + correlation_id 同时相等
-            if (
-                trusted_context.subject != intent.subject
-                or trusted_context.correlation_id != intent.correlation_id
-            ):
-                self._audit(
-                    cur, "approve_identity_mismatch", CONFIRMATION_IDENTITY_MISMATCH,
-                    intent.task_id, None,
-                )
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_IDENTITY_MISMATCH)
+            if now >= intent.expires_at:
+                self._write_terminal(cur, intent, "EXPIRED", now)
+                recovered = self._commit_or_recover(intent, trusted_context, approve_result=False)
+                if recovered is not None:
+                    return recovered
+                self._audit_best_effort("approve_expired", CONFIRMATION_EXPIRED, intent)
+                return TaskResult.error(CONFIRMATION_EXPIRED)
+            # phase 1: PUBLISHING 必须先持久化；不写 consumed_at。
+            cur.execute(
+                "UPDATE confirmations SET status='PUBLISHING' WHERE confirmation_id=? "
+                "AND status='PENDING' AND subject=? AND correlation_id=?",
+                (confirmation_id, intent.subject, intent.correlation_id),
+            )
+            if cur.rowcount != 1:
+                self._rollback_quietly()
+                return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
+            recovered = self._commit_or_recover(intent, trusted_context, approve_result=False)
+            if recovered is not None:
+                return recovered
+        except sqlite3.Error:
+            self._rollback_quietly()
+            return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
 
-            # P0-2：先处理已消费终态，过期逻辑绝不改写已 APPROVED 记录
+        # phase 2: 再次拿写预约，保留到发布、最终 UPDATE、提交全部结束。
+        try:
+            self._begin_immediate()
+            intent = self._read_intent(confirmation_id)
+            if intent is None:
+                self._rollback_quietly()
+                return TaskResult.error(TASK_WRITE_FAILED)
             if intent.status == "APPROVED":
-                # 永远 unchanged + already_consumed；不改库、不二次写
+                self._rollback_quietly()
                 return TaskResult(
                     "unchanged", intent.task_id, intent.confirmation_id,
                     CONFIRMATION_ALREADY_CONSUMED,
                 )
-            if intent.status != "PENDING":
-                # REJECTED / CANCELLED / EXPIRED：保持终态，不可再消费
-                self._audit(
-                    cur, "approve_not_consumable", CONFIRMATION_MISMATCH,
-                    intent.task_id, None,
-                )
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_MISMATCH)
-
-            if now >= intent.expires_at:
-                # 懒求值过期：仅 PENDING 转 EXPIRED
-                cur.execute(
-                    "UPDATE confirmations SET status='EXPIRED', consumed_at=? "
-                    "WHERE confirmation_id=?",
-                    (now, confirmation_id),
-                )
-                cur.execute(
-                    "UPDATE idempotency SET status='EXPIRED' "
-                    "WHERE subject=? AND correlation_id=?",
-                    (intent.subject, intent.correlation_id),
-                )
-                self._audit(
-                    cur, "approve_expired", CONFIRMATION_EXPIRED, intent.task_id, None
-                )
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_EXPIRED)
-
-            payload = {
-                "task_id": intent.task_id,
-                "title": intent.title,
-                "description": intent.description,
-                "content_hash": intent.content_hash,
-                "created_at": intent.created_at,
-                "status": "created",
-            }
-            try:
-                outcome = self._publish_task_file(intent.task_id, payload)
-            except TaskPublishError as exc:
-                # 发布失败：意图保持 PENDING，可重试（重放返回 UNCHANGED）。
-                # 携带服务派生的 task_id（不含路径 / 用户名 / 正文），便于调用方
-                # 定位既有的、未被覆盖的目标文件。
-                self._audit(
-                    cur, "approve_write_failed", exc.code, intent.task_id, None
-                )
-                self._conn.commit()
-                return TaskResult.error(exc.code, task_id=intent.task_id)
-
-            cur.execute(
-                "UPDATE confirmations SET status='APPROVED', consumed_at=? "
-                "WHERE confirmation_id=?",
-                (now, confirmation_id),
-            )
-            cur.execute(
-                "UPDATE idempotency SET status='APPROVED' "
-                "WHERE subject=? AND correlation_id=?",
-                (intent.subject, intent.correlation_id),
-            )
-            self._audit(cur, "approve_ok", None, intent.task_id, intent.confirmation_id)
-            self._conn.commit()
-            return TaskResult(outcome, intent.task_id, intent.confirmation_id, None)
+            if intent.status != "PUBLISHING":
+                self._rollback_quietly()
+                return TaskResult.error(CONFIRMATION_MISMATCH, task_id=intent.task_id)
+            return self._finish_publishing(intent, trusted_context, approve_result=True)
         except sqlite3.Error:
-            self._conn.rollback()
-            raise
+            self._rollback_quietly()
+            return self._recover_commit_state(confirmation_id, trusted_context, True)
 
     def reject(self, confirmation_id, trusted_context) -> TaskResult:
         return self._terminalize(
@@ -567,83 +544,244 @@ class TasksStore:
     # ------------------------------------------------------------------ #
     # 内部
     # ------------------------------------------------------------------ #
+    def _begin_immediate(self) -> None:
+        self._conn.execute("BEGIN IMMEDIATE")
+
+    def _rollback_quietly(self) -> None:
+        try:
+            self._conn.rollback()
+        except sqlite3.Error:
+            pass
+
+    def _read_intent(self, confirmation_id) -> Optional[TaskIntent]:
+        row = self._conn.execute(
+            "SELECT confirmation_id, task_id, subject, correlation_id, content_hash, "
+            "title, description, status, created_at, expires_at FROM confirmations "
+            "WHERE confirmation_id=?",
+            (confirmation_id,),
+        ).fetchone()
+        return None if row is None else self._row_to_intent(row)
+
+    def _begin_for_terminal(self, confirmation_id, trusted_context):
+        """拿到写预约后再读权威状态；返回 intent 或稳定失败结果。"""
+        try:
+            self._begin_immediate()
+            intent = self._read_intent(confirmation_id)
+        except sqlite3.Error:
+            self._rollback_quietly()
+            return TaskResult.error(TASK_WRITE_FAILED)
+        if intent is None:
+            self._rollback_quietly()
+            return TaskResult.error(CONFIRMATION_REQUIRED)
+        if (
+            trusted_context.subject != intent.subject
+            or trusted_context.correlation_id != intent.correlation_id
+        ):
+            self._rollback_quietly()
+            return TaskResult.error(CONFIRMATION_IDENTITY_MISMATCH)
+        return intent
+
+    @staticmethod
+    def _terminal_result(intent: TaskIntent, action: str) -> TaskResult:
+        if intent.status == "APPROVED":
+            if action == "approve":
+                return TaskResult(
+                    "unchanged", intent.task_id, intent.confirmation_id,
+                    CONFIRMATION_ALREADY_CONSUMED,
+                )
+            return TaskResult.error(CONFIRMATION_MISMATCH, task_id=intent.task_id)
+        if intent.status == "EXPIRED":
+            return TaskResult.error(CONFIRMATION_EXPIRED, task_id=intent.task_id)
+        return TaskResult.error(CONFIRMATION_MISMATCH, task_id=intent.task_id)
+
+    def _write_terminal(self, cur, intent: TaskIntent, status: str, now: float) -> None:
+        cur.execute(
+            "UPDATE confirmations SET status=?, consumed_at=? WHERE confirmation_id=? "
+            "AND status='PENDING' AND subject=? AND correlation_id=?",
+            (status, now, intent.confirmation_id, intent.subject, intent.correlation_id),
+        )
+        if cur.rowcount != 1:
+            raise sqlite3.OperationalError("conditional terminal update lost")
+        cur.execute(
+            "UPDATE idempotency SET status=? WHERE subject=? AND correlation_id=?",
+            (status, intent.subject, intent.correlation_id),
+        )
+
+    def _commit_or_recover(self, intent, trusted_context, approve_result: bool):
+        """提交失败后绝不猜测 rollback 结果，换新连接重读权威状态。"""
+        try:
+            _commit(self._conn)
+            return None
+        except sqlite3.Error:
+            return self._recover_commit_state(
+                intent.confirmation_id, trusted_context, approve_result
+            )
+
+    def _recover_commit_state(self, confirmation_id, trusted_context, approve_result: bool):
+        self._rollback_quietly()
+        try:
+            _close(self._conn)
+            self._conn = _make_connection(self._db_path)
+            self._configure_connection(self._conn)
+            intent = self._read_intent(confirmation_id)
+        except sqlite3.Error:
+            return TaskResult.error(TASK_WRITE_FAILED)
+        if intent is None:
+            return TaskResult.error(TASK_WRITE_FAILED)
+        if (
+            intent.subject != trusted_context.subject
+            or intent.correlation_id != trusted_context.correlation_id
+        ):
+            return TaskResult.error(CONFIRMATION_IDENTITY_MISMATCH)
+        if intent.status == "PUBLISHING":
+            return self._recover_publishing(intent, trusted_context, approve_result)
+        if intent.status == "APPROVED":
+            return TaskResult(
+                "unchanged", intent.task_id, intent.confirmation_id,
+                CONFIRMATION_ALREADY_CONSUMED,
+            )
+        # PENDING / negative terminal after an unknown commit is intentionally not retried
+        # inside this call: caller gets a stable failure and may make a new controlled request.
+        return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
+
+    def _payload(self, intent: TaskIntent) -> dict:
+        return {
+            "task_id": intent.task_id,
+            "title": intent.title,
+            "description": intent.description,
+            "content_hash": intent.content_hash,
+            "created_at": intent.created_at,
+            "status": "created",
+        }
+
+    def _finish_publishing(self, intent, trusted_context, approve_result: bool) -> TaskResult:
+        """在持有 BEGIN IMMEDIATE 写预约时发布并把 PUBLISHING 条件写为 APPROVED。"""
+        try:
+            outcome = self._publish_task_file(intent.task_id, self._payload(intent))
+        except TaskPublishError as exc:
+            # phase 1 的 PUBLISHING 已提交；D-2 的稳定码不能证明是否零残留。
+            self._rollback_quietly()
+            return TaskResult.error(exc.code, task_id=intent.task_id)
+        cur = self._conn.cursor()
+        try:
+            cur.execute(
+                "UPDATE confirmations SET status='APPROVED', consumed_at=? "
+                "WHERE confirmation_id=? AND status='PUBLISHING' AND subject=? "
+                "AND correlation_id=?",
+                (self._now(), intent.confirmation_id, intent.subject, intent.correlation_id),
+            )
+            if cur.rowcount != 1:
+                self._rollback_quietly()
+                return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
+            cur.execute(
+                "UPDATE idempotency SET status='APPROVED' WHERE subject=? AND correlation_id=?",
+                (intent.subject, intent.correlation_id),
+            )
+            recovered = self._commit_or_recover(intent, trusted_context, approve_result)
+            if recovered is not None:
+                return recovered
+        except sqlite3.Error:
+            self._rollback_quietly()
+            return self._recover_commit_state(
+                intent.confirmation_id, trusted_context, approve_result
+            )
+        self._audit_best_effort("approve_ok", None, intent)
+        if approve_result:
+            return TaskResult(outcome, intent.task_id, intent.confirmation_id, None)
+        return TaskResult(
+            "unchanged", intent.task_id, intent.confirmation_id,
+            CONFIRMATION_ALREADY_CONSUMED,
+        )
+
+    def _recover_publishing(self, intent, trusted_context, approve_result: bool) -> TaskResult:
+        """PUBLISHING 只可完成 APPROVED 或失败关闭，绝不可改负向/PENDING。"""
+        self._rollback_quietly()
+        try:
+            self._begin_immediate()
+            current = self._read_intent(intent.confirmation_id)
+            if current is None:
+                self._rollback_quietly()
+                return TaskResult.error(TASK_WRITE_FAILED)
+            if (
+                current.subject != trusted_context.subject
+                or current.correlation_id != trusted_context.correlation_id
+            ):
+                self._rollback_quietly()
+                return TaskResult.error(CONFIRMATION_IDENTITY_MISMATCH)
+            if current.status == "APPROVED":
+                self._rollback_quietly()
+                return TaskResult(
+                    "unchanged", current.task_id, current.confirmation_id,
+                    CONFIRMATION_ALREADY_CONSUMED,
+                )
+            if current.status != "PUBLISHING":
+                self._rollback_quietly()
+                return TaskResult.error(TASK_WRITE_FAILED, task_id=current.task_id)
+            return self._finish_publishing(current, trusted_context, approve_result)
+        except sqlite3.Error:
+            self._rollback_quietly()
+            return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
+
+    def _audit_best_effort(self, event: str, error_code: Optional[str], intent: TaskIntent) -> None:
+        """主事务成功后单独落最小审计；审计失败绝不推翻主结果。"""
+        conn = None
+        try:
+            conn = _make_connection(self._db_path)
+            self._configure_connection(conn)
+            self._audit(conn.cursor(), event, error_code, intent.task_id, intent.confirmation_id)
+            _commit(conn)
+        except sqlite3.Error:
+            pass
+        finally:
+            if conn is not None:
+                try:
+                    _close(conn)
+                except sqlite3.Error:
+                    pass
+
     def _terminalize(
         self, confirmation_id, trusted_context, new_status, event, outcome
     ) -> TaskResult:
-        """将 PENDING 意图转为 REJECTED / CANCELLED 终态；绝不发布任务文件。
-
-        P0-1：身份绑定 subject + correlation_id 同时相等。P0-2：先处理已终态
-        （含已 APPIRED），过期逻辑绝不改写已消费记录；仅 PENDING 到期转 EXPIRED。
-        P1-6：confirmation_id 先校验格式，错误结果不回显任意输入。
-        """
+        """将 PENDING 转为负向终态；PUBLISHING 只能恢复，绝不能覆盖。"""
         bad = _check_context(trusted_context)
         if bad is not None:
             return TaskResult.error(bad)
         if not _validate_confirmation_id(confirmation_id):
             return TaskResult.error(CONFIRMATION_INVALID_ID)
+        intent = self._begin_for_terminal(confirmation_id, trusted_context)
+        if isinstance(intent, TaskResult):
+            return intent
+        if intent.status == "PUBLISHING":
+            recovered = self._recover_publishing(intent, trusted_context, approve_result=False)
+            if recovered.error_code == TASK_WRITE_FAILED:
+                return recovered
+            # 已恢复为 APPROVED；调用 reject/cancel 不能伪装为成功的负向终态。
+            return TaskResult.error(CONFIRMATION_MISMATCH, task_id=intent.task_id)
+        if intent.status != "PENDING":
+            self._rollback_quietly()
+            if intent.status == new_status:
+                return TaskResult(outcome, intent.task_id, intent.confirmation_id, None)
+            return TaskResult.error(CONFIRMATION_MISMATCH, task_id=intent.task_id)
+
         now = self._now()
         cur = self._conn.cursor()
         try:
-            row = cur.execute(
-                "SELECT confirmation_id, task_id, subject, correlation_id, status, expires_at "
-                "FROM confirmations WHERE confirmation_id=?",
-                (confirmation_id,),
-            ).fetchone()
-            if row is None:
-                self._audit(cur, event + "_no_record", CONFIRMATION_REQUIRED, None, None)
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_REQUIRED)
-            (cid, task_id, subject, corr, status, expires_at) = row
-            # P0-1：身份绑定 subject + correlation_id 同时相等
-            if trusted_context.subject != subject or trusted_context.correlation_id != corr:
-                self._audit(
-                    cur, event + "_identity_mismatch", CONFIRMATION_IDENTITY_MISMATCH,
-                    task_id, None,
-                )
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_IDENTITY_MISMATCH)
-            # P0-2：终态（含已 APPROVED）保持；不再被过期逻辑改写
-            if status == new_status:
-                # 幂等：已是该终态，不改库
-                self._audit(cur, event + "_already", None, task_id, cid)
-                self._conn.commit()
-                return TaskResult(outcome, task_id, cid, None)
-            if status != "PENDING":
-                # REJECTED / CANCELLED / EXPIRED / APPROVED：不可再消费
-                self._audit(
-                    cur, event + "_not_consumable", CONFIRMATION_MISMATCH, task_id, None
-                )
-                self._conn.commit()
-                return TaskResult.error(CONFIRMATION_MISMATCH)
-            if now >= expires_at:
-                # 懒求值过期：仅 PENDING 转 EXPIRED
-                cur.execute(
-                    "UPDATE confirmations SET status='EXPIRED', consumed_at=? "
-                    "WHERE confirmation_id=?",
-                    (now, confirmation_id),
-                )
-                cur.execute(
-                    "UPDATE idempotency SET status='EXPIRED' "
-                    "WHERE subject=? AND correlation_id=?",
-                    (subject, corr),
-                )
-                self._audit(cur, event + "_expired", CONFIRMATION_EXPIRED, task_id, None)
-                self._conn.commit()
+            if now >= intent.expires_at:
+                self._write_terminal(cur, intent, "EXPIRED", now)
+                recovered = self._commit_or_recover(intent, trusted_context, approve_result=False)
+                if recovered is not None:
+                    return recovered
+                self._audit_best_effort(event + "_expired", CONFIRMATION_EXPIRED, intent)
                 return TaskResult.error(CONFIRMATION_EXPIRED)
-            cur.execute(
-                "UPDATE confirmations SET status=?, consumed_at=? WHERE confirmation_id=?",
-                (new_status, now, confirmation_id),
-            )
-            cur.execute(
-                "UPDATE idempotency SET status=? WHERE subject=? AND correlation_id=?",
-                (new_status, subject, corr),
-            )
-            self._audit(cur, event + "_ok", None, task_id, cid)
-            self._conn.commit()
-            return TaskResult(outcome, task_id, cid, None)
+            self._write_terminal(cur, intent, new_status, now)
+            recovered = self._commit_or_recover(intent, trusted_context, approve_result=False)
+            if recovered is not None:
+                return recovered
+            self._audit_best_effort(event + "_ok", None, intent)
+            return TaskResult(outcome, intent.task_id, intent.confirmation_id, None)
         except sqlite3.Error:
-            self._conn.rollback()
-            raise
+            self._rollback_quietly()
+            return TaskResult.error(TASK_WRITE_FAILED, task_id=intent.task_id)
 
     def _row_to_intent(self, row) -> TaskIntent:
         (
