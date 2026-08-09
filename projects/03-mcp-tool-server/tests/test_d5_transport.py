@@ -124,13 +124,20 @@ class D5TransportTests(NetworkBlockedTestCase):
 
     @staticmethod
     def _stop(proc):
-        if proc.poll() is None:
-            proc.terminate()
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                proc.wait(timeout=5)
+        try:
+            if proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait(timeout=5)
+        finally:
+            # Popen owns these pipes. Closing them avoids ResourceWarning and
+            # prevents local interpreter paths from appearing in test output.
+            for stream in (proc.stdout, proc.stderr):
+                if stream is not None:
+                    stream.close()
 
 
 if __name__ == "__main__":
