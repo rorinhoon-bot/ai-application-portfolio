@@ -17,8 +17,9 @@ r"""P3 C 阶段：本地 MCP Server 适配层（stdio only，复用 B2a 安全�
 - 所有结果以脱敏 JSON 文本返回；业务失败（非法参数 / 幂等冲突 / 未知确认等）携带
   稳定错误码，绝不回显异常文本、路径或正文。
 
-仅本地 stdio。不引入 mcp[cli] / Inspector / HTTP / SSE / WebSocket / uv / 网络 Transport，
-不联网、不调用真实模型 API、不读写真实私人笔记、不创建真实 symlink/junction。
+默认仅本地 stdio。D-5 可显式启用 SDK 自带的 streamable-HTTP，但只能绑定
+`127.0.0.1` 或 `::1`；拒绝 SSE、任意公网/局域网监听与自定义端点。不调用真实模型
+API、不读写真实私人笔记、不创建真实 symlink/junction。
 
 网络说明（P1-5）：运行时只用 stdio；测试中的父进程与 Server 子进程均默认阻断外部
 网络（仅测试环境开关 `NETWORK_ACCESS_BLOCKED_IN_TESTS=1` 启用），生产不受影响。
@@ -65,6 +66,9 @@ from .tasks import (
 
 _SERVICE_NAME = "p3-local-notes"
 _SERVICE_VERSION = "1.0.0"
+_STDIO_TRANSPORT = "stdio"
+_HTTP_TRANSPORT = "streamable-http"
+_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1"})
 
 # 规范化请求内容 → 稳定关联 ID 的分隔符（与 tasks.py 的 _CONTENT_SEP 同义）
 _CONTENT_SEP = "\x1f"
@@ -108,6 +112,9 @@ class ServerConfig:
     task_root: str
     notes_root: str
     identity: RuntimeIdentity
+    transport: str = _STDIO_TRANSPORT
+    host: str = "127.0.0.1"
+    port: int = 8000
     service_name: str = _SERVICE_NAME
     version: str = _SERVICE_VERSION
 
@@ -119,6 +126,14 @@ class ServerConfig:
         # 不回退默认主体、不泄露路径/正文/原始异常。
         if not _valid_subject(self.identity.subject):
             raise TaskPublishError(INVALID_ARGUMENTS)
+        if self.transport not in {_STDIO_TRANSPORT, _HTTP_TRANSPORT}:
+            raise TaskPublishError(INVALID_ARGUMENTS)
+        # HTTP 不是默认能力；一旦显式开启，也只能监听确定的本地回环地址。
+        if self.transport == _HTTP_TRANSPORT:
+            if self.host not in _LOOPBACK_HOSTS:
+                raise TaskPublishError(INVALID_ARGUMENTS)
+            if isinstance(self.port, bool) or not isinstance(self.port, int) or not 1 <= self.port <= 65535:
+                raise TaskPublishError(INVALID_ARGUMENTS)
 
     @classmethod
     def from_env(cls, environ: Optional[dict] = None) -> "ServerConfig":
@@ -142,11 +157,20 @@ class ServerConfig:
         # 共置；缺省路径下无文件 → 失败关闭，不回退默认主体）。
         identity_file = env.get("MCP_NOTES_IDENTITY_FILE")
         identity = load_runtime_identity(env, identity_file_path=identity_file)
+        transport = env.get("MCP_NOTES_TRANSPORT", _STDIO_TRANSPORT)
+        raw_port = env.get("MCP_NOTES_PORT", "8000")
+        try:
+            port = int(raw_port)
+        except (TypeError, ValueError):
+            raise TaskPublishError(INVALID_ARGUMENTS) from None
         config = cls(
             db_path=env.get("MCP_NOTES_DB_PATH", os.path.join(".mcp-notes", "control.db")),
             task_root=env.get("MCP_NOTES_TASK_ROOT", os.path.join(".mcp-notes", "tasks")),
             notes_root=env.get("MCP_NOTES_NOTES_ROOT", default_notes),
             identity=identity,
+            transport=transport,
+            host=env.get("MCP_NOTES_HOST", "127.0.0.1"),
+            port=port,
         )
         return config
 
@@ -245,6 +269,7 @@ def build_server(config: ServerConfig) -> SafeMCPServer:
         lambda entry: read_note_content(entry, notes_root)
     )
     subject = config.identity.subject
+    transport = config.transport
 
     server = SafeMCPServer(name=config.service_name)
     server._allowed_args = dict(_TOOL_ARG_SPEC)
@@ -337,7 +362,7 @@ def build_server(config: ServerConfig) -> SafeMCPServer:
             {
                 "service": config.service_name,
                 "version": config.version,
-                "transport": "stdio",
+                "transport": transport,
                 "tools": ["search_notes", "create_task"],
                 "tools_note": (
                     "create_task returns PENDING only. approve/reject/cancel are handled "
@@ -358,9 +383,8 @@ def build_server(config: ServerConfig) -> SafeMCPServer:
                     "controlled subject, and a matching persisted record."
                 ),
                 "network": (
-                    "Runtime uses stdio only. In tests, both the parent process and the Server "
-                    "subprocess default to blocking external network access (test-only switch); "
-                    "production network capability is unchanged."
+                    "Default runtime uses stdio. Optional streamable HTTP is explicitly local-loopback "
+                    "only; in tests, parent and Server subprocess block external network access."
                 ),
             }
         )
@@ -389,7 +413,16 @@ def main() -> None:
         # stderr 仅输出稳定错误码、非零退出；禁止回显路径/正文/异常堆栈（P0-2 入口泄露修复）。
         sys.stderr.write("invalid-arguments\n")
         sys.exit(2)
-    server.run(transport="stdio")
+    if config.transport == _STDIO_TRANSPORT:
+        server.run(transport=_STDIO_TRANSPORT)
+    else:
+        # ServerConfig 已拒绝任何非回环 host；固定端点避免客户端传入任意路径。
+        server.run(
+            transport=_HTTP_TRANSPORT,
+            host=config.host,
+            port=config.port,
+            streamable_http_path="/mcp",
+        )
 
 
 if __name__ == "__main__":

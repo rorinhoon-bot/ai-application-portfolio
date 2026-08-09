@@ -420,3 +420,10 @@
 - 决定：所有 `approve` / `reject` / `cancel` / expiry 持久化写均先 `BEGIN IMMEDIATE` 并权威重读。批准采用 `PENDING → PUBLISHING → APPROVED` 两阶段；阶段 1 在发布前提交，阶段 2 仅在 D-2 发布成功后条件更新。D-2 只暴露稳定错误码，不能证明清理是否无残留，故发布失败始终保留 `PUBLISHING`、返回稳定错误并失败关闭；恢复仅可再次受控发布后完成 `APPROVED`，绝不回退 `PENDING` 或写负向终态。
 - 取舍：`busy_timeout` 只缓解 `SQLITE_BUSY`；跨进程正确性来自 SQLite 写预约、条件 UPDATE + `rowcount`、D-2 no-replace 与持久状态机，而非 WAL、连接池或 Python 锁。终态审计在主提交成功后另开 best-effort 事务，审计失败不回滚已提交状态。
 - 验证：新增 `tests/test_d4_concurrency.py` 九项离线确定性回归（含 `multiprocessing.Barrier` 双进程批准、批准/拒绝顺序、未知 COMMIT 重读恢复、审计失败与 `PUBLISHING` 防负向终态）；不创建真实链接。当前 `unittest` 235 项（226 通过 + 9 skip）、评估 11/11、demo 8/8、`compileall` / `pip check` / `git diff --check` 通过；`safe_task_write*.py` 零改动。真实多用户与跨 subject 审计隔离仍 blocked-until-approved。
+
+## D-030：D-5 本机回环 streamable-HTTP
+
+- 状态：accepted（已实现，待本地提交；不 push、不建 PR）。
+- 决定：stdio 保持默认。仅部署配置显式选择 `streamable-http` 时启用 MCP SDK v2 内置 HTTP；只允许 `127.0.0.1` 或 `::1`、端口 `1..65535` 与固定 `/mcp` 端点。SSE、未知 transport、空 transport、`0.0.0.0`、局域网地址和非法端口均复用 `invalid-arguments` 失败关闭。
+- 取舍：不额外启用 legacy SSE，避免重复传输面；不新增依赖，复用已锁定 SDK 的传递依赖。此能力仅服务本机 Host/Client 互通，绝不构成公网部署或多用户授权。
+- 验证：新增 `tests/test_d5_transport.py` 四项测试：默认 stdio、配置拒绝三类、以及真实 127.0.0.1 streamable-HTTP Client 的 `list_tools` 与 `create_task` PENDING 路径。确认 Tool 列表仍只有 `search_notes` / `create_task`，确认动作不暴露。当前总测试 239 项（230 通过 + 9 skip）。
