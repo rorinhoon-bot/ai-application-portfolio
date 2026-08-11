@@ -57,6 +57,3 @@ Set-Location ..\03-mcp-tool-server
 .\.venv\Scripts\python.exe evals\run_d6_eval.py
 ```
 
-## 诚实说明
-
-这些项目用于证明工程学习与实践过程，不应被描述成大型生产系统。每个项目的 README、完成审计和 `LLH_Study.md` 都记录了当前证据与未完成边界。
