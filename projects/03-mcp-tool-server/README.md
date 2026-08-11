@@ -18,7 +18,7 @@
 
 ## 当前阶段
 
-- 状态：`completed`（P3 的 Slice A、B1、B2a、C 与 D-1 至 D-6 均已完成并本地提交；当前等待用户决定是否统一 push / 建 PR）。
+- 状态：`completed`（P3 的 Slice A、B1、B2a、C 与 D-1 至 D-6 均已完成，并已随作品集仓库 `main` 分支公开；未另建 PR）。
 - 已实现（Slice A）：`src/mcp_notes/` 纯标准库合同与检索逻辑、`evals/fixtures/notes-v1/` 3 份原创虚构笔记、`tests/` stdlib `unittest` 套件（含默认网络阻断底座）。
 - 已实现（Slice B1 路径安全索引）：新增 `src/mcp_notes/safe_open.py` —— 基于 Windows 原生句柄（`NtOpenFile` / `NtQueryDirectoryFile`，`OBJ_DONT_REPARSE` + 相对父 HANDLE）拒绝 symlink / junction / reparse point 跟随与 TOCTOU。具体已落实并通过测试（Codex P0/P1 修订）：
   - 组件级校验（§4.6）拒绝空段、`.`、`..`、`\`、`/`、`:`、`< > " | ? *`、控制字符、尾随点 / 空格、保留设备名；`open_file_relative` 先校验 `rel_parts` 为非空列表并对每一级组件校验；`_nt_open` 在相对父 HANDLE 打开时**也自行校验组件**，不依赖调用方。

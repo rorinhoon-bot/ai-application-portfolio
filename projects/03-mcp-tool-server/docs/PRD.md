@@ -125,7 +125,7 @@ Resource URI 为固定程序常量 `notes://service-info`。内容只说明 Tool
 
 ## 10. known-limitations-for-D（C 阶段已知边界，待 D 阶段处理）
 
-- `TrustedContext` 的 `subject`/`correlation_id` 已由 **D-1** 收紧为精确字符白名单（`subject` 须匹配 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`、`correlation_id` 须为服务端派生的 `^[0-9a-f]{64}$`，缺失/非法在配置启动失败关闭）；唯一身份来源已由 D-3 收口为受控身份根下部署预置的 identity.json；MCP_NOTES_SUBJECT 仅作文件安全读取后的可选相等性断言，永不产生或后备 subject。该信任边界由 **D-3** 设计收口，**D-3 实现已由本地提交 `d14341d` 落地（未 push、未建 PR；本次 Codex 复核中）**（见 `docs/D-3-design.md` **v3**、DECISIONS **D-027**；D-025(v1) 与 D-026(v2) 均已 superseded，属历史引用，勿按其实施）。
+- `TrustedContext` 的 `subject`/`correlation_id` 已由 **D-1** 收紧为精确字符白名单（`subject` 须匹配 `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`、`correlation_id` 须为服务端派生的 `^[0-9a-f]{64}$`，缺失/非法在配置启动失败关闭）；唯一身份来源已由 D-3 收口为受控身份根下部署预置的 identity.json；MCP_NOTES_SUBJECT 仅作文件安全读取后的可选相等性断言，永不产生或后备 subject。该信任边界由 **D-3** 设计收口，**D-3 实现已随作品集仓库 `main` 分支公开（未另建 PR）**（见 `docs/D-3-design.md` **v3**、DECISIONS **D-027**；D-025(v1) 与 D-026(v2) 均已 superseded，属历史引用，勿按其实施）。
 - D-4 已实现跨进程确认消费：`BEGIN IMMEDIATE` 写预约、条件 `UPDATE` + `rowcount`、D-2 no-replace 与持久化 `PUBLISHING` 两阶段；WAL/连接池/Python 锁均不作为跨进程正确性方案。真实多用户（多 subject / 多 OS 账户 / per-subject task_root / audit subject 列）仍 blocked-until-approved。
 - 仅 Windows 原生 `NtCreateFile(FILE_CREATE, OBJ_DONT_REPARSE)` no-replace 发布路径经实机验证；跨平台一致性（非 Windows 的等价原子无覆盖发布）待 D 阶段补。
 - 真实 Host 支持面（第三方 MCP Client 兼容性、传输扩展如 SSE/HTTP）未在 C 阶段评估。
