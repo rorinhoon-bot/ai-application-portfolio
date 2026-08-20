@@ -65,7 +65,7 @@ $env:PYTHONPATH="src"
 
 ```env
 MODEL_PROVIDER=mimo
-MODEL_API_KEY=你的真实Key
+MODEL_API_KEY=replace-with-your-key
 MODEL_BASE_URL=https://api.xiaomimimo.com/v1
 MODEL_NAME=mimo-v2.5
 MODEL_TIMEOUT_SECONDS=30

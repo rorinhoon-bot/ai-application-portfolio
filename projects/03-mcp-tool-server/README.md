@@ -55,7 +55,6 @@ python -m unittest discover -s tests -v
 - [计划架构与安全数据流](docs/ARCHITECTURE.md)
 - [依赖提案（已安装 `mcp==2.0.0`）](docs/DEPENDENCIES.md)
 - [固定离线评估方案](docs/EVALUATION_DATA.md)
-- [后续安全接力说明](docs/WORKBUDDY_HANDOFF.md)
 - [关键取舍](DECISIONS.md)
 - [当前状态](STATUS.md)
 

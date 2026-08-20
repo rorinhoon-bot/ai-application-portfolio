@@ -30,7 +30,7 @@
 - **真实证据**：`144 passed`；固定工作流案例 `12/12`；引用绑定 `10/10`；checkpoint 恢复 `1/1`；人工报告评分 `4.8/5`。
 - **已有制品**：本 README 已嵌入工作流 SVG；下方“离线演示”嵌入真实终端 SVG。
 - **面试学习**：状态图、人工暂停、恢复、幂等导出和面试问答见 [LLH_Study.md](LLH_Study.md)。
-- **可选补图**：可按仓库根目录 [截图清单](../../docs/GITHUB_PUBLISHING_CHECKLIST.md#4-截图与演示清单) 补一张真实运行摘要；不需要伪造 Web UI。
+- **演示材料**：本 README 已嵌入真实离线运行摘要；不需要伪造 Web UI。
 
 > 公开说明边界：当前资料和工具均为原创虚构/确定性夹具，不能作为真实技术选型结论或真实模型质量证明。
 
@@ -137,4 +137,4 @@ $env:LANGSMITH_TRACING="false"
 
 ## 完成审计
 
-逐项 `PROJECT_STANDARDS.md` 证据见 [`docs/COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md)。真实人工报告质量评分为 `4.8/5`，记录见 [`evals/results/workflow-v2-human-report-review.md`](evals/results/workflow-v2-human-report-review.md)；AI 自评未代替人工验收。
+逐项完成证据见 [`docs/COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md)。真实人工报告质量评分为 `4.8/5`，记录见 [`evals/results/workflow-v2-human-report-review.md`](evals/results/workflow-v2-human-report-review.md)；AI 自评未代替人工验收。

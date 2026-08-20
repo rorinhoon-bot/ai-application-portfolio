@@ -906,7 +906,7 @@ MCP 能把 AI Host 接到本地工具，但本地文件读写一旦没有明确�
 ### 第一关：跑完整测试
 
 ```powershell
-Set-Location H:\暑假学习\编程学习\ai-application-portfolio\projects\03-mcp-tool-server
+Set-Location projects\03-mcp-tool-server
 .\.venv\Scripts\python.exe -W error::ResourceWarning -m unittest discover -s tests -p "test_*.py"
 ```
 

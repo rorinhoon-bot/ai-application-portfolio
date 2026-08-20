@@ -54,4 +54,4 @@
 
 ## 结论
 
-达到 `docs/PROJECT_STANDARDS.md`。P1可以标记为 `completed`。保留的小样本与机器可读 `conflict` 基线限制已在README、架构、评估和学习总结中公开。
+达到项目验收清单。P1可以标记为 `completed`。保留的小样本与机器可读 `conflict` 基线限制已在README、架构、评估和学习总结中公开。

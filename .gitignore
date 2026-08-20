@@ -37,6 +37,19 @@ projects/01-cited-rag/data/sources/html/
 projects/01-cited-rag/data/sources/license/
 projects/01-cited-rag/data/indexes/
 
+# Local-only project data and media
+tmp/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+*.mp4
+*.wav
+projects/**/data/models/
+projects/**/data/indexes/
+projects/**/data/sources/html/
+projects/**/data/sources/license/
+
 # Editors and operating systems
 .vscode/
 .idea/

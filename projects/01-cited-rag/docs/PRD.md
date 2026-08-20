@@ -338,7 +338,7 @@ PRD v0.1 已确认目标：
 - `.env.example` 不含真实密钥。
 - README、架构、演示、限制和开发复盘完整。
 - 项目完成后创建 `LLH_Study.md`。
-- 达到仓库 `docs/PROJECT_STANDARDS.md` 后才能标记 `completed`。
+- 达到项目验收清单后才能标记 `completed`。
 
 ## 19. 已确认技术边界
 

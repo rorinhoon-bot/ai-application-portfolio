@@ -344,4 +344,4 @@ D-4 可做的部分：**跨进程并发唯一消费（BEGIN IMMEDIATE 写预约 
   - **P1-c（测试 seam）**：§5.2 T4 / §6 改为**私有连接工厂 `_make_connection` + 包装函数 `_commit(conn)`/`_close(conn)`** 作为测试 seam；**不**直接 monkeypatch `sqlite3.Connection.commit/close`（C 实现不可实例替换）。
   - **database-busy 采纳**：§4.1 / T4 固定断言——COMMIT 失败路径复用 `task-write-failed`；`database-busy` 仍属可选加法码，实现阶段决策，不阻塞 D-4。可选 `confirmation-in-progress` 同理（默认复用 `task-write-failed`）。
   - **高层文档同步**：`STATUS.md` / `ARCHITECTURE.md` / `DECISIONS.md` 中「`PENDING` 一律可重放」的高层表述改为「`PENDING` 仅在文件尚未发布时安全重放；文件已存在时须按 `PUBLISHING` 契约完成既有发布，失败则保持 `PUBLISHING`，不得写负向终态」（见对应文件本轮修改 + D-028 第三轮修正段）。
-  - 仍 **design-only、未暂存、未提交、未 push、未建 PR**，待 Codex 最终复核；用户已决定：本轮修正后**将本地 MCP 工具服务项目后续全部开发交 Codex 接力**（见 `docs/HANDOFF-TO-CODEX.md`）。
+  - 仍 **design-only、未暂存、未提交、未 push、未建 PR**，待最终复核；后续实现需继续经过代码审查和测试验证。
