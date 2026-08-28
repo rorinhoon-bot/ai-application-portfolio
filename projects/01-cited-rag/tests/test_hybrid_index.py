@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
@@ -16,17 +17,30 @@ from cited_rag.indexing import (
     make_embedding_config_sha256,
     make_index_fingerprint,
 )
-from cited_rag.model_assets import load_verified_model_assets
-from cited_rag.models import IndexManifest, IndexSpecification
+from cited_rag.models import EmbeddingConfig, IndexManifest, IndexSpecification
 from tests.test_retrieval import chunks
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_sparse_schema_extension_preserves_frozen_dense_identity() -> None:
-    assets = load_verified_model_assets(
-        project_root=PROJECT_ROOT,
-        report_path=PROJECT_ROOT / "data" / "model-assets.json",
+    report = json.loads(
+        (PROJECT_ROOT / "data" / "model-assets.json").read_text(encoding="utf-8")
+    )
+    config = EmbeddingConfig(
+        schema_version=report["schema_version"],
+        provider=report["provider"],
+        model_name=report["public_model_name"],
+        resolved_model_source=report["repository_id"],
+        model_revision=report["revision"],
+        model_assets_sha256=report["model_assets_sha256"],
+        model_license=report["license"],
+        model_cache_relative_path="data/models/fastembed",
+        dimension=512,
+        max_input_tokens=512,
+        batch_size=64,
+        distance="cosine",
+        normalize=True,
     )
     manifest = IndexManifest.model_validate_json(
         (
@@ -35,7 +49,7 @@ def test_sparse_schema_extension_preserves_frozen_dense_identity() -> None:
         ).read_text(encoding="utf-8")
     )
 
-    assert make_embedding_config_sha256(assets.config) == (
+    assert make_embedding_config_sha256(config) == (
         "db152eac59c563e8867b8debc577cccc0a267a632173845b3ac9a21013cd21bd"
     )
     assert make_index_fingerprint(manifest.specification) == (
