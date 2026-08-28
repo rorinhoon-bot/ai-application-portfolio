@@ -1,0 +1,7 @@
+/portfolio-site/p1/*.html text eol=lf
+/portfolio-site/p1/*.md text eol=lf
+/portfolio-site/p1/*.json text eol=lf
+/portfolio-site/p1/assets/*.css text eol=lf
+/portfolio-site/p1/assets/*.js text eol=lf
+/portfolio-site/p1/assets/*.json text eol=lf
+/portfolio-site/p1/assets/*.png binary
