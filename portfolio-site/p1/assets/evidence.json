@@ -73,7 +73,7 @@
     "total_tokens": 17768,
     "automatic_retries": 0,
     "source_path": "data/answering-v3-report.json",
-    "source_sha256": "163375245dbde0dcbe6fd6b4b6eb5c0dd91ffafeb3eaca67e01e273a0d387a7a"
+    "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
   },
   "headline_metrics": [
     {
@@ -141,7 +141,7 @@
       "recorded_at": "2026-07-29T05:09:16.934930Z",
       "total_tokens": 1747,
       "source_path": "data/answering-v3-report.json",
-      "source_sha256": "163375245dbde0dcbe6fd6b4b6eb5c0dd91ffafeb3eaca67e01e273a0d387a7a"
+      "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
     },
     {
       "case_id": "refuse-flask-app-context",
@@ -159,7 +159,7 @@
       "recorded_at": "2026-07-29T05:09:16.934930Z",
       "total_tokens": 1598,
       "source_path": "data/answering-v3-report.json",
-      "source_sha256": "163375245dbde0dcbe6fd6b4b6eb5c0dd91ffafeb3eaca67e01e273a0d387a7a"
+      "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
     },
     {
       "case_id": "argparse-prog-balanced",
@@ -202,7 +202,7 @@
       "recorded_at": "2026-07-29T05:46:38.563731+00:00",
       "total_tokens": 1851,
       "source_path": "data/conflict-v2-evaluation-report.json",
-      "source_sha256": "78aa501821489b437b1c68787d980e57bfdd5f58139d1fb131e737c85784cfe9",
+      "source_sha256": "d53c91a40ed2b4ac5d4ef332c53e06b0d300a411467521837f93c0b9f26b9eee",
       "review": {
         "kind": "post-hoc-human-review",
         "accepted": true,
@@ -212,7 +212,7 @@
         "original_expected_status": "conflict",
         "accepted_semantics": "Explicit cross-version comparisons may use answered when the answer labels each version and cited evidence supports every version claim.",
         "review_source_path": "data/conflict-v2-human-review.json",
-        "review_source_sha256": "963694e9c5f299bc377b3dad02e5ff6117bbe0474794869d8d2756e3b63aef80"
+        "review_source_sha256": "2460363c13afb45fa5e23b54bf133ea51574ff0f1ce04e739252516e078eaab9"
       }
     }
   ],
@@ -245,7 +245,7 @@
       "evidence": "fake provider先返回429，再成功；共2次物理尝试、1次重试。",
       "resolution": "最多一次重试；潜在已计费尝试显式记录为billing_uncertain，不伪造零费用。",
       "source_path": "data/retry-smoke-report.json",
-      "source_sha256": "522c0f61b68d9ddccfbd2d74031e1160f9b01249ad43366ffe122a00a788849f"
+      "source_sha256": "f154610ad6438a43518937d7340fc711a9666b3508bbf8eff43016ed84d4f48d"
     }
   ],
   "runtime_proof": {

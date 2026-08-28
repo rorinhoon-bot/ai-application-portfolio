@@ -64,6 +64,12 @@ def canonical_json_bytes(value: object) -> bytes:
     ).encode("utf-8")
 
 
+def normalized_source_bytes(relative_path: str, content: bytes) -> bytes:
+    if relative_path.lower().endswith(".json"):
+        return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
+
+
 def _require_regular_file(path: Path, *, label: str) -> bytes:
     if path.is_symlink():
         raise EvidenceExportError(f"{label} must not be a symlink: {path.name}")
@@ -170,7 +176,10 @@ def _retrieval_view(report: dict[str, Any], label: str) -> dict[str, Any]:
 def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
     project_root = project_root.resolve()
     report_bytes = {
-        path: _require_regular_file(project_root / path, label="source report")
+        path: normalized_source_bytes(
+            path,
+            _require_regular_file(project_root / path, label="source report"),
+        )
         for path in SOURCE_REPORTS
     }
     reports = {
@@ -389,7 +398,10 @@ def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
 def _source_manifest(project_root: Path) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for relative_path in (*SOURCE_REPORTS, *SOURCE_IMAGES):
-        content = _require_regular_file(project_root / relative_path, label="evidence input")
+        content = normalized_source_bytes(
+            relative_path,
+            _require_regular_file(project_root / relative_path, label="evidence input"),
+        )
         entries.append(
             {
                 "path": f"projects/01-cited-rag/{relative_path}",

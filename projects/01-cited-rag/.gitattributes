@@ -1,3 +1,5 @@
+/data/*.json text eol=lf
+/data/evaluation/*.json text eol=lf
 /data/hybrid-index-build-report.json text eol=lf
 /data/retrieval-v2-hybrid-development-report.json text eol=lf
 /data/hybrid-locked-run-failure.json text eol=lf

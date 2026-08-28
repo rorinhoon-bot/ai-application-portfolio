@@ -24,12 +24,12 @@
     {
       "path": "assets/evidence.js",
       "byte_count": 20300,
-      "sha256": "1762408f7947a1981902efaf498ac4132047e50ac7836d0ca860a4e7fbf6d237"
+      "sha256": "d1bc7001376e3fba58e52e3e05d29475e70d8e30bc9fed31e8768da89ad8701f"
     },
     {
       "path": "assets/evidence.json",
       "byte_count": 15262,
-      "sha256": "61ae1481b7653905633526b3dae08a99c42e3bc3e55fddfe0e0fb7924dcda255"
+      "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac"
     },
     {
       "path": "assets/streamlit-cited-answer.png",
@@ -43,8 +43,8 @@
     },
     {
       "path": "evidence-manifest.json",
-      "byte_count": 4577,
-      "sha256": "15f8e3f73e9caabe602e5e950e943312d6ec3cac6a1328012eef937773693722"
+      "byte_count": 4576,
+      "sha256": "79358ab82634bdb956e47f340d1fd2a7bd3e732744ddb852ad9ff3eec9f56410"
     },
     {
       "path": "index.html",
@@ -54,7 +54,7 @@
   ],
   "totals": {
     "file_count": 9,
-    "byte_count": 233881
+    "byte_count": 233880
   },
   "limits": {
     "maximum_file_count": 32,

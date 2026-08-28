@@ -39,6 +39,15 @@ def test_evidence_export_is_current() -> None:
     assert exporter.export(check=True) is None
 
 
+def test_json_source_hashes_are_newline_stable() -> None:
+    lf = b'{\n  "status": "passed"\n}\n'
+    crlf = lf.replace(b"\n", b"\r\n")
+
+    assert exporter.normalized_source_bytes("data/report.json", lf) == lf
+    assert exporter.normalized_source_bytes("data/report.json", crlf) == lf
+    assert exporter.normalized_source_bytes("docs/image.png", crlf) == crlf
+
+
 def test_retrieval_comparison_uses_one_fixed_evaluation_set() -> None:
     evidence = load_evidence()
     rows = evidence["retrieval_comparison"]
@@ -98,8 +107,9 @@ def test_manifest_hashes_every_fixed_input_and_generated_output() -> None:
     for item in manifest["inputs"]:
         source = REPOSITORY_ROOT / item["path"]
         assert source.is_file()
-        assert item["byte_count"] == source.stat().st_size
-        assert item["sha256"] == sha256(source)
+        content = exporter.normalized_source_bytes(item["path"], source.read_bytes())
+        assert item["byte_count"] == len(content)
+        assert item["sha256"] == hashlib.sha256(content).hexdigest()
     for item in manifest["outputs"]:
         output = REPOSITORY_ROOT / item["path"]
         assert output.is_file()
