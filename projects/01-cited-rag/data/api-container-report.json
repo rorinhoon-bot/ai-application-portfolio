@@ -1,0 +1,108 @@
+{
+  "schema_version": "1",
+  "slice": "V2-B2",
+  "status": "passed",
+  "tested_at": "2026-08-24T13:38:04.8257133Z",
+  "approved_design": "docs/API_CONTAINER_DESIGN.md#9",
+  "platform": {
+    "os": "linux",
+    "architecture": "amd64",
+    "docker_client_version": "29.7.2",
+    "docker_engine_version": "29.7.2",
+    "docker_compose_version": "5.4.0"
+  },
+  "build": {
+    "dockerfile_frontend": "docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e",
+    "base_image": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+    "base_image_size_bytes": 44804306,
+    "dependency_count": 44,
+    "selected_wheel_bytes": 65250778,
+    "binary_only": true,
+    "hashes_required": true,
+    "first_attempt": {
+      "status": "failed_safe",
+      "error": "h2<5,>=3 was not pinned under --require-hashes",
+      "image_created": false,
+      "container_created": false
+    },
+    "correction": {
+      "added_exact_existing_lock_packages": [
+        "h2==4.4.0",
+        "hpack==4.2.0",
+        "hyperframe==6.1.0"
+      ],
+      "added_wheel_bytes": 109621
+    },
+    "api_image": "cited-rag-api:v2-b2",
+    "api_image_id": "sha256:bed22b58bbeacac4abbd12b2e7e0bb66aa6dc1d3881caaa4080fbbef666e0f50",
+    "api_image_size_bytes": 123768630,
+    "h_drive_free_before_bytes": 114508095488,
+    "h_drive_free_after_bytes": 113599188992,
+    "h_drive_consumed_bytes": 908906496,
+    "approved_h_drive_cap_bytes": 2147483648
+  },
+  "runtime": {
+    "api_container_id": "1f16adf0fcada841d259f28984ed587315d57c65942e195e31bfe70d9f499376",
+    "api_container_image_id": "sha256:bed22b58bbeacac4abbd12b2e7e0bb66aa6dc1d3881caaa4080fbbef666e0f50",
+    "api_health": "healthy",
+    "user": "10001:10001",
+    "read_only_rootfs": true,
+    "cap_drop": [
+      "ALL"
+    ],
+    "no_new_privileges": true,
+    "pids_limit": 256,
+    "cpu_limit": 2.0,
+    "memory_limit_bytes": 1073741824,
+    "host_binding": "127.0.0.1:8000",
+    "network": "cited-rag-qdrant_qdrant_bridge",
+    "model_mount_read_only": true,
+    "server_index_mount_read_only": true,
+    "admin_key_present": false
+  },
+  "qdrant_unchanged": {
+    "container_id_before": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "container_id_after": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "started_at_before": "2026-08-24T12:54:39.855442058Z",
+    "started_at_after": "2026-08-24T12:54:39.855442058Z"
+  },
+  "active_index": {
+    "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+    "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+    "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+    "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+    "point_count": 1359,
+    "active_pointer_sha256_before": "e636265d4bba2188ee1d6b00fb24f0378d87f184f9af2bfa700a6f0dd0a54d27",
+    "active_pointer_sha256_after": "e636265d4bba2188ee1d6b00fb24f0378d87f184f9af2bfa700a6f0dd0a54d27",
+    "manifest_sha256_before": "496cbfa8941a275f6e9a2c1aa94a7b317e62260b1be528c5fe3ed14fd2cbabd8",
+    "manifest_sha256_after": "496cbfa8941a275f6e9a2c1aa94a7b317e62260b1be528c5fe3ed14fd2cbabd8"
+  },
+  "checks": {
+    "python_version": "3.14.7",
+    "locked_packages_expected": 44,
+    "locked_packages_actual": 44,
+    "pip_check": "passed",
+    "healthz_status": 200,
+    "readyz_status": 200,
+    "openapi_status": 200,
+    "invalid_request_status": 422,
+    "invalid_request_code": "request_validation_failed",
+    "request_id_header_matches_body": true,
+    "foreign_origin_preflight_status": 405,
+    "cors_allow_origin_absent": true,
+    "api_restart_recovered": true,
+    "api_container_id_stable_across_restart": true,
+    "qdrant_identity_stable": true,
+    "index_evidence_stable": true,
+    "rootfs_write_rejected": true,
+    "model_mount_write_rejected": true,
+    "server_index_mount_write_rejected": true,
+    "tmpfs_write_succeeded": true,
+    "image_contains_env_file": false,
+    "image_contains_model_binary": false,
+    "image_contains_server_index": false,
+    "image_contains_raw_html": false,
+    "legal_answer_request_sent": false,
+    "mimo_called": false
+  }
+}

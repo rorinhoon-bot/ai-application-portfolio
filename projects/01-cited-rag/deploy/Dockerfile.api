@@ -1,0 +1,49 @@
+# syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+
+ARG PYTHON_IMAGE=python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52
+
+FROM ${PYTHON_IMAGE} AS wheelhouse
+
+WORKDIR /build
+COPY requirements-api.txt ./
+RUN python -m pip download \
+    --disable-pip-version-check \
+    --no-cache-dir \
+    --only-binary=:all: \
+    --require-hashes \
+    --dest /wheels \
+    --requirement requirements-api.txt
+
+FROM ${PYTHON_IMAGE} AS runtime
+
+ENV HF_HUB_OFFLINE=1 \
+    HOME=/tmp \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src \
+    PYTHONUNBUFFERED=1 \
+    XDG_CACHE_HOME=/tmp/.cache
+
+WORKDIR /app
+COPY requirements-api.txt /tmp/requirements-api.txt
+RUN --mount=type=bind,from=wheelhouse,source=/wheels,target=/wheels,ro \
+    python -m pip install \
+    --disable-pip-version-check \
+    --no-cache-dir \
+    --no-index \
+    --find-links=/wheels \
+    --only-binary=:all: \
+    --require-hashes \
+    --requirement /tmp/requirements-api.txt \
+    && python -m pip check \
+    && rm /tmp/requirements-api.txt \
+    && mkdir -p /app/data/models/fastembed /app/data/server-indexes \
+    && chown -R 10001:10001 /app
+
+COPY --chown=10001:10001 src/cited_rag /app/src/cited_rag
+COPY --chown=10001:10001 data/model-assets.json /app/data/model-assets.json
+
+USER 10001:10001
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "cited_rag.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

@@ -1,0 +1,93 @@
+{
+  "schema_version": "1",
+  "slice": "V2-C2-preflight",
+  "audited_at": "2026-08-25",
+  "status": "design-ready-runtime-stopped",
+  "git": {
+    "branch": "codex/p1-production-rag-v2",
+    "worktree_clean_before_design": true
+  },
+  "current_active_index": {
+    "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+    "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+    "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+    "point_count": 1359,
+    "active_pointer_sha256": "e636265d4bba2188ee1d6b00fb24f0378d87f184f9af2bfa700a6f0dd0a54d27",
+    "manifest_sha256": "496cbfa8941a275f6e9a2c1aa94a7b317e62260b1be528c5fe3ed14fd2cbabd8"
+  },
+  "runtime": {
+    "docker_engine_available": false,
+    "docker_error": "dockerDesktopLinuxEngine named pipe was unavailable",
+    "docker_started_by_preflight": false,
+    "h_drive_free_bytes": 113626398720
+  },
+  "sparse_config": {
+    "schema_version": "1",
+    "name": "unicode-code-bm25-v1",
+    "unicode_normalization": "NFKC",
+    "han_codepoint_ranges": [
+      "3400-4DBF",
+      "4E00-9FFF",
+      "F900-FAFF",
+      "20000-2EBEF",
+      "30000-323AF"
+    ],
+    "han_ngram_size": 2,
+    "single_han_fallback": true,
+    "ascii_identifier_pattern": "[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*",
+    "dotted_identifier_emission": "full-and-components",
+    "numeric_pattern": "[0-9]+(?:\\.[0-9]+)*",
+    "token_namespaces": {
+      "han": "h:",
+      "ascii_identifier": "a:",
+      "number": "n:"
+    },
+    "hash_algorithm": "mmh3-x86-32",
+    "hash_seed": 0,
+    "hash_signed": false,
+    "k1": 1.2,
+    "b": 0.75,
+    "idf_provider": "qdrant-modifier-idf",
+    "dense_vector_name": "dense-bge-v1",
+    "sparse_vector_name": "lexical-bm25-v1"
+  },
+  "sparse_config_sha256": "53400f58436e2faf179eb5383aac62e63ca8ab86d161e7c8a05b413ee3b9d8a2",
+  "offline_corpus_audit": {
+    "chunk_count": 1359,
+    "token_occurrences": 158321,
+    "unique_token_count": 25836,
+    "document_sparse_nnz": 118664,
+    "average_document_length": 116.49816041206769,
+    "average_sparse_nnz": 87.31714495952906,
+    "maximum_sparse_nnz": 280,
+    "empty_sparse_document_count": 0,
+    "mmh3_collision_count": 0,
+    "minimum_raw_indices_values_bytes": 949312
+  },
+  "fixed_query": {
+    "dense_prefetch": 20,
+    "sparse_prefetch": 20,
+    "fusion_candidate_count": 20,
+    "final_count": 5,
+    "rrf_k": 2,
+    "rrf_weights": [1.0, 1.0]
+  },
+  "planned_limits": {
+    "h_drive_incremental_bytes": 1073741824,
+    "new_collection_count": 1,
+    "new_point_count": 1359,
+    "existing_collection_delete_allowed": false,
+    "named_volume_delete_allowed": false,
+    "new_python_dependency_allowed": false,
+    "model_download_allowed": false,
+    "mimo_call_allowed": false
+  },
+  "preflight_side_effects": {
+    "qdrant_written": false,
+    "active_pointer_changed": false,
+    "container_started_or_restarted": false,
+    "python_package_installed": false,
+    "model_downloaded": false,
+    "mimo_called": false
+  }
+}

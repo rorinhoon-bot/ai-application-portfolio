@@ -1,0 +1,155 @@
+name: cited-rag-qdrant
+
+services:
+  api:
+    profiles:
+      - api
+    image: cited-rag-api:v2-d1
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    user: "10001:10001"
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - "${P1_MODEL_ENV_FILE:?P1_MODEL_ENV_FILE is required}"
+      - ../.env.qdrant-read
+    environment:
+      HF_HUB_OFFLINE: "1"
+      OTEL_ENABLED: "${P1_OTEL_ENABLED:-false}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      QDRANT_PROFILE: "container"
+      QDRANT_URL: "http://qdrant:6333"
+    volumes:
+      - type: bind
+        source: ../data/models/fastembed
+        target: /app/data/models/fastembed
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../data/server-indexes
+        target: /app/data/server-indexes
+        read_only: true
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=134217728
+    networks:
+      - qdrant_bridge
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=10).read()"
+      interval: 10s
+      timeout: 15s
+      retries: 12
+      start_period: 60s
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    mem_limit: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  otel-collector:
+    profiles:
+      - observability
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.159.0@sha256:1f2c54a30e713fac6b3ae77a1ec84010c2007e29ced8ec666214fc2f6739c1cc
+    user: "10001:10001"
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    command:
+      - --config=/etc/otelcol-contrib/config.yaml
+    ports:
+      - "127.0.0.1:9464:9464"
+    volumes:
+      - type: bind
+        source: ./otel-collector.yaml
+        target: /etc/otelcol-contrib/config.yaml
+        read_only: true
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=33554432
+    networks:
+      - qdrant_bridge
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    cpus: 1.0
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  qdrant:
+    image: qdrant/qdrant:v1.19.0-unprivileged@sha256:a0e04fe623cb064502cd869cefc1dc7ce359d8edd481063b5bd351c0a0a2c91e
+    user: "1000:1000"
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    ports:
+      - "127.0.0.1:6333:6333"
+    environment:
+      QDRANT__SERVICE__API_KEY: "${QDRANT_ADMIN_API_KEY:?QDRANT_ADMIN_API_KEY is required}"
+      QDRANT__SERVICE__READ_ONLY_API_KEY: "${QDRANT_READ_ONLY_API_KEY:?QDRANT_READ_ONLY_API_KEY is required}"
+      QDRANT__SERVICE__ENABLE_CORS: "false"
+      QDRANT__SERVICE__ENABLE_SNAPSHOT_URL_RECOVERY: "false"
+      QDRANT__TELEMETRY_DISABLED: "true"
+      QDRANT__CLUSTER__ENABLED: "false"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+      - qdrant_snapshots:/qdrant/snapshots
+    networks:
+      - qdrant_bridge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "bash -c ':> /dev/tcp/127.0.0.1/6333'"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    cpus: 2.0
+    mem_limit: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  qdrant_bridge:
+    driver: bridge
+    internal: false
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+
+volumes:
+  qdrant_storage:
+  qdrant_snapshots:

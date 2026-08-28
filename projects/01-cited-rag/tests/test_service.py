@@ -67,6 +67,10 @@ def _chunk(version: str, rank: int) -> RetrievedChunk:
 class FakeRetriever:
     def __init__(self) -> None:
         self.queries = []
+        self.readiness_calls = 0
+
+    def check_ready(self) -> None:
+        self.readiness_calls += 1
 
     def retrieve(self, query):
         self.queries.append(query)
@@ -95,6 +99,20 @@ class FakeAnswerer:
             index_id=retrieval.index_id,
             build_id=retrieval.build_id,
         )
+
+
+def test_service_readiness_checks_only_retriever() -> None:
+    retriever = FakeRetriever()
+    answerer = FakeAnswerer()
+    service = CitedRagService(
+        retriever=retriever,
+        answerer=answerer,
+    )
+
+    service.check_ready()
+
+    assert retriever.readiness_calls == 1
+    assert answerer.retrieval is None
 
 
 def test_explicit_two_version_question_uses_balanced_retrieval() -> None:

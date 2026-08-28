@@ -1,0 +1,116 @@
+{
+  "schema_version": "1",
+  "slice": "V2-D1+D2",
+  "audited_at": "2026-08-27",
+  "status": "workflow-ready",
+  "current_baseline": {
+    "request_id": true,
+    "structured_json_business_logs": true,
+    "opentelemetry_traces": true,
+    "opentelemetry_metrics": true,
+    "github_actions_workflow": true,
+    "answer_token_usage": true,
+    "evaluation_latency_p50_p95": true,
+    "offline_test_count": 387,
+    "active_retrieval_mode": "hybrid-client-rrf-v1",
+    "configured_api_image": "cited-rag-api:v2-d1",
+    "docker_engine_running": true
+  },
+  "python_dependency_audit": {
+    "python": "3.14.3",
+    "binary_only_dry_run_passed": true,
+    "selected_direct": {
+      "opentelemetry-api": "1.44.0",
+      "opentelemetry-sdk": "1.44.0",
+      "opentelemetry-exporter-otlp-proto-http": "1.44.0"
+    },
+    "new_recursive": {
+      "googleapis-common-protos": "1.75.2",
+      "opentelemetry-exporter-otlp-proto-common": "1.44.0",
+      "opentelemetry-proto": "1.44.0",
+      "opentelemetry-semantic-conventions": "0.65b0"
+    },
+    "fastapi_auto_instrumentation": {
+      "package": "opentelemetry-instrumentation-fastapi",
+      "latest_observed_version": "0.65b0",
+      "selected": false,
+      "reason": "pre-release; manual instrumentation gives tighter privacy and cardinality control"
+    },
+    "installed": true
+  },
+  "collector_audit": {
+    "image": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.159.0",
+    "index_digest": "sha256:1f2c54a30e713fac6b3ae77a1ec84010c2007e29ced8ec666214fc2f6739c1cc",
+    "linux_amd64_digest": "sha256:4f4276c07cee9055f2ab630a86330243f85e208c388ee697bea2a44dab896c3f",
+    "selected": true,
+    "pulled_in_this_slice": true,
+    "host_ports": [
+      "127.0.0.1:9464"
+    ],
+    "unpublished_ports": [
+      4317,
+      4318
+    ],
+    "docker_hub_manifest_result": "connection_refused",
+    "ghcr_manifest_result": "passed"
+  },
+  "github_actions_audit": {
+    "workflow_present": true,
+    "workflow_path": ".github/workflows/p1-ci.yml",
+    "remote_run_performed": false,
+    "permissions": "contents: read",
+    "checkout": {
+      "version": "7.0.1",
+      "commit": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    "setup_python": {
+      "version": "7.0.0",
+      "commit": "5fda3b95a4ea91299a34e894583c3862153e4b97"
+    }
+  },
+  "external_side_effects": {
+    "python_package_installed": true,
+    "collector_image_pulled": true,
+    "container_changed": true,
+    "qdrant_written": false,
+    "mimo_called": false,
+    "model_downloaded": false,
+    "github_remote_changed": false,
+    "cloud_resource_created": false
+  },
+  "implementation": {
+    "json_log_allowlist": true,
+    "manual_trace_stages": [
+      "http",
+      "answer",
+      "retrieval",
+      "embedding",
+      "qdrant.dense",
+      "qdrant.sparse",
+      "fusion",
+      "generation"
+    ],
+    "low_cardinality_metrics": true,
+    "privacy_fixture_occurrences": 0,
+    "telemetry_failure_changes_business_response": false,
+    "collector_config_present": true,
+    "collector_runtime_validated": true,
+    "api_v2_d1_built": true,
+    "runtime_blocker": null,
+    "runtime_release_report": "data/observability-runtime-release-report.json",
+    "ci_smoke_report": "data/ci-smoke-report.json",
+    "ci_smoke_passed": true,
+    "git_boundary_check_passed": true,
+    "workflow_ready": true,
+    "remote_ci_passed": false
+  },
+  "sources": [
+    "https://opentelemetry.io/docs/languages/python/",
+    "https://opentelemetry.io/docs/languages/python/instrumentation/",
+    "https://opentelemetry.io/docs/languages/python/exporters/",
+    "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/tag/v0.159.0",
+    "https://docs.github.com/actions/automating-builds-and-tests/building-and-testing-python",
+    "https://docs.github.com/en/actions/reference/security/secure-use",
+    "https://prometheus.io/docs/practices/histograms/"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "schema_version": "1",
+  "slice": "V2-D3",
+  "status": "fake-verified",
+  "max_attempts": 2,
+  "retryable_http_statuses": [
+    408,
+    429,
+    500,
+    502,
+    503,
+    504
+  ],
+  "default_retry_delay_ms": 250,
+  "maximum_retry_delay_ms": 2000,
+  "scenarios": [
+    {
+      "name": "rate_limit_then_success",
+      "outcome": "success",
+      "error_code": null,
+      "physical_attempt_count": 2,
+      "retry_count": 1,
+      "retry_delays_ms": [
+        500
+      ],
+      "usage_complete": true,
+      "billing_uncertain_attempts": 1
+    },
+    {
+      "name": "connect_error_then_success",
+      "outcome": "success",
+      "error_code": null,
+      "physical_attempt_count": 2,
+      "retry_count": 1,
+      "retry_delays_ms": [
+        250
+      ],
+      "usage_complete": true,
+      "billing_uncertain_attempts": 0
+    },
+    {
+      "name": "read_timeout_no_retry",
+      "outcome": "error",
+      "error_code": "MODEL_TIMEOUT",
+      "physical_attempt_count": 1,
+      "retry_count": 0,
+      "retry_delays_ms": [],
+      "usage_complete": false,
+      "billing_uncertain_attempts": 1
+    },
+    {
+      "name": "server_errors_exhausted",
+      "outcome": "error",
+      "error_code": "MODEL_HTTP_ERROR",
+      "physical_attempt_count": 2,
+      "retry_count": 1,
+      "retry_delays_ms": [
+        250
+      ],
+      "usage_complete": false,
+      "billing_uncertain_attempts": 1
+    },
+    {
+      "name": "invalid_model_json",
+      "outcome": "error",
+      "error_code": "INVALID_MODEL_JSON",
+      "physical_attempt_count": 1,
+      "retry_count": 0,
+      "retry_delays_ms": [],
+      "usage_complete": false,
+      "billing_uncertain_attempts": 0
+    }
+  ],
+  "external_side_effects": {
+    "network_accessed": false,
+    "mimo_called": false,
+    "qdrant_written": false,
+    "docker_changed": false,
+    "dependency_installed": false
+  }
+}

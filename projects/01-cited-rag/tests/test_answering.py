@@ -13,9 +13,11 @@ from cited_rag.answering import (
 from cited_rag.errors import (
     InvalidCitationIdError,
     InvalidModelJsonError,
+    ModelHttpError,
     ModelOutputError,
 )
 from cited_rag.model_client import (
+    AnswerModelAttempt,
     AnswerModelRequest,
     AnswerModelResponse,
 )
@@ -25,6 +27,7 @@ from cited_rag.models import (
     RetrievedChunk,
 )
 from cited_rag.retrieval import DENSE_IDENTIFIER_RETRIEVAL_CONFIG
+from cited_rag.observability import bind_observability
 
 INDEX_ID = UUID("614f6c23-7c35-5832-8086-c29651d60866")
 BUILD_ID = UUID("4facb454-cca4-476f-b623-fa29b40fcf00")
@@ -33,8 +36,14 @@ CHUNK_313 = UUID("00000000-0000-0000-0000-000000000313")
 
 
 class FakeModelClient:
-    def __init__(self, content: str) -> None:
+    def __init__(
+        self,
+        content: str,
+        *,
+        attempts: tuple[AnswerModelAttempt, ...] = (),
+    ) -> None:
         self.content = content
+        self.attempts = attempts
         self.requests: list[AnswerModelRequest] = []
 
     def generate(self, request: AnswerModelRequest) -> AnswerModelResponse:
@@ -44,7 +53,36 @@ class FakeModelClient:
             prompt_tokens=120,
             completion_tokens=30,
             total_tokens=150,
+            attempts=self.attempts,
         )
+
+
+class RecordingTelemetry:
+    def __init__(self) -> None:
+        self.attempts: list[dict[str, object]] = []
+        self.completions: list[dict[str, object]] = []
+
+    def record_model_attempt(self, **fields: object) -> None:
+        self.attempts.append(fields)
+
+    def record_model_completed(self, **fields: object) -> None:
+        self.completions.append(fields)
+
+
+class FailingRetryClient:
+    def generate(self, request: AnswerModelRequest) -> AnswerModelResponse:
+        error = ModelHttpError(503)
+        error.model_attempts = (
+            AnswerModelAttempt(
+                attempt=1,
+                outcome="error",
+                retry_reason="server_error",
+                retry_delay_ms=250,
+                billing_uncertain=True,
+            ),
+            AnswerModelAttempt(attempt=2, outcome="error"),
+        )
+        raise error
 
 
 def make_retrieved(
@@ -171,6 +209,72 @@ def test_answer_binds_source_metadata_only_from_retrieval() -> None:
     assert request.user_payload["evidence"][0]["chunk_id"] == str(CHUNK_314)
     assert "citation_ids" in request.response_schema["properties"]
     assert "source_url" not in request.response_schema["properties"]
+
+
+def test_answer_records_each_physical_attempt_and_final_usage() -> None:
+    attempts = (
+        AnswerModelAttempt(
+            attempt=1,
+            outcome="error",
+            retry_reason="server_error",
+            retry_delay_ms=250,
+            billing_uncertain=True,
+        ),
+        AnswerModelAttempt(attempt=2, outcome="success"),
+    )
+    client = FakeModelClient(
+        output(
+            status="answered",
+            answer="运行 python -m venv ENV_DIR。",
+            citation_ids=[str(CHUNK_314)],
+        ),
+        attempts=attempts,
+    )
+    telemetry = RecordingTelemetry()
+
+    with bind_observability(telemetry):
+        result = AnsweringService(model_client=client).answer(
+            make_retrieval()
+        )
+
+    assert result.status == "answered"
+    assert telemetry.attempts == [
+        {
+            "attempt": 1,
+            "outcome": "error",
+            "retry_reason": "server_error",
+            "retry_delay_ms": 250,
+            "billing_uncertain": True,
+        },
+        {
+            "attempt": 2,
+            "outcome": "success",
+            "retry_reason": None,
+            "retry_delay_ms": None,
+            "billing_uncertain": False,
+        },
+    ]
+    assert telemetry.completions == [
+        {
+            "outcome": "success",
+            "prompt_tokens": 120,
+            "completion_tokens": 30,
+        }
+    ]
+
+
+def test_exhausted_retry_records_two_attempts_and_one_completion() -> None:
+    telemetry = RecordingTelemetry()
+
+    with bind_observability(telemetry):
+        with pytest.raises(ModelHttpError, match="MODEL_HTTP_ERROR"):
+            AnsweringService(model_client=FailingRetryClient()).answer(
+                make_retrieval()
+            )
+
+    assert [item["attempt"] for item in telemetry.attempts] == [1, 2]
+    assert telemetry.attempts[0]["retry_reason"] == "server_error"
+    assert telemetry.completions == [{"outcome": "error"}]
 
 
 def test_refusal_has_no_program_bound_citations() -> None:

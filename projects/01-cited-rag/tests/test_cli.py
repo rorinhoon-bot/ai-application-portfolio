@@ -2,6 +2,9 @@ from io import StringIO
 import json
 from uuid import UUID
 
+import pytest
+
+import cited_rag.cli as cli
 from cited_rag.cli import main
 from cited_rag.errors import RetrievalInputError
 from cited_rag.models import AnswerResult
@@ -15,6 +18,21 @@ class FakeApplication:
     def answer(self, *, question, python_version=None) -> AnswerResult:
         self.calls.append((question, python_version))
         return self.result
+
+
+@pytest.mark.parametrize(
+    ("profile", "expected"),
+    [
+        ("local", cli.LOCAL_INDEX_ROOT),
+        ("server", cli.SERVER_INDEX_ROOT),
+        ("container", cli.SERVER_INDEX_ROOT),
+    ],
+)
+def test_runtime_profile_selects_matching_index_root(
+    profile: str,
+    expected: object,
+) -> None:
+    assert cli._index_root_for_profile(profile) == expected
 
 
 def refused_result(question: str) -> AnswerResult:

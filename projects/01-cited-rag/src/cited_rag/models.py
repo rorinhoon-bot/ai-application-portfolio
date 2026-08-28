@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from hashlib import sha256
+from math import ceil, log2
 from pathlib import PurePosixPath
 from typing import Annotated, Literal, Self
 from uuid import UUID
@@ -520,10 +521,72 @@ class EmbeddingConfig(ContractModel):
     passage_instruction: None = None
 
 
+class SparseIndexConfig(ContractModel):
+    """Pinned deterministic Chinese/code sparse-vector configuration."""
+
+    schema_version: Literal["1"]
+    name: Literal["unicode-code-bm25-v1"]
+    unicode_normalization: Literal["NFKC"]
+    han_codepoint_ranges: tuple[str, ...]
+    han_ngram_size: Literal[2]
+    single_han_fallback: Literal[True]
+    ascii_identifier_pattern: Literal[
+        r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*"
+    ]
+    dotted_identifier_emission: Literal["full-and-components"]
+    numeric_pattern: Literal[r"[0-9]+(?:\.[0-9]+)*"]
+    token_namespaces: dict[str, str]
+    hash_algorithm: Literal["mmh3-x86-32"]
+    hash_seed: Literal[0]
+    hash_signed: Literal[False]
+    k1: Literal[1.2]
+    b: Literal[0.75]
+    idf_provider: Literal["qdrant-modifier-idf"]
+    dense_vector_name: Literal["dense-bge-v1"]
+    sparse_vector_name: Literal["lexical-bm25-v1"]
+
+    @model_validator(mode="after")
+    def validate_fixed_sparse_config(self) -> Self:
+        if self.han_codepoint_ranges != (
+            "3400-4DBF",
+            "4E00-9FFF",
+            "F900-FAFF",
+            "20000-2EBEF",
+            "30000-323AF",
+        ):
+            raise ValueError("han_codepoint_ranges must match the fixed order")
+        if self.token_namespaces != {
+            "han": "h:",
+            "ascii_identifier": "a:",
+            "number": "n:",
+        }:
+            raise ValueError("token_namespaces must match the fixed mapping")
+        return self
+
+
+class SparseVocabulary(ContractModel):
+    """Content-addressed corpus vocabulary used for collision safety."""
+
+    schema_version: Literal["1"]
+    sparse_config_sha256: Sha256Hex
+    tokens: Annotated[tuple[str, ...], Field(min_length=1)]
+
+    @field_validator("tokens")
+    @classmethod
+    def validate_tokens(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        if values != tuple(sorted(values)):
+            raise ValueError("sparse vocabulary tokens must be sorted")
+        if len(values) != len(set(values)):
+            raise ValueError("sparse vocabulary tokens must be unique")
+        if any(not value or len(value) > 600 for value in values):
+            raise ValueError("sparse vocabulary token is invalid")
+        return values
+
+
 class IndexSpecification(ContractModel):
     """Deterministic inputs that define one logical vector index."""
 
-    schema_version: Literal["1"]
+    schema_version: Literal["1", "2"]
     corpus_id: UUID
     source_manifest_sha256: Sha256Hex
     parser_schema_version: Identifier
@@ -534,6 +597,38 @@ class IndexSpecification(ContractModel):
     embedding_dimension: Annotated[int, Field(ge=1)]
     distance: Literal["cosine"]
     payload_schema_version: Literal["payload-v1"]
+    index_kind: Literal["hybrid-dense-sparse"] | None = None
+    source_index_fingerprint: Sha256Hex | None = None
+    dense_vector_name: Literal["dense-bge-v1"] | None = None
+    sparse_vector_name: Literal["lexical-bm25-v1"] | None = None
+    sparse_config_sha256: Sha256Hex | None = None
+    sparse_vocabulary_sha256: Sha256Hex | None = None
+    sparse_vocabulary_token_count: Annotated[int, Field(ge=1)] | None = None
+    sparse_document_length_sum: Annotated[int, Field(ge=1)] | None = None
+    sparse_document_count: Annotated[int, Field(ge=1)] | None = None
+
+    @model_validator(mode="after")
+    def validate_schema_specific_index_fields(self) -> Self:
+        sparse_fields = (
+            self.index_kind,
+            self.source_index_fingerprint,
+            self.dense_vector_name,
+            self.sparse_vector_name,
+            self.sparse_config_sha256,
+            self.sparse_vocabulary_sha256,
+            self.sparse_vocabulary_token_count,
+            self.sparse_document_length_sum,
+            self.sparse_document_count,
+        )
+        if self.schema_version == "1":
+            if any(value is not None for value in sparse_fields):
+                raise ValueError("schema v1 must not contain sparse index fields")
+        else:
+            if any(value is None for value in sparse_fields):
+                raise ValueError("schema v2 requires all sparse index fields")
+            if self.sparse_document_count != self.chunk_count:
+                raise ValueError("sparse_document_count must equal chunk_count")
+        return self
 
 
 class IndexManifest(ContractModel):
@@ -705,11 +800,31 @@ class RetrievalQuery(ContractModel):
 class RetrievalConfig(ContractModel):
     """Fixed query-time ranking behavior, separate from index identity."""
 
-    schema_version: Literal["1"]
-    mode: Literal["dense", "dense-plus-identifiers"]
+    schema_version: Literal["1", "2", "3"]
+    mode: Literal[
+        "dense",
+        "dense-plus-identifiers",
+        "hybrid-rrf",
+        "hybrid-client-rrf-v1",
+    ]
     top_k: Literal[5]
     remove_filtered_version_terms: bool
     identifier_result_limit: Annotated[int, Field(ge=0, le=2)]
+    dense_vector_name: Literal["dense-bge-v1"] | None = None
+    sparse_vector_name: Literal["lexical-bm25-v1"] | None = None
+    dense_prefetch: Literal[20] | None = None
+    sparse_prefetch: Literal[20] | None = None
+    fusion_candidate_count: Literal[20] | None = None
+    rrf_k: Literal[2] | None = None
+    rrf_weights: tuple[Literal[1.0], Literal[1.0]] | None = None
+    tie_break: Literal["score-desc-point-id-asc"] | None = None
+    dense_exact: Literal[True] | None = None
+    lane_candidate_count: Literal[20] | None = None
+    tie_window_initial_limit: Literal[64] | None = None
+    tie_window_growth_factor: Literal[2] | None = None
+    tie_window_cap: Literal["manifest-point-count"] | None = None
+    rrf_rank_base: Literal["zero-based"] | None = None
+    rrf_arithmetic: Literal["fraction-exact"] | None = None
 
     @model_validator(mode="after")
     def validate_mode_fields(self) -> Self:
@@ -722,13 +837,56 @@ class RetrievalConfig(ContractModel):
                 raise ValueError(
                     "dense baseline must not reserve identifier results"
                 )
-        elif (
+        elif self.mode == "dense-plus-identifiers" and (
             not self.remove_filtered_version_terms
             or self.identifier_result_limit == 0
         ):
             raise ValueError(
                 "dense-plus-identifiers requires normalization and a result lane"
             )
+        hybrid_fields = (
+            self.dense_vector_name,
+            self.sparse_vector_name,
+            self.dense_prefetch,
+            self.sparse_prefetch,
+            self.fusion_candidate_count,
+            self.rrf_k,
+            self.rrf_weights,
+            self.tie_break,
+        )
+        deterministic_fields = (
+            self.dense_exact,
+            self.lane_candidate_count,
+            self.tie_window_initial_limit,
+            self.tie_window_growth_factor,
+            self.tie_window_cap,
+            self.rrf_rank_base,
+            self.rrf_arithmetic,
+        )
+        if self.mode == "hybrid-rrf":
+            if self.schema_version != "2":
+                raise ValueError("hybrid-rrf requires retrieval schema v2")
+            if not self.remove_filtered_version_terms:
+                raise ValueError("hybrid-rrf requires version-term normalization")
+            if self.identifier_result_limit != 0:
+                raise ValueError("hybrid-rrf must not use the identifier lane")
+            if any(value is None for value in hybrid_fields):
+                raise ValueError("hybrid-rrf requires all fusion fields")
+            if any(value is not None for value in deterministic_fields):
+                raise ValueError("hybrid-rrf must not contain client fusion fields")
+        elif self.mode == "hybrid-client-rrf-v1":
+            if self.schema_version != "3":
+                raise ValueError("hybrid-client-rrf-v1 requires retrieval schema v3")
+            if not self.remove_filtered_version_terms:
+                raise ValueError("hybrid-client-rrf-v1 requires version-term normalization")
+            if self.identifier_result_limit != 0:
+                raise ValueError("hybrid-client-rrf-v1 must not use the identifier lane")
+            if any(value is None for value in hybrid_fields + deterministic_fields):
+                raise ValueError("hybrid-client-rrf-v1 requires all deterministic fusion fields")
+        elif any(
+            value is not None for value in hybrid_fields + deterministic_fields
+        ):
+            raise ValueError("dense retrieval modes must not contain fusion fields")
         return self
 
 
@@ -739,7 +897,13 @@ class RetrievedChunk(ContractModel):
     score: Annotated[float, Field(ge=-1.000001, le=1.000001)]
     payload: ChunkPayload
     citation_url: HttpUrl
-    retrieval_reason: Literal["dense", "identifier"]
+    retrieval_reason: Literal[
+        "dense",
+        "identifier",
+        "hybrid-rrf",
+        "hybrid-client-rrf-v1",
+    ]
+    score_kind: Literal["cosine", "rrf"] = "cosine"
 
     @model_validator(mode="after")
     def validate_citation_url(self) -> Self:
@@ -748,6 +912,34 @@ class RetrievedChunk(ContractModel):
             raise ValueError(
                 "citation_url must use payload source_url and section_anchor"
             )
+        if (self.retrieval_reason in {"hybrid-rrf", "hybrid-client-rrf-v1"}) != (
+            self.score_kind == "rrf"
+        ):
+            raise ValueError("hybrid retrieval must use rrf score_kind")
+        return self
+
+
+class RetrievalCandidate(ContractModel):
+    """One fused Hybrid candidate retained for evaluation and reranking."""
+
+    rank: Annotated[int, Field(ge=1, le=20)]
+    score: Annotated[float, Field(allow_inf_nan=False)]
+    payload: ChunkPayload
+    citation_url: HttpUrl
+    retrieval_reason: Literal["hybrid-rrf", "hybrid-client-rrf-v1"]
+    score_kind: Literal["rrf"]
+    dense_rank: Annotated[int, Field(ge=1, le=20)] | None = None
+    sparse_rank: Annotated[int, Field(ge=1, le=20)] | None = None
+
+    @model_validator(mode="after")
+    def validate_candidate(self) -> Self:
+        expected = f"{self.payload.source_url}#{self.payload.section_anchor}"
+        if str(self.citation_url) != expected:
+            raise ValueError(
+                "citation_url must use payload source_url and section_anchor"
+            )
+        if self.dense_rank is None and self.sparse_rank is None:
+            raise ValueError("hybrid candidate requires a source rank")
         return self
 
 
@@ -768,6 +960,14 @@ class RetrievalResult(ContractModel):
         ),
     ]
     results: Annotated[tuple[RetrievedChunk, ...], Field(max_length=5)]
+    candidates: Annotated[
+        tuple[RetrievalCandidate, ...],
+        Field(max_length=20),
+    ] | None = None
+    dense_fetch_limit: Annotated[int, Field(ge=1)] | None = None
+    sparse_fetch_limit: Annotated[int, Field(ge=1)] | None = None
+    dense_fetch_rounds: Annotated[int, Field(ge=1)] | None = None
+    sparse_fetch_rounds: Annotated[int, Field(ge=1)] | None = None
 
     @model_validator(mode="after")
     def validate_result_set(self) -> Self:
@@ -783,6 +983,31 @@ class RetrievalResult(ContractModel):
         chunk_ids = [result.payload.chunk_id for result in self.results]
         if len(chunk_ids) != len(set(chunk_ids)):
             raise ValueError("retrieval results must not repeat chunk_id")
+        is_hybrid = self.retrieval_config.mode in {
+            "hybrid-rrf",
+            "hybrid-client-rrf-v1",
+        }
+        if is_hybrid:
+            if self.candidates is None:
+                raise ValueError("hybrid retrieval must expose candidates")
+            candidate_ids = [item.payload.chunk_id for item in self.candidates]
+            if len(candidate_ids) != len(set(candidate_ids)):
+                raise ValueError("retrieval candidates must not repeat chunk_id")
+            if chunk_ids != candidate_ids[: len(chunk_ids)]:
+                raise ValueError("hybrid results must be the candidate prefix")
+        elif self.candidates is not None:
+            raise ValueError("dense retrieval must not expose candidates")
+        diagnostics = (
+            self.dense_fetch_limit,
+            self.sparse_fetch_limit,
+            self.dense_fetch_rounds,
+            self.sparse_fetch_rounds,
+        )
+        if self.retrieval_config.mode == "hybrid-client-rrf-v1":
+            if any(value is None for value in diagnostics):
+                raise ValueError("deterministic hybrid retrieval requires lane diagnostics")
+        elif any(value is not None for value in diagnostics):
+            raise ValueError("lane diagnostics require deterministic hybrid retrieval")
         if self.query.python_version is not None and any(
             result.payload.python_version != self.query.python_version
             for result in self.results
@@ -1245,6 +1470,426 @@ class RetrievalEvaluationReport(ContractModel):
         case_ids = [case.case_id for case in self.cases]
         if len(case_ids) != len(set(case_ids)):
             raise ValueError("report cases must have unique case_id")
+        return self
+
+
+RetrievalEvaluationCaseKindV2 = Literal[
+    "semantic-paraphrase",
+    "exact-identifier",
+    "mixed-semantic-identifier",
+    "version-specific",
+    "known-hard",
+]
+RetrievalEvaluationSplitV2 = Literal["development", "locked-test"]
+
+
+class RetrievalEvaluationCaseV2(ContractModel):
+    """One manually verified, stratified V2 retrieval question."""
+
+    case_id: Identifier
+    question: Annotated[str, Field(min_length=1, max_length=500)]
+    python_version: PythonVersion | None = None
+    case_kind: RetrievalEvaluationCaseKindV2
+    split: RetrievalEvaluationSplitV2
+    relevant_chunk_ids: Annotated[tuple[UUID, ...], Field(min_length=1)]
+    rationale: Annotated[str, Field(min_length=1, max_length=500)]
+
+    @field_validator("question", "rationale")
+    @classmethod
+    def validate_evaluation_text(cls, value: str, info) -> str:
+        return _require_trimmed_non_empty(value, field_name=info.field_name)
+
+    @field_validator("relevant_chunk_ids")
+    @classmethod
+    def validate_relevant_chunk_ids(
+        cls,
+        values: tuple[UUID, ...],
+    ) -> tuple[UUID, ...]:
+        if len(values) != len(set(values)):
+            raise ValueError("relevant_chunk_ids must not contain duplicates")
+        return values
+
+
+class RetrievalEvaluationSetV2(ContractModel):
+    """Fixed 50-case, stratified evaluation set for retrieval ablations."""
+
+    schema_version: Literal["2"]
+    evaluation_set_id: Identifier
+    index_fingerprint: Sha256Hex
+    top_k: Literal[5]
+    candidate_k: Literal[20]
+    authoring_method: Literal["manual-from-verified-corpus"]
+    cases: Annotated[tuple[RetrievalEvaluationCaseV2, ...], Field(min_length=50, max_length=50)]
+
+    @model_validator(mode="after")
+    def validate_stratification(self) -> Self:
+        case_ids = [case.case_id for case in self.cases]
+        if len(case_ids) != len(set(case_ids)):
+            raise ValueError("evaluation cases must have unique case_id")
+        expected_kinds = {
+            "semantic-paraphrase": 12,
+            "exact-identifier": 12,
+            "mixed-semantic-identifier": 10,
+            "version-specific": 8,
+            "known-hard": 8,
+        }
+        observed_kinds = {
+            kind: sum(case.case_kind == kind for case in self.cases)
+            for kind in expected_kinds
+        }
+        if observed_kinds != expected_kinds:
+            raise ValueError("evaluation case_kind counts must match V2 design")
+        expected_splits = {"development": 30, "locked-test": 20}
+        observed_splits = {
+            split: sum(case.split == split for case in self.cases)
+            for split in expected_splits
+        }
+        if observed_splits != expected_splits:
+            raise ValueError("evaluation split counts must match V2 design")
+        return self
+
+
+class RetrievalEvaluationCaseV3(ContractModel):
+    """One fresh release-locked case authored before any V3 retrieval."""
+
+    case_id: Identifier
+    question: Annotated[str, Field(min_length=1, max_length=500)]
+    python_version: PythonVersion | None = None
+    case_kind: RetrievalEvaluationCaseKindV2
+    relevant_chunk_ids: Annotated[tuple[UUID, ...], Field(min_length=1)]
+    rationale: Annotated[str, Field(min_length=1, max_length=500)]
+
+    @field_validator("question", "rationale")
+    @classmethod
+    def validate_text(cls, value: str, info) -> str:
+        return _require_trimmed_non_empty(value, field_name=info.field_name)
+
+    @field_validator("relevant_chunk_ids")
+    @classmethod
+    def validate_relevant_ids(
+        cls,
+        values: tuple[UUID, ...],
+    ) -> tuple[UUID, ...]:
+        if len(values) != len(set(values)):
+            raise ValueError("relevant_chunk_ids must not contain duplicates")
+        return values
+
+
+class RetrievalEvaluationSetV3(ContractModel):
+    """Fresh 20-case release-locked set with no development split."""
+
+    schema_version: Literal["3"]
+    evaluation_set_id: Identifier
+    source_index_fingerprint: Sha256Hex
+    top_k: Literal[5]
+    candidate_k: Literal[20]
+    authoring_method: Literal["manual-from-verified-payloads-before-retrieval"]
+    cases: Annotated[
+        tuple[RetrievalEvaluationCaseV3, ...],
+        Field(min_length=20, max_length=20),
+    ]
+
+    @model_validator(mode="after")
+    def validate_locked_set(self) -> Self:
+        case_ids = [case.case_id for case in self.cases]
+        questions = [case.question for case in self.cases]
+        if len(case_ids) != len(set(case_ids)):
+            raise ValueError("V3 cases must have unique case_id")
+        if len(questions) != len(set(questions)):
+            raise ValueError("V3 cases must have unique questions")
+        expected_kinds = {
+            "semantic-paraphrase": 4,
+            "exact-identifier": 4,
+            "mixed-semantic-identifier": 4,
+            "version-specific": 4,
+            "known-hard": 4,
+        }
+        observed_kinds = {
+            kind: sum(case.case_kind == kind for case in self.cases)
+            for kind in expected_kinds
+        }
+        if observed_kinds != expected_kinds:
+            raise ValueError("V3 case_kind counts must be four each")
+        all_relevant = [
+            chunk_id
+            for case in self.cases
+            for chunk_id in case.relevant_chunk_ids
+        ]
+        if len(all_relevant) != len(set(all_relevant)):
+            raise ValueError("V3 cases must not share relevant chunks")
+        return self
+
+
+class RetrievalEvaluationObservationV2(ContractModel):
+    """Ranked V2 observation retained without generated source metadata."""
+
+    rank: Annotated[int, Field(ge=1, le=20)]
+    score: Annotated[float, Field(allow_inf_nan=False)]
+    chunk_id: UUID
+    source_id: Identifier
+    python_version: PythonVersion
+    section_anchor: Annotated[str, Field(min_length=1, max_length=500)]
+    retrieval_reason: Literal[
+        "dense",
+        "identifier",
+        "sparse",
+        "hybrid-rrf",
+        "hybrid-client-rrf-v1",
+        "reranker",
+    ]
+
+    @field_validator("section_anchor")
+    @classmethod
+    def validate_observation_anchor(cls, value: str) -> str:
+        return _require_trimmed_non_empty(value, field_name="section_anchor")
+
+
+class RetrievalEvaluationCaseResultV2(ContractModel):
+    """Quality and repeated warm-latency result for one V2 case."""
+
+    case_id: Identifier
+    question: Annotated[str, Field(min_length=1, max_length=500)]
+    python_version: PythonVersion | None = None
+    case_kind: RetrievalEvaluationCaseKindV2
+    split: RetrievalEvaluationSplitV2
+    relevant_chunk_ids: Annotated[tuple[UUID, ...], Field(min_length=1)]
+    retrieved: Annotated[tuple[RetrievalEvaluationObservationV2, ...], Field(max_length=5)]
+    candidates: Annotated[tuple[RetrievalEvaluationObservationV2, ...], Field(max_length=20)] | None = None
+    hit_at_5: bool
+    first_relevant_rank_at_5: Annotated[int, Field(ge=1, le=5)] | None = None
+    reciprocal_rank_at_5: Annotated[float, Field(ge=0, le=1)]
+    ndcg_at_5: Annotated[float, Field(ge=0, le=1)]
+    candidate_hit_at_20: bool | None = None
+    first_relevant_rank_at_20: Annotated[int, Field(ge=1, le=20)] | None = None
+    latency_ms: Annotated[tuple[float, ...], Field(min_length=3, max_length=3)]
+    error_code: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]+$")] | None = None
+    error_reason: Annotated[str, Field(min_length=1, max_length=500)] | None = None
+
+    @field_validator("latency_ms")
+    @classmethod
+    def validate_latency_samples(cls, values: tuple[float, ...]) -> tuple[float, ...]:
+        if any(value < 0 for value in values):
+            raise ValueError("latency_ms must contain non-negative values")
+        return values
+
+    @model_validator(mode="after")
+    def validate_case_outcome(self) -> Self:
+        if (self.error_code is None) != (self.error_reason is None):
+            raise ValueError("error_code and error_reason must both be set or both be null")
+        if self.error_code is not None:
+            if self.retrieved or self.candidates is not None or self.hit_at_5:
+                raise ValueError("failed evaluation case must not contain retrieval results")
+            if (
+                self.first_relevant_rank_at_5 is not None
+                or self.reciprocal_rank_at_5 != 0
+                or self.ndcg_at_5 != 0
+                or self.candidate_hit_at_20 is not None
+                or self.first_relevant_rank_at_20 is not None
+            ):
+                raise ValueError("failed evaluation case metrics must be empty")
+            return self
+
+        ranks = [item.rank for item in self.retrieved]
+        if ranks != list(range(1, len(self.retrieved) + 1)):
+            raise ValueError("evaluation result ranks must be contiguous")
+        relevant = set(self.relevant_chunk_ids)
+        observed_rank = next((item.rank for item in self.retrieved if item.chunk_id in relevant), None)
+        if self.first_relevant_rank_at_5 != observed_rank:
+            raise ValueError("first_relevant_rank_at_5 must match retrieved evidence")
+        if self.hit_at_5 != (observed_rank is not None):
+            raise ValueError("hit_at_5 must match retrieved evidence")
+        expected_rr = 0.0 if observed_rank is None else 1.0 / observed_rank
+        if abs(self.reciprocal_rank_at_5 - expected_rr) > 1e-12:
+            raise ValueError("reciprocal_rank_at_5 must match first relevant rank")
+        dcg = sum(
+            1.0 / log2(item.rank + 1)
+            for item in self.retrieved
+            if item.chunk_id in relevant
+        )
+        ideal_count = min(len(relevant), 5)
+        idcg = sum(
+            1.0 / log2(rank + 1)
+            for rank in range(1, ideal_count + 1)
+        )
+        expected_ndcg = dcg / idcg
+        if abs(self.ndcg_at_5 - expected_ndcg) > 1e-12:
+            raise ValueError("ndcg_at_5 must match retrieved evidence")
+        if self.candidates is None:
+            if self.candidate_hit_at_20 is not None or self.first_relevant_rank_at_20 is not None:
+                raise ValueError("candidate metrics require candidate observations")
+        else:
+            candidate_ranks = [item.rank for item in self.candidates]
+            if candidate_ranks != list(range(1, len(self.candidates) + 1)):
+                raise ValueError("candidate ranks must be contiguous")
+            candidate_rank = next((item.rank for item in self.candidates if item.chunk_id in relevant), None)
+            if self.first_relevant_rank_at_20 != candidate_rank:
+                raise ValueError("first_relevant_rank_at_20 must match candidates")
+            if self.candidate_hit_at_20 != (candidate_rank is not None):
+                raise ValueError("candidate_hit_at_20 must match candidates")
+        return self
+
+
+class RetrievalMetricAggregateV2(ContractModel):
+    """One overall or stratified V2 quality aggregate."""
+
+    slice_name: Literal[
+        "overall",
+        "development",
+        "locked-test",
+        "semantic-paraphrase",
+        "exact-identifier",
+        "mixed-semantic-identifier",
+        "version-specific",
+        "known-hard",
+    ]
+    case_count: Annotated[int, Field(ge=1)]
+    hit_count: Annotated[int, Field(ge=0)]
+    recall_at_5: Annotated[float, Field(ge=0, le=1)]
+    mrr_at_5: Annotated[float, Field(ge=0, le=1)]
+    ndcg_at_5: Annotated[float, Field(ge=0, le=1)]
+    candidate_recall_at_20: Annotated[float, Field(ge=0, le=1)] | None = None
+
+
+class RetrievalLatencySummaryV2(ContractModel):
+    """Nearest-rank warm-query latency summary."""
+
+    warm_up_count: Literal[5]
+    repetitions_per_case: Literal[3]
+    sample_count: Annotated[int, Field(ge=1)]
+    percentile_method: Literal["nearest-rank"]
+    minimum_ms: Annotated[float, Field(ge=0)]
+    p50_ms: Annotated[float, Field(ge=0)]
+    p95_ms: Annotated[float, Field(ge=0)]
+    maximum_ms: Annotated[float, Field(ge=0)]
+
+    @model_validator(mode="after")
+    def validate_order(self) -> Self:
+        if not (self.minimum_ms <= self.p50_ms <= self.p95_ms <= self.maximum_ms):
+            raise ValueError("latency percentiles must be ordered")
+        return self
+
+
+class RetrievalRuntimeMetadataV2(ContractModel):
+    """Cold-start and reproducibility metadata for one measured run."""
+
+    qdrant_profile: Literal["server"]
+    python_version: Annotated[str, Field(min_length=1, max_length=50)]
+    qdrant_server_version: Annotated[str, Field(min_length=1, max_length=50)]
+    qdrant_client_version: Annotated[str, Field(min_length=1, max_length=50)]
+    fastembed_version: Annotated[str, Field(min_length=1, max_length=50)]
+    model_revision: GitCommitHex
+    model_asset_bytes: Annotated[int, Field(ge=1)]
+    collection_storage_bytes: Annotated[int, Field(ge=1)]
+    docker_memory_bytes: Annotated[int, Field(ge=1)]
+    logical_cpu_count: Annotated[int, Field(ge=1)]
+    process_thread_count: Annotated[int, Field(ge=1)]
+    cold_start_ms: Annotated[float, Field(ge=0)]
+    candidate_count: Literal[20]
+    external_api_calls: Literal[0]
+
+
+class RetrievalEvaluationReportV2(ContractModel):
+    """Auditable V2 quality, stratification, latency and runtime report."""
+
+    schema_version: Literal["2"]
+    evaluation_set_id: Identifier
+    evaluation_set_sha256: Sha256Hex
+    generated_at: AwareDatetime
+    index_id: UUID
+    build_id: UUID
+    index_fingerprint: Sha256Hex
+    top_k: Literal[5]
+    candidate_k: Literal[20]
+    retrieval_config: RetrievalConfig
+    candidate_metric_status: Literal[
+        "available",
+        "unavailable-current-retriever-no-candidate-layer",
+    ]
+    overall: RetrievalMetricAggregateV2
+    by_split: Annotated[tuple[RetrievalMetricAggregateV2, ...], Field(min_length=2, max_length=2)]
+    by_case_kind: Annotated[tuple[RetrievalMetricAggregateV2, ...], Field(min_length=5, max_length=5)]
+    latency: RetrievalLatencySummaryV2
+    runtime: RetrievalRuntimeMetadataV2
+    cases: Annotated[tuple[RetrievalEvaluationCaseResultV2, ...], Field(min_length=50, max_length=50)]
+
+    @model_validator(mode="after")
+    def validate_report(self) -> Self:
+        if self.top_k != self.retrieval_config.top_k:
+            raise ValueError("report top_k must match retrieval configuration")
+        if self.overall.slice_name != "overall":
+            raise ValueError("overall metric must use the overall slice")
+        if {item.slice_name for item in self.by_split} != {"development", "locked-test"}:
+            raise ValueError("by_split must contain both fixed splits")
+        if {item.slice_name for item in self.by_case_kind} != {
+            "semantic-paraphrase",
+            "exact-identifier",
+            "mixed-semantic-identifier",
+            "version-specific",
+            "known-hard",
+        }:
+            raise ValueError("by_case_kind must contain all fixed case kinds")
+        if self.latency.sample_count != len(self.cases) * self.latency.repetitions_per_case:
+            raise ValueError("latency sample_count must match cases and repetitions")
+        samples = sorted(
+            sample for case in self.cases for sample in case.latency_ms
+        )
+        expected_p50 = samples[ceil(0.50 * len(samples)) - 1]
+        expected_p95 = samples[ceil(0.95 * len(samples)) - 1]
+        if (
+            self.latency.minimum_ms != samples[0]
+            or self.latency.p50_ms != expected_p50
+            or self.latency.p95_ms != expected_p95
+            or self.latency.maximum_ms != samples[-1]
+        ):
+            raise ValueError("latency summary must match case samples")
+        if self.runtime.candidate_count != self.candidate_k:
+            raise ValueError("runtime candidate_count must match report candidate_k")
+        candidate_available = self.candidate_metric_status == "available"
+        if candidate_available != all(case.candidates is not None for case in self.cases):
+            raise ValueError("candidate status must match case observations")
+        aggregates = (self.overall, *self.by_split, *self.by_case_kind)
+        if any(
+            (aggregate.candidate_recall_at_20 is not None)
+            != candidate_available
+            for aggregate in aggregates
+        ):
+            raise ValueError("candidate aggregate must match candidate status")
+        expected_slices = [
+            (self.overall, self.cases),
+            *(
+                (aggregate, tuple(case for case in self.cases if case.split == aggregate.slice_name))
+                for aggregate in self.by_split
+            ),
+            *(
+                (aggregate, tuple(case for case in self.cases if case.case_kind == aggregate.slice_name))
+                for aggregate in self.by_case_kind
+            ),
+        ]
+        for aggregate, cases in expected_slices:
+            case_count = len(cases)
+            hit_count = sum(case.hit_at_5 for case in cases)
+            expected_recall = hit_count / case_count
+            expected_mrr = sum(case.reciprocal_rank_at_5 for case in cases) / case_count
+            expected_ndcg = sum(case.ndcg_at_5 for case in cases) / case_count
+            if aggregate.case_count != case_count or aggregate.hit_count != hit_count:
+                raise ValueError("quality aggregate counts must match cases")
+            if (
+                abs(aggregate.recall_at_5 - expected_recall) > 1e-12
+                or abs(aggregate.mrr_at_5 - expected_mrr) > 1e-12
+                or abs(aggregate.ndcg_at_5 - expected_ndcg) > 1e-12
+            ):
+                raise ValueError("quality aggregate metrics must match cases")
+            if candidate_available:
+                expected_candidate = (
+                    sum(bool(case.candidate_hit_at_20) for case in cases)
+                    / case_count
+                )
+                if (
+                    aggregate.candidate_recall_at_20 is None
+                    or abs(aggregate.candidate_recall_at_20 - expected_candidate)
+                    > 1e-12
+                ):
+                    raise ValueError("candidate aggregate must match cases")
         return self
 
 

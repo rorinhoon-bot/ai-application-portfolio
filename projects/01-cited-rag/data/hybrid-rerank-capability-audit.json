@@ -1,0 +1,127 @@
+{
+  "schema_version": "1",
+  "slice": "V2-C-design",
+  "audited_at": "2026-08-24",
+  "status": "passed",
+  "installed_runtime": {
+    "fastembed": "0.8.0",
+    "qdrant_client": "1.18.0",
+    "qdrant_server": "1.19.0"
+  },
+  "current_baseline": {
+    "evaluation_set_id": "retrieval-v1",
+    "case_count": 15,
+    "python_3_13_case_count": 2,
+    "python_3_14_case_count": 13,
+    "dense_hit_count": 10,
+    "dense_recall_at_5": 0.6666666666666666,
+    "dense_plus_identifiers_hit_count": 13,
+    "dense_plus_identifiers_recall_at_5": 0.8666666666666667,
+    "missing_metrics": [
+      "MRR@5",
+      "nDCG@5",
+      "candidate Recall@20",
+      "P50 latency",
+      "P95 latency",
+      "resource measurements",
+      "stratified case metrics"
+    ]
+  },
+  "qdrant_capabilities": {
+    "named_dense_vectors": true,
+    "named_sparse_vectors": true,
+    "idf_modifier": true,
+    "prefetch_query": true,
+    "rrf_query": true,
+    "selected_fusion_baseline": "unweighted RRF with explicit k=2"
+  },
+  "fastembed_bm25": {
+    "model": "Qdrant/bm25",
+    "available": true,
+    "selected": false,
+    "reason": "FastEmbed 0.8.0 has no Chinese BM25 language and its SimpleTokenizer splits on whitespace, so Chinese spans are not trustworthy lexical terms.",
+    "supported_languages": [
+      "arabic",
+      "danish",
+      "dutch",
+      "english",
+      "finnish",
+      "french",
+      "german",
+      "greek",
+      "hungarian",
+      "italian",
+      "norwegian",
+      "portuguese",
+      "romanian",
+      "russian",
+      "spanish",
+      "swedish",
+      "tamil",
+      "turkish"
+    ]
+  },
+  "selected_sparse_design": {
+    "name": "unicode-code-bm25-v1",
+    "new_python_dependency_required": false,
+    "token_classes": [
+      "overlapping Han bigrams",
+      "lowercased ASCII identifiers",
+      "dotted identifier and component tokens",
+      "decimal number tokens"
+    ],
+    "hash": "mmh3 unsigned 32-bit with collision audit",
+    "term_frequency_k1": 1.2,
+    "length_normalization_b": 0.75,
+    "idf_provider": "Qdrant Modifier.IDF"
+  },
+  "reranker_candidate": {
+    "model": "BAAI/bge-reranker-base",
+    "revision": "2cfc18c9415c912f9d8155881c133215df768a70",
+    "license": "mit",
+    "languages": [
+      "Chinese",
+      "English"
+    ],
+    "supported_by_fastembed_0_8_0": true,
+    "required_files": [
+      {
+        "path": "config.json",
+        "bytes": 799
+      },
+      {
+        "path": "onnx/model.onnx",
+        "bytes": 1112459588,
+        "sha256_from_lfs_metadata": "15b9a8c3da82eddf263df571281166e00e9308fe19d077084b642ebfcaf06d2b"
+      },
+      {
+        "path": "special_tokens_map.json",
+        "bytes": 279
+      },
+      {
+        "path": "tokenizer.json",
+        "bytes": 17098107,
+        "sha256_from_lfs_metadata": "9eb652ac4e40cc093272bbbe0f55d521cf67570060227109b5cdc20945a4489e"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "bytes": 443
+      }
+    ],
+    "required_file_bytes": 1129559216,
+    "downloaded": false,
+    "selected_for_default_runtime": false
+  },
+  "external_side_effects": {
+    "python_package_installed": false,
+    "model_downloaded": false,
+    "qdrant_written": false,
+    "mimo_called": false
+  },
+  "sources": [
+    "https://qdrant.tech/documentation/search/hybrid-queries/",
+    "https://qdrant.tech/documentation/search/text-search/hybrid-search/",
+    "https://github.com/qdrant/fastembed",
+    "https://huggingface.co/BAAI/bge-reranker-base"
+  ]
+}

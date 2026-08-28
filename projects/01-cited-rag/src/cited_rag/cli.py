@@ -22,16 +22,23 @@ from cited_rag.config import Settings
 from cited_rag.embedding import EmbeddingService
 from cited_rag.errors import CitedRagError
 from cited_rag.model_assets import load_verified_model_assets
+from cited_rag.indexing import load_active_index
 from cited_rag.models import AnswerResult, PythonVersion
+from cited_rag.qdrant_connection import (
+    QdrantReadSettings,
+    make_read_client_factory,
+)
 from cited_rag.retrieval import (
     DENSE_IDENTIFIER_RETRIEVAL_CONFIG,
+    HYBRID_CLIENT_RRF_RETRIEVAL_CONFIG,
     QdrantRetrievalService,
 )
 from cited_rag.service import CitedRagService
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODEL_REPORT = PROJECT_ROOT / "data" / "model-assets.json"
-INDEX_ROOT = PROJECT_ROOT / "data" / "indexes"
+LOCAL_INDEX_ROOT = PROJECT_ROOT / "data" / "indexes"
+SERVER_INDEX_ROOT = PROJECT_ROOT / "data" / "server-indexes"
 
 
 class Application(Protocol):
@@ -48,10 +55,20 @@ ApplicationFactory = Callable[[], Application]
 
 
 def build_local_application() -> CitedRagService:
-    """Build from verified local assets; never download at runtime."""
+    """Build from verified local assets and selected Qdrant profile."""
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     settings = Settings(_env_file=PROJECT_ROOT / ".env")
+    qdrant_settings = QdrantReadSettings(
+        _env_file=PROJECT_ROOT / ".env.qdrant-read"
+    )
+    index_root = _index_root_for_profile(qdrant_settings.qdrant_profile)
+    _, active_manifest = load_active_index(index_root=index_root)
+    retrieval_config = (
+        HYBRID_CLIENT_RRF_RETRIEVAL_CONFIG
+        if active_manifest.specification.schema_version == "2"
+        else DENSE_IDENTIFIER_RETRIEVAL_CONFIG
+    )
     assets = load_verified_model_assets(
         project_root=PROJECT_ROOT,
         report_path=MODEL_REPORT,
@@ -71,13 +88,18 @@ def build_local_application() -> CitedRagService:
     return CitedRagService(
         retriever=QdrantRetrievalService(
             embedding_service=embedding_service,
-            index_root=INDEX_ROOT,
-            retrieval_config=DENSE_IDENTIFIER_RETRIEVAL_CONFIG,
+            index_root=index_root,
+            retrieval_config=retrieval_config,
+            client_factory=make_read_client_factory(qdrant_settings),
         ),
         answerer=AnsweringService(
             model_client=create_answer_model_client(settings)
         ),
     )
+
+
+def _index_root_for_profile(profile: str) -> Path:
+    return LOCAL_INDEX_ROOT if profile == "local" else SERVER_INDEX_ROOT
 
 
 def main(

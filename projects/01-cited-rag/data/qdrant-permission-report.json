@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "status": "passed",
+  "validated_at": "2026-08-23T14:53:48.009840+00:00",
+  "qdrant_transport": "loopback-http",
+  "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+  "point_count": 1359,
+  "read_only_access": {
+    "count_status": 200,
+    "scroll_status": 200,
+    "query_status": 200,
+    "self_query_top_score": 1.0
+  },
+  "write_denial": {
+    "expected_status": 403,
+    "create_collection": 403,
+    "upsert_point": 403,
+    "delete_collection": 403
+  },
+  "probe_collection_absent": true,
+  "secrets_recorded": false
+}

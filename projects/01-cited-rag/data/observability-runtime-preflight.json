@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "slice": "V2-D1-runtime-activation",
+  "recorded_at": "2026-08-27T10:09:12.2393082Z",
+  "status": "blocked_before_container_runtime",
+  "authorization": {
+    "docker_engine_start": true,
+    "one_qdrant_restart_if_triggered_by_restart_policy": true,
+    "qdrant_writes": false,
+    "qdrant_deletes": false,
+    "qdrant_configuration_changes": false,
+    "volume_changes": false
+  },
+  "preflight": {
+    "git_commit": "4dbd1bd",
+    "active_pointer_sha256": "5a905dc41cebc1a9b40d73ef19840629ebd490398a34bfd1639bdb9f0bd54e84",
+    "manifest_sha256": "4c8f38c0547fa575a8bef783a4065679153b6c3f5ec5fa86645d83f78f193697",
+    "build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+    "collection_name": "cited-rag-c1a14f1add33-740d893f20e4",
+    "docker_data_vhdx_bytes": 3083862016,
+    "docker_data_vhdx_last_write_utc": "2026-08-25T14:13:37.0334630Z",
+    "h_drive_free_bytes_before": 109889757184,
+    "wsl_distributions_before": {
+      "Ubuntu": "Stopped",
+      "docker-desktop": "Stopped"
+    }
+  },
+  "attempt": {
+    "docker_desktop_started": true,
+    "engine_ready": false,
+    "engine_wait_seconds": 180,
+    "backend_error": "starting services: Docker Desktop failed to access its local ingest socket; the run was stopped before Engine or containers started.",
+    "failed_processes_stopped": true,
+    "wsl_shutdown_attempted": true,
+    "stale_socket_move_result": "system_cannot_access_file",
+    "wsl_service_restart_result": "access_denied_non_elevated",
+    "factory_reset_attempted": false
+  },
+  "post_failure": {
+    "docker_engine_running": false,
+    "qdrant_started": false,
+    "collector_image_pulled": false,
+    "api_image_built": false,
+    "container_changed": false,
+    "qdrant_written": false,
+    "qdrant_deleted": false,
+    "volume_changed": false,
+    "docker_data_vhdx_bytes": 3083862016,
+    "docker_data_vhdx_last_write_utc": "2026-08-25T14:13:37.0334630Z",
+    "h_drive_free_bytes_after": 109889253376,
+    "active_pointer_sha256": "5a905dc41cebc1a9b40d73ef19840629ebd490398a34bfd1639bdb9f0bd54e84",
+    "manifest_sha256": "4c8f38c0547fa575a8bef783a4065679153b6c3f5ec5fa86645d83f78f193697"
+  },
+  "required_operator_action": "Restart Windows to release the inaccessible stale AF_UNIX socket, then resume V2-D1 runtime activation. Do not factory-reset Docker Desktop."
+}

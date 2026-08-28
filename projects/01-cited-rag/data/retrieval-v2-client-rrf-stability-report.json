@@ -1,0 +1,844 @@
+{
+  "schema_version": "1",
+  "report_id": "retrieval-v2-client-rrf-stability",
+  "generated_at": "2026-08-25T06:17:12.158010+00:00",
+  "evaluation_set_id": "retrieval-v2",
+  "evaluation_set_sha256": "a3b30c755dc2a4036b9d715a9df2bd891bfb850ce2bc2c369b43447c2a8abd13",
+  "index_id": "c1a14f1a-dd33-59e8-8e4f-26a9f16846f1",
+  "build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+  "collection_name": "cited-rag-c1a14f1add33-740d893f20e4",
+  "retrieval_config": {
+    "schema_version": "3",
+    "mode": "hybrid-client-rrf-v1",
+    "top_k": 5,
+    "remove_filtered_version_terms": true,
+    "identifier_result_limit": 0,
+    "dense_vector_name": "dense-bge-v1",
+    "sparse_vector_name": "lexical-bm25-v1",
+    "dense_prefetch": 20,
+    "sparse_prefetch": 20,
+    "fusion_candidate_count": 20,
+    "rrf_k": 2,
+    "rrf_weights": [
+      1.0,
+      1.0
+    ],
+    "tie_break": "score-desc-point-id-asc",
+    "dense_exact": true,
+    "lane_candidate_count": 20,
+    "tie_window_initial_limit": 64,
+    "tie_window_growth_factor": 2,
+    "tie_window_cap": "manifest-point-count",
+    "rrf_rank_base": "zero-based",
+    "rrf_arithmetic": "fraction-exact"
+  },
+  "warm_up_count": 5,
+  "case_count": 50,
+  "repetitions_per_case": 3,
+  "stable_case_count": 50,
+  "passed": true,
+  "quality_metrics_used_for_release": false,
+  "external_api_calls": 0,
+  "cases": [
+    {
+      "case_id": "create-virtual-environment",
+      "ranking_signature_sha256": "450af8c4ec2509d77e11f476c50607d6bfe1e115d3776e0b8df8d73ed282bd7a",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        5388.6819,
+        5367.5491,
+        5448.4724
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "list-comprehension-purpose",
+      "ranking_signature_sha256": "12a1945e97efef2c3e0366b78b3e032ebd8e3a4ba39f33034fec7c17602ff84b",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        5395.6444,
+        5720.9146,
+        7810.9243
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "match-first-pattern",
+      "ranking_signature_sha256": "be5ea674e62902c70cbb3ea5d426635e394f1827c8034ecc1be375e5a4c1ff4f",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7431.9321,
+        7225.1444,
+        8153.5894
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "finally-resource-cleanup",
+      "ranking_signature_sha256": "fee3c8ee2000bd0df0cfe0cb8f1bac64079959140444c885c05cf075082dede4",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7613.0389,
+        7389.2643,
+        6389.3231
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "shutil-file-management",
+      "ranking_signature_sha256": "c48043d6b291b65911bb32e494a3638e9ff558010d3c4bf7de43942509cf7ab6",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6609.341,
+        7460.388,
+        6953.5615
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "loop-else-without-break",
+      "ranking_signature_sha256": "940d5557bb0c7b9e1888bb1701dbdf6a997f6be22259e50419cf6255a15a880f",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6455.9991,
+        6555.0894,
+        6482.2542
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "efficient-fifo-queue",
+      "ranking_signature_sha256": "c6110702d084cb198295ee48d0a698d0d35ad90574a39b4690f941f84a69d5b0",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6644.8256,
+        7006.5678,
+        7202.3884
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "weak-reference-purpose",
+      "ranking_signature_sha256": "04d86e6f9610ff1849b954b19a4dccb7d222cf293517f400c691c2ac7950395f",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7091.865,
+        7641.0037,
+        7504.0138
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "dictionary-comprehension",
+      "ranking_signature_sha256": "fd89dcc793940c5b5aa88199441ba52d6d294e680d6a0018dc7d43a30645c48b",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7268.9013,
+        6821.6105,
+        7121.8916
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "unpack-call-arguments",
+      "ranking_signature_sha256": "f8174f6b3ba8e299bdea2d882553a4a25646041ba0f6ccef8aa02f8f8004b497",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6899.5497,
+        6694.5687,
+        6876.0949
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "generator-expression-memory",
+      "ranking_signature_sha256": "9df6dd0014c1082ad67f726fc793a8de5efa890a06d821dabc01994f8ef94b3c",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6809.2238,
+        6679.5939,
+        6981.4189
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "set-properties",
+      "ranking_signature_sha256": "1943fdbb7786f0cc45ff01e1892f149c7f4811e8857bc472375f24807a9f3fd4",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6901.3992,
+        6873.9308,
+        7006.2946
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "json-non-ascii-output",
+      "ranking_signature_sha256": "3f2f20d4d62bd03e128d4f870822c6b87d5d6e94edb52c1274d3ca734ab72d5b",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6840.717,
+        6929.477,
+        6871.23
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "class-name-mangling",
+      "ranking_signature_sha256": "6f2d1566ff5312d09c082facfb0b23c6e762d3d5d0e70676916b8f49b53f0392",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6910.645,
+        6755.9233,
+        6692.3877
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "argparse-suggest-on-error",
+      "ranking_signature_sha256": "ed056211fce28acbb140fc3ccb678de3320a83238515dfca99fdfcaa4428f819",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6810.6663,
+        6937.0622,
+        6807.3484
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "formatted-string-literal",
+      "ranking_signature_sha256": "9c05e0e51d562e807104ed1f024062961be293f5d9e6c1f878284aca318b1d96",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6727.049,
+        6750.0423,
+        6804.5471
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "keyword-only-marker",
+      "ranking_signature_sha256": "dcde00477c5b670b195c50bd02c5360a5bea650fa1af3f99ce84a411f2adcdad",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7087.7545,
+        7073.9124,
+        6818.3262
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "reprlib-abbreviated-repr",
+      "ranking_signature_sha256": "5430bc15be5cc0a5e1716a792c05d2b71732b2b6c0a0844e3d912a38f6d1bd70",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7038.4895,
+        7248.2218,
+        6850.6724
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "bisect-insort",
+      "ranking_signature_sha256": "36999e236aaad056e2908ffecfe6f5150da49fdef707ef3aa68f7aa5791404c1",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6819.0312,
+        6784.0583,
+        6805.4422
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "sys-path-append",
+      "ranking_signature_sha256": "7d79044a8ef9db72d50375bfe3bff10bf495503a3d904e48a1fa9b917da4ae66",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6911.4434,
+        5850.3969,
+        5467.0712
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "path-walk-symlink-classification",
+      "ranking_signature_sha256": "094271d034c5e1d27588a354515bf8a378a61810dc03efbd3632bab7c868fa03",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6682.7818,
+        6872.955,
+        6880.7027
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "json-decode-error-fields",
+      "ranking_signature_sha256": "f1c70d6531652e0f8397c1aad83389c7b633225ead3e55daf3baf2fbf3ae0366",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6921.45,
+        6995.5027,
+        6841.325
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "argparse-boolean-optional-action",
+      "ranking_signature_sha256": "63c3adc97edd3c5044a335026235eb924becee7b36bb0ab9ba89023498e5b5f4",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6708.5183,
+        7235.8336,
+        7086.0048
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "venv-create-api",
+      "ranking_signature_sha256": "8311e9f846bd1872345e8e30fe1ccab0cc51e36de31298dbd86252248bd361b2",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7042.3695,
+        7185.2022,
+        7467.1616
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "float-isclose",
+      "ranking_signature_sha256": "b2e45de04cb7aa80bf7b28b10c03f116ec49904b5bf535298721e71d0dce4733",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7739.4552,
+        7337.1219,
+        7554.1781
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "path-read-text-314",
+      "ranking_signature_sha256": "ebeaf333ebb5f8daa5c966fd8b8f6aaeb17da9ba357d88789e8c79ac81ff10d5",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6999.411,
+        6999.6103,
+        7121.456
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "deque-popleft-queue",
+      "ranking_signature_sha256": "328535ce8391520280d31de76560d0b00c2935deb61cd7deac304c8eb92445e1",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6966.8896,
+        6791.5589,
+        7058.9433
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "path-glob-double-star",
+      "ranking_signature_sha256": "b30f6d489347196668baf430062f685ca28d0970c9f98c3835a2525944012078",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7047.5198,
+        6924.7304,
+        6877.8708
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "json-loads-string",
+      "ranking_signature_sha256": "c51a59e6777ceb9735cd1cb9e2370ec371c6fbf2f38761a6218fd457716ac5b9",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6994.5155,
+        6806.8017,
+        7127.7421
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "venv-upgrade-deps",
+      "ranking_signature_sha256": "ab2dab2c7ced09a61b393321e3a4b579b1b114ae23632014cd4d41aceb742894",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7208.546,
+        6975.3206,
+        7135.0084
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "list-sort-lambda-key",
+      "ranking_signature_sha256": "1f6ead0945b6ad1e929134f13e468b0b653f1bc24924d4cb6bd42f5c8c69c59e",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7090.3207,
+        7015.1996,
+        7235.9225
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "raise-from-exception-chain",
+      "ranking_signature_sha256": "f23808d1490c4b16b25053b68b554439c800352c9bbdeff9573aae556c79eb9d",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6966.5282,
+        7031.8279,
+        7054.3694
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "math-fsum-accuracy",
+      "ranking_signature_sha256": "7b5b1a4ca68f892d9cee3968ac52d9c96573b1f25f2e784ce6e5eb3a25c6bb29",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7623.6627,
+        7926.7634,
+        7288.5272
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "package-all-star-import",
+      "ranking_signature_sha256": "b4d3a52df8aeec22f6dadbb1a14316c50bcd2212dd9dfc1f99dd819e9567ec52",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7281.8306,
+        7248.0331,
+        7731.9056
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "path-read-text-313",
+      "ranking_signature_sha256": "b7c1ae67f15851a93c9373cd3545c00dc15b55bcd5abc99d56392210834cc918",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7907.331,
+        6233.3384,
+        7242.7002
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "argparse-prog-313",
+      "ranking_signature_sha256": "6b9dab25c72eb7868c3666f2c01a3ebbc529fa6854516c6f3578ceb013e4dc2f",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7256.8035,
+        7052.1671,
+        6513.8855
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "argparse-color-314",
+      "ranking_signature_sha256": "2b0a0349f68a8c782f7d91530a2987a86696ed04e6f1702304d4f4dd2dd48dd3",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6441.1921,
+        7011.853,
+        6914.202
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "path-copy-314",
+      "ranking_signature_sha256": "a2d27fa1450a17abe1e9fc9dd25599a3ca68cc1b825edf546dd608412f28d18c",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6183.6984,
+        6757.2936,
+        7337.9189
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "template-string-314",
+      "ranking_signature_sha256": "487045966ee50c7458f92b517a70176b9f692790591b0e6f044e7ed3d957f55d",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        8817.2281,
+        11608.3252,
+        8187.9655
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "deferred-annotations-314",
+      "ranking_signature_sha256": "fd4314717be54c3a58c061725231b887b2976de680d300123a5f3198bc72bd0d",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7593.4007,
+        7157.8717,
+        6707.0749
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "free-threaded-cpython-313",
+      "ranking_signature_sha256": "50fc2ab55a32b5f5912b4869604b6bc5fd3b9e6bdb23451273ff32d9f740a894",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6769.9904,
+        7326.8481,
+        6581.9965
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "interactive-interpreter-313",
+      "ranking_signature_sha256": "bf64dd28cfcf9586647d3cedad54785b72797ff6de836a03c880b7b964ef6594",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7768.9683,
+        5235.1546,
+        4984.4423
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "module-name-attribute",
+      "ranking_signature_sha256": "06ba590f46ace0d75e2c05f293f7c71659b122fc8b7db04483084cdd0453ac59",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        7312.856,
+        7915.0145,
+        7083.4958
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "transpose-with-zip",
+      "ranking_signature_sha256": "5b518042eb96609719c66f6b8c55296ea72d9cdc38ea9d6ddd13eb631f11babd",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6719.1503,
+        6256.4001,
+        6382.4864
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "mutable-default-once",
+      "ranking_signature_sha256": "2248ef0185914c6946f8ce84255c1998eac51c8466230da421e4d35d2994332e",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6085.3552,
+        6186.8836,
+        6263.2402
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "singleton-tuple-comma",
+      "ranking_signature_sha256": "b872635c69833d02cbf4b89bb1da2cf7a5c8d59480611b0657b2ff7ecd3130a7",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6238.8307,
+        6439.4976,
+        6021.6012
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "json-duplicate-object-names",
+      "ranking_signature_sha256": "d2fd4f41f98c8544d2f97b8fcb71261d587fcc4e84866c1861fe30dae6e5a058",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6207.7428,
+        6154.3632,
+        6120.6331
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "mutable-class-variable-sharing",
+      "ranking_signature_sha256": "d4065e0f240e28d4c3feb887e073a45692013b48e8601aeb228027ab0391676f",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6160.7589,
+        6079.5401,
+        6177.7604
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "list-alias-versus-copy",
+      "ranking_signature_sha256": "8f821e3be7c863ec7af4db589303c89bee48edd98cfd47f5eb341028adaeefb1",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6148.7119,
+        6304.9817,
+        6389.9608
+      ],
+      "stable": true
+    },
+    {
+      "case_id": "star-import-without-all",
+      "ranking_signature_sha256": "4a546e22935929ed29aa6c0daa7d67bfdc99f98a0c820e795eaf24fd8dde17a8",
+      "diagnostics": {
+        "dense_fetch_limit": 64,
+        "sparse_fetch_limit": 64,
+        "dense_fetch_rounds": 1,
+        "sparse_fetch_rounds": 1
+      },
+      "latency_ms": [
+        6270.4897,
+        6269.7656,
+        6172.5987
+      ],
+      "stable": true
+    }
+  ]
+}

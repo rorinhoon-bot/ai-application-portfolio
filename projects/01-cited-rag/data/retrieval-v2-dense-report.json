@@ -1,0 +1,3674 @@
+{
+  "schema_version": "2",
+  "evaluation_set_id": "retrieval-v2",
+  "evaluation_set_sha256": "a3b30c755dc2a4036b9d715a9df2bd891bfb850ce2bc2c369b43447c2a8abd13",
+  "generated_at": "2026-08-24T14:23:58.618422Z",
+  "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+  "index_fingerprint": "ea641fef238f3e74d6f64fa923feb53f9a7f36d88b082f14cafdcaabb541c4cd",
+  "top_k": 5,
+  "candidate_k": 20,
+  "retrieval_config": {
+    "schema_version": "1",
+    "mode": "dense",
+    "top_k": 5,
+    "remove_filtered_version_terms": false,
+    "identifier_result_limit": 0
+  },
+  "candidate_metric_status": "unavailable-current-retriever-no-candidate-layer",
+  "overall": {
+    "slice_name": "overall",
+    "case_count": 50,
+    "hit_count": 42,
+    "recall_at_5": 0.84,
+    "mrr_at_5": 0.6313333333333333,
+    "ndcg_at_5": 0.6839867307981148,
+    "candidate_recall_at_20": null
+  },
+  "by_split": [
+    {
+      "slice_name": "development",
+      "case_count": 30,
+      "hit_count": 25,
+      "recall_at_5": 0.8333333333333334,
+      "mrr_at_5": 0.6511111111111112,
+      "ndcg_at_5": 0.6965325152556999,
+      "candidate_recall_at_20": null
+    },
+    {
+      "slice_name": "locked-test",
+      "case_count": 20,
+      "hit_count": 17,
+      "recall_at_5": 0.85,
+      "mrr_at_5": 0.6016666666666667,
+      "ndcg_at_5": 0.6651680541117372,
+      "candidate_recall_at_20": null
+    }
+  ],
+  "by_case_kind": [
+    {
+      "slice_name": "semantic-paraphrase",
+      "case_count": 12,
+      "hit_count": 12,
+      "recall_at_5": 1.0,
+      "mrr_at_5": 0.7916666666666666,
+      "ndcg_at_5": 0.8456474611908057,
+      "candidate_recall_at_20": null
+    },
+    {
+      "slice_name": "exact-identifier",
+      "case_count": 12,
+      "hit_count": 10,
+      "recall_at_5": 0.8333333333333334,
+      "mrr_at_5": 0.6208333333333333,
+      "ndcg_at_5": 0.6732824060375707,
+      "candidate_recall_at_20": null
+    },
+    {
+      "slice_name": "mixed-semantic-identifier",
+      "case_count": 10,
+      "hit_count": 8,
+      "recall_at_5": 0.8,
+      "mrr_at_5": 0.5166666666666667,
+      "ndcg_at_5": 0.5892789260714373,
+      "candidate_recall_at_20": null
+    },
+    {
+      "slice_name": "version-specific",
+      "case_count": 8,
+      "hit_count": 6,
+      "recall_at_5": 0.75,
+      "mrr_at_5": 0.49375,
+      "ndcg_at_5": 0.556057389859924,
+      "candidate_recall_at_20": null
+    },
+    {
+      "slice_name": "known-hard",
+      "case_count": 8,
+      "hit_count": 6,
+      "recall_at_5": 0.75,
+      "mrr_at_5": 0.6875,
+      "ndcg_at_5": 0.7038662191964322,
+      "candidate_recall_at_20": null
+    }
+  ],
+  "latency": {
+    "warm_up_count": 5,
+    "repetitions_per_case": 3,
+    "sample_count": 150,
+    "percentile_method": "nearest-rank",
+    "minimum_ms": 4678.6507,
+    "p50_ms": 4804.7573,
+    "p95_ms": 5303.8008,
+    "maximum_ms": 9407.2171
+  },
+  "runtime": {
+    "qdrant_profile": "server",
+    "python_version": "3.14.3",
+    "qdrant_server_version": "1.19.0",
+    "qdrant_client_version": "1.18.0",
+    "fastembed_version": "0.8.0",
+    "model_revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+    "model_asset_bytes": 95221432,
+    "collection_storage_bytes": 205628065,
+    "docker_memory_bytes": 70632079,
+    "logical_cpu_count": 16,
+    "process_thread_count": 35,
+    "cold_start_ms": 8095.8386,
+    "candidate_count": 20,
+    "external_api_calls": 0
+  },
+  "cases": [
+    {
+      "case_id": "create-virtual-environment",
+      "question": "用 Python 的 venv 创建虚拟环境时应运行什么命令？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "1c0bf31a-bd77-5b52-b1b6-19272cb88666",
+        "a8d37aee-807d-57fe-bec4-9375d57693b3"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8468784,
+          "chunk_id": "7d0a14ae-f711-5b6d-ae97-e445cebc9e47",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.79636043,
+          "chunk_id": "1c0bf31a-bd77-5b52-b1b6-19272cb88666",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.7794858,
+          "chunk_id": "65ae1cd1-9611-5a6b-9d2b-4816310fcb67",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.77435124,
+          "chunk_id": "2b163a1d-1115-5bfa-a67b-0a091a0a0f96",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "how-venvs-work",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.77355313,
+          "chunk_id": "a8d37aee-807d-57fe-bec4-9375d57693b3",
+          "source_id": "py3146-tutorial-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6240505200038379,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4840.3337,
+        4751.8301,
+        4825.7959
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "list-comprehension-purpose",
+      "question": "列表推导式如何用已有序列简洁地创建新列表？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "1a08bcf2-f467-5803-9231-506ee50a8dcd"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7463532,
+          "chunk_id": "1a08bcf2-f467-5803-9231-506ee50a8dcd",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6827339,
+          "chunk_id": "449c1547-796f-529a-b219-9ea7e1d9e414",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6362226,
+          "chunk_id": "260732e7-3311-5a97-a434-6946903e3d3a",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "nested-list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6278633,
+          "chunk_id": "08fb7309-a8d4-5b2a-adc6-9eb4682a7179",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "nested-list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6107791,
+          "chunk_id": "b6274c18-da96-518e-9c43-d9e232f0a69b",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "looping-techniques",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4936.5755,
+        4840.054,
+        4757.3102
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "match-first-pattern",
+      "question": "Python 的 match 语句会执行多少个匹配的 case，并且能否提取值？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "e47f7362-b3fc-526a-8f63-3179cf196acf"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.75910896,
+          "chunk_id": "e47f7362-b3fc-526a-8f63-3179cf196acf",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.73055065,
+          "chunk_id": "329e8f79-4a9f-5055-8497-6b6843f6eb5c",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.706764,
+          "chunk_id": "f121fb74-f1a5-5456-9ceb-97eaa28efa9b",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.698524,
+          "chunk_id": "5a3e1a6f-7abb-583c-aad4-fce6065a7afe",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6947158,
+          "chunk_id": "0b3ac2d2-581c-5740-a9b8-f0d857deceef",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4823.6832,
+        4787.2773,
+        4783.5677
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "finally-resource-cleanup",
+      "question": "为什么 finally 子句适合释放文件或网络连接等外部资源？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "3dd00bab-fda3-5bdf-bb61-2f5941011b14"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.65572464,
+          "chunk_id": "3dd00bab-fda3-5bdf-bb61-2f5941011b14",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "defining-clean-up-actions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.5903144,
+          "chunk_id": "e04a3fcc-8047-5703-b76d-dbce51e1a8b9",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "defining-clean-up-actions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5869809,
+          "chunk_id": "05a38132-b7ea-5a4e-9a81-714fd15296f7",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "reading-and-writing-files",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5748023,
+          "chunk_id": "971b696b-3cf9-5ace-bd3e-67348f4b2a61",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "defining-clean-up-actions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.56908,
+          "chunk_id": "d0dcde0c-c18e-53e2-8f30-caf4c792be4d",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4850.9296,
+        4874.6485,
+        4925.0965
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "shutil-file-management",
+      "question": "标准库中哪个模块提供高级文件管理接口，并怎样复制文件？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "fb43671a-f577-5080-9fbb-06aae40383cc"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6254469,
+          "chunk_id": "fb43671a-f577-5080-9fbb-06aae40383cc",
+          "source_id": "py3146-tutorial-stdlib",
+          "python_version": "3.14",
+          "section_anchor": "operating-system-interface",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.621063,
+          "chunk_id": "ef7b6da0-c6bb-52ae-9f82-2e5524907cc7",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "working-with-binary-data-record-layouts",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.61625373,
+          "chunk_id": "eddb9d2f-6a14-5392-8e4d-759e1855b8b7",
+          "source_id": "py3146-tutorial-stdlib",
+          "python_version": "3.14",
+          "section_anchor": "file-wildcards",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.615748,
+          "chunk_id": "9378e3c5-43a6-5652-b818-b3ac30b78717",
+          "source_id": "py3146-tutorial-stdlib",
+          "python_version": "3.14",
+          "section_anchor": "quality-control",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.60256684,
+          "chunk_id": "79a6e9ee-2c6b-5dc8-ab0b-05a6b9acdbec",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "brief-tour-of-the-standard-library-part-ii",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4741.816,
+        4773.4302,
+        4746.7363
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "loop-else-without-break",
+      "question": "循环自然结束和被提前终止时，循环后的 else 分别会不会执行？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "d33b1fc4-2050-50dd-9760-36357be96110"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6724436,
+          "chunk_id": "d33b1fc4-2050-50dd-9760-36357be96110",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "else-clauses-on-loops",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6135901,
+          "chunk_id": "aa67b765-553a-5af6-89a6-32bf6f89c5b0",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "else-clauses-on-loops",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5680207,
+          "chunk_id": "6fc67532-d177-547b-aea4-54efbfa24ad2",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "break-and-continue-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5490934,
+          "chunk_id": "b3c8ff41-0c6d-5d83-862d-e1b2e3e17f6f",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "else-clauses-on-loops",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5382853,
+          "chunk_id": "971b696b-3cf9-5ace-bd3e-67348f4b2a61",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "defining-clean-up-actions",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4755.9169,
+        4712.2788,
+        4776.2673
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "efficient-fifo-queue",
+      "question": "需要频繁从序列两端添加和移除元素时，为什么普通列表不是理想队列？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "d2d26202-4eb1-566f-bae9-d09644249be5"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6775496,
+          "chunk_id": "d2d26202-4eb1-566f-bae9-d09644249be5",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-queues",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.5892793,
+          "chunk_id": "3cfc88a6-24c1-575c-8cad-fdf26db3470a",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-queues",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5383262,
+          "chunk_id": "381ffad3-0aa8-507a-803e-e9d2039d327b",
+          "source_id": "py3146-tutorial-introduction",
+          "python_version": "3.14",
+          "section_anchor": "lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5370898,
+          "chunk_id": "be8f5e41-1b3b-5463-addd-cb175ec34d99",
+          "source_id": "py3146-tutorial-introduction",
+          "python_version": "3.14",
+          "section_anchor": "first-steps-towards-programming",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.52051526,
+          "chunk_id": "a191a776-70c4-56eb-a2fb-8f70ee3abf27",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4746.1264,
+        4801.5637,
+        4712.0465
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "weak-reference-purpose",
+      "question": "怎样跟踪一个对象又不因为跟踪本身阻止它被垃圾回收？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "717317f5-2813-5d75-903d-5a737c7aabd6"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.49944365,
+          "chunk_id": "e8b0b00b-1dde-5fc6-afd7-78be39b0c81c",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "gc",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.4931303,
+          "chunk_id": "717317f5-2813-5d75-903d-5a737c7aabd6",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "weak-references",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.48961702,
+          "chunk_id": "beac3b73-252d-50b9-b4c9-370bedcf5a7c",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "random-remarks",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.4800271,
+          "chunk_id": "1b9eaec8-fcfc-5287-abfa-55c362fb7b44",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "reading-directories",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.4752971,
+          "chunk_id": "29ee6e27-48c3-50e7-820b-44cdd22f69ce",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "garbage-collection",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4761.682,
+        4741.1797,
+        4816.4236
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "dictionary-comprehension",
+      "question": "怎样用一个表达式把若干整数映射到它们的平方并创建字典？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "cab3762d-0ebe-550b-8772-d360bf62e591"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.60251397,
+          "chunk_id": "1a08bcf2-f467-5803-9231-506ee50a8dcd",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.5922464,
+          "chunk_id": "cab3762d-0ebe-550b-8772-d360bf62e591",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "dictionaries",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5911078,
+          "chunk_id": "15af93d1-15bd-5aa1-ae3e-c3b47fd0d17f",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "generator-expressions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.585588,
+          "chunk_id": "24c8964b-4798-5c12-a218-978d84c94791",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "dictionaries",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5814762,
+          "chunk_id": "3cb265ca-12b5-598c-8f71-940289b89e33",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "the-string-format-method",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4717.3042,
+        4758.8493,
+        4730.1297
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "unpack-call-arguments",
+      "question": "位置实参保存在列表中时，调用函数前怎样把它们拆成独立实参？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "bdc870af-b321-5d3e-881c-144ba485da2b"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6923433,
+          "chunk_id": "bdc870af-b321-5d3e-881c-144ba485da2b",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "unpacking-argument-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6504329,
+          "chunk_id": "5286bf3f-7b61-5ec4-af3d-9a7ce3583982",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "recap",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6437147,
+          "chunk_id": "b6924ade-245c-54b5-8afc-cfd8901c736b",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "arbitrary-argument-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.63548946,
+          "chunk_id": "4ca67397-d14c-5697-9ae2-ae851afbc6a4",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "positional-only-parameters",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.62412924,
+          "chunk_id": "4753395a-d4e7-5a9b-b979-feedf56bdbde",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "method-objects",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4761.054,
+        4773.5052,
+        4724.8318
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "generator-expression-memory",
+      "question": "只需立即把一串计算结果交给外层函数时，哪种推导式写法比完整列表更省内存？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "4fc545e8-575c-5a6a-92a7-3d0f99bbb016"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.664267,
+          "chunk_id": "1a08bcf2-f467-5803-9231-506ee50a8dcd",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6289574,
+          "chunk_id": "4fc545e8-575c-5a6a-92a7-3d0f99bbb016",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "generator-expressions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6141037,
+          "chunk_id": "01e8b250-7680-5c0f-8a47-ed4e7ab24592",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-stacks",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.61287713,
+          "chunk_id": "08fb7309-a8d4-5b2a-adc6-9eb4682a7179",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "nested-list-comprehensions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.61081326,
+          "chunk_id": "449c1547-796f-529a-b219-9ea7e1d9e414",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "list-comprehensions",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4757.8252,
+        4707.8463,
+        4734.3311
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "set-properties",
+      "question": "需要去重、成员检测以及交并差运算时，应使用哪种无序数据类型？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "90622426-3050-50ae-9ae9-b37a05e884e7"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.56922984,
+          "chunk_id": "592b95aa-7c5f-5c94-8195-b41d395b4e61",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "comparing-sequences-and-other-types",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.54583395,
+          "chunk_id": "90622426-3050-50ae-9ae9-b37a05e884e7",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "sets",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5384928,
+          "chunk_id": "5e0ac2b1-1503-5d82-8d8d-0515ad6d440d",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "more-on-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5320835,
+          "chunk_id": "0a9153f4-f102-5cec-aefd-bf1bd5f9192b",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "multiple-inheritance",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.529803,
+          "chunk_id": "1e9ea811-8bee-54fe-b943-d78af566840d",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "private-variables",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4741.6039,
+        4769.9913,
+        4762.6919
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "json-non-ascii-output",
+      "question": "json.dump 怎样让非 ASCII 字符保持原样而不是转义？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "93877b62-515c-5e87-855c-0c105644784f"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.70148385,
+          "chunk_id": "93877b62-515c-5e87-855c-0c105644784f",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "basic-usage",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6929758,
+          "chunk_id": "16626fb0-7f2e-5c16-8955-60159f1a6371",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "basic-usage",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.69275403,
+          "chunk_id": "e8bc339f-abb5-5963-a713-cdc7f7990d28",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "infinite-and-nan-number-values",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6762835,
+          "chunk_id": "8b7f5ee1-cd73-50d9-8a68-b9f95be58985",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "basic-usage",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.67520225,
+          "chunk_id": "16aa15ff-92d1-5b09-8c71-278ea246df00",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "saving-structured-data-with-json",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4798.0231,
+        4729.4812,
+        4740.0345
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "class-name-mangling",
+      "question": "类中名为 __spam 的标识符会怎样进行名称改写？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "9b998b19-241d-5809-8c24-17b667ac5e8f"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.69733423,
+          "chunk_id": "9b998b19-241d-5809-8c24-17b667ac5e8f",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "private-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.61533874,
+          "chunk_id": "1e9ea811-8bee-54fe-b943-d78af566840d",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "private-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6010835,
+          "chunk_id": "cf03159a-1cb4-568a-a413-9040d0f0f0a0",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "scopes-and-namespaces-example",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.59875834,
+          "chunk_id": "68177c27-3c53-5344-a549-d306d3ca9b60",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "a-word-about-names-and-objects",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5847586,
+          "chunk_id": "92bee188-6a7c-5f12-9a00-5a718c589baf",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "private-variables",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4700.8458,
+        4763.7679,
+        4748.4342
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-suggest-on-error",
+      "question": "Python 3.14 的 argparse 怎样为拼错的 choices 值提供建议？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "05a8b0bc-419e-5e02-b5e9-917202d6d6c2"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6555983,
+          "chunk_id": "83b04f0c-b903-53ed-be8f-5252907f302d",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "choices",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6402265,
+          "chunk_id": "831a8ba4-4563-572d-8b2a-a649c1f11d88",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "type",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6319235,
+          "chunk_id": "91245b7a-6dbb-592b-bc25-fc75d3f5caac",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "argparse",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6127922,
+          "chunk_id": "130b1ab0-6095-5ec0-bb53-faa9dece5e79",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "id8",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6116152,
+          "chunk_id": "05a8b0bc-419e-5e02-b5e9-917202d6d6c2",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "suggest-on-error",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 5,
+      "reciprocal_rank_at_5": 0.2,
+      "ndcg_at_5": 0.38685280723454163,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4737.7017,
+        4736.6464,
+        4727.911
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "formatted-string-literal",
+      "question": "f 字符串怎样嵌入表达式，并把 pi 格式化到小数点后三位？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "a6b404ac-ade9-5509-af0d-0175f9d10330"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.76570976,
+          "chunk_id": "a6b404ac-ade9-5509-af0d-0175f9d10330",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "formatted-string-literals",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6807927,
+          "chunk_id": "6d36addd-546f-54ea-a3ee-5287e96b6a37",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "old-string-formatting",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6671287,
+          "chunk_id": "0f88c0ea-7354-55ff-9bb9-d174a7ab0fca",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "match-statements",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6622369,
+          "chunk_id": "3cb265ca-12b5-598c-8f71-940289b89e33",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "the-string-format-method",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.65713274,
+          "chunk_id": "09d76f00-d9f6-5108-9d9b-8867ec96249d",
+          "source_id": "py3146-tutorial-stdlib",
+          "python_version": "3.14",
+          "section_anchor": "string-pattern-matching",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4760.4599,
+        4755.6796,
+        4712.6898
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "keyword-only-marker",
+      "question": "函数签名中用什么标记让后续形参只能按关键字传入？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "3a92d381-c84e-5913-95da-e0bf2cc2694c"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7234383,
+          "chunk_id": "3a92d381-c84e-5913-95da-e0bf2cc2694c",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "keyword-only-arguments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.72060597,
+          "chunk_id": "097dd64f-e1c6-5e3f-9e80-c71dccc0490e",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "special-parameters",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.67485726,
+          "chunk_id": "4ca67397-d14c-5697-9ae2-ae851afbc6a4",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "positional-only-parameters",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.67244226,
+          "chunk_id": "5286bf3f-7b61-5ec4-af3d-9a7ce3583982",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "recap",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6422029,
+          "chunk_id": "53e60352-bc7e-51f8-a011-99f4ebabd5a6",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "keyword-arguments",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4767.658,
+        4763.7101,
+        4979.5608
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "reprlib-abbreviated-repr",
+      "question": "reprlib.repr 对大型或深层嵌套容器有什么用途？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "5a4161a9-2880-5e0e-aefe-7391453c1c30"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.5619738,
+          "chunk_id": "5a4161a9-2880-5e0e-aefe-7391453c1c30",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "output-formatting",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.52409816,
+          "chunk_id": "dfaf1903-fa41-5ecc-8ebc-3b89a457a745",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "pending-removal-in-python-3-19",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.50990564,
+          "chunk_id": "446662a1-1bb0-5087-9b2f-985592797a07",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "concurrent-futures",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5091294,
+          "chunk_id": "cba27d0d-72cb-590a-a6cb-885fdb799523",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "contextvars",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.50753254,
+          "chunk_id": "57c2efc3-0859-566a-ba7d-7ad37b66007a",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "ctypes",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4814.3235,
+        4836.6449,
+        4756.3506
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "bisect-insort",
+      "question": "bisect.insort 怎样把新项目插入已有序列表并维持顺序？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "2d07c572-7305-54e8-9ecb-5f84c7bf5f4b"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.58847564,
+          "chunk_id": "6d6e65ce-b6ed-596f-b51f-17fac0e9a970",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "formatter-class",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.58435285,
+          "chunk_id": "83b04f0c-b903-53ed-be8f-5252907f302d",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "choices",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5818144,
+          "chunk_id": "831a8ba4-4563-572d-8b2a-a649c1f11d88",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "type",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.57671076,
+          "chunk_id": "2d07c572-7305-54e8-9ecb-5f84c7bf5f4b",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "tools-for-working-with-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5762191,
+          "chunk_id": "60250250-0a77-5306-a114-44c43b5c076f",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "more-on-lists",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 4,
+      "reciprocal_rank_at_5": 0.25,
+      "ndcg_at_5": 0.43067655807339306,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4783.7008,
+        4759.5973,
+        4823.9604
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "sys-path-append",
+      "question": "怎样用 sys.path.append 临时加入模块搜索目录？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "6a2bbfb6-80c4-5e0d-b3b7-d94c7d0680c0"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7185102,
+          "chunk_id": "06a12867-e10b-5ccd-9ffd-7ec98433f2f1",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "the-module-search-path",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.7163935,
+          "chunk_id": "6a2bbfb6-80c4-5e0d-b3b7-d94c7d0680c0",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "standard-modules",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6513716,
+          "chunk_id": "5899c19a-a479-5f63-b1ad-d0fbd5e585a2",
+          "source_id": "py3146-tutorial-whatnow",
+          "python_version": "3.14",
+          "section_anchor": "what-now",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6500907,
+          "chunk_id": "0053f9fe-9207-5e15-98fe-21934321252b",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "standard-modules",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.64429456,
+          "chunk_id": "8dd1a7b2-de77-5645-925e-b76849ef751a",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4754.2175,
+        4776.1725,
+        4788.7136
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "path-walk-symlink-classification",
+      "question": "Path.walk 在 follow_symlinks=False 时把目录符号链接归到哪里？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "1a5bd67c-6452-59bd-b471-93fef5d2d4c1"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.79983795,
+          "chunk_id": "1b9eaec8-fcfc-5287-abfa-55c362fb7b44",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "reading-directories",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.71150196,
+          "chunk_id": "8dd1a7b2-de77-5645-925e-b76849ef751a",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.69400895,
+          "chunk_id": "ee047a79-4be8-5c97-895e-1a29cf559088",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "permissions-and-ownership",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6925708,
+          "chunk_id": "e15e2c7f-b347-58b1-96a6-d0d391b8f217",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6902474,
+          "chunk_id": "92b22d56-0dee-5b56-9c6b-2d80d2d1629e",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4747.3842,
+        4759.3969,
+        4785.8753
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "json-decode-error-fields",
+      "question": "json.JSONDecodeError 提供 msg、doc、pos、lineno 和 colno 中的哪些定位信息？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "346ac437-50a9-5e5c-a575-d003a7d1fa36"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7376485,
+          "chunk_id": "346ac437-50a9-5e5c-a575-d003a7d1fa36",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "exceptions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.63994336,
+          "chunk_id": "290700c3-3beb-549c-8d9b-d910fd1d17e3",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6304462,
+          "chunk_id": "f2c2ba36-2e67-5004-a98e-df196a01bb54",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "encoders-and-decoders",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6301297,
+          "chunk_id": "8e5a5f49-3264-541c-9b5b-930ab17c69f4",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "basic-usage",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.63010883,
+          "chunk_id": "e6c8c462-2bc2-5454-82f5-b8d0a5eca893",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "encoders-and-decoders",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4761.2325,
+        4733.5171,
+        4774.7208
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-boolean-optional-action",
+      "question": "argparse.BooleanOptionalAction 如何让 --no-foo 得到 False？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "aff55926-6f8f-5fdc-aeb7-353c5d606b4e"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6684178,
+          "chunk_id": "9793b78c-8366-55bf-9f48-4d55ee768efc",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "module-argparse",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6588061,
+          "chunk_id": "5a33f6ff-3402-5de9-a30d-f085a6465101",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "name-or-flags",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6415839,
+          "chunk_id": "ef9913b3-2598-5397-af5c-42c91b814b63",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "invalid-arguments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6402509,
+          "chunk_id": "75634a36-5bc3-5260-be6c-3a80f27d5abb",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "required",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6394727,
+          "chunk_id": "4643e0fb-4c81-516c-8e69-a2b3c9cd2ab4",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "prog",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4688.5724,
+        4776.1292,
+        4678.6507
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "venv-create-api",
+      "question": "venv.create 的 env_dir、with_pip、upgrade_deps 和 scm_ignore_files 参数怎样出现在函数签名中？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "f0d71fc6-7847-5999-92ea-3952ba2bcab5"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7631233,
+          "chunk_id": "c52227df-cf23-505e-abf3-b45d9e04aa2e",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.7563105,
+          "chunk_id": "f0d71fc6-7847-5999-92ea-3952ba2bcab5",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.74123985,
+          "chunk_id": "38f2b390-95ac-5842-a0ff-936a59bbb6c1",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.7314124,
+          "chunk_id": "6e3e00c3-908d-5d6e-ab45-7b24d5adf604",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.702826,
+          "chunk_id": "269be5e9-80b2-5027-8f75-77805d489985",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4765.2419,
+        4723.3968,
+        4776.1926
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "float-isclose",
+      "question": "0.1 加三次与 0.3 比较时，怎样进行近似浮点值比较？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "a80785aa-c8de-5707-a124-69d858afcfc0"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7241639,
+          "chunk_id": "a80785aa-c8de-5707-a124-69d858afcfc0",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.7097583,
+          "chunk_id": "0b2a2438-d3c0-5f70-a0d1-98c4820bdfa4",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.7069277,
+          "chunk_id": "a191a776-70c4-56eb-a2fb-8f70ee3abf27",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6830717,
+          "chunk_id": "6716f80f-4182-5b97-8276-da638e71db46",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6649134,
+          "chunk_id": "8457f41a-ac64-5aea-94c1-d38cd0ef6a90",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4723.3745,
+        4820.57,
+        4736.0628
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "path-read-text-314",
+      "question": "Python 3.14 中 Path.read_text 返回什么，文件是否会自动关闭？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "19707cdc-10cd-53ac-b8cc-f58b5b7c982a"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.69493943,
+          "chunk_id": "353e2233-af5c-520e-91d2-2761b6f505cd",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "io",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.68370116,
+          "chunk_id": "805ed013-049c-568f-88a1-9ada2763ae84",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "id13",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.67325574,
+          "chunk_id": "05a38132-b7ea-5a4e-9a81-714fd15296f7",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "reading-and-writing-files",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.67012393,
+          "chunk_id": "a8694560-9e82-5233-9a3b-def77b9455fc",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "configparser",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6654292,
+          "chunk_id": "5d12af1e-599a-5b0a-b910-d9b5375718ad",
+          "source_id": "py3146-tutorial-inputoutput",
+          "python_version": "3.14",
+          "section_anchor": "reading-and-writing-files",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4761.79,
+        4767.5011,
+        4731.7868
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "deque-popleft-queue",
+      "question": "用 collections.deque 实现先进先出队列时，怎样从左端取出最早元素？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "3cfc88a6-24c1-575c-8cad-fdf26db3470a"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.66359514,
+          "chunk_id": "3cfc88a6-24c1-575c-8cad-fdf26db3470a",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-queues",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.64707124,
+          "chunk_id": "d2d26202-4eb1-566f-bae9-d09644249be5",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-queues",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5642408,
+          "chunk_id": "01e8b250-7680-5c0f-8a47-ed4e7ab24592",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-stacks",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5494006,
+          "chunk_id": "ca42418f-6b7a-582e-9695-7c8cd4d1a0b7",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "looping-techniques",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.54127616,
+          "chunk_id": "8d18eaa3-941f-5c45-8444-50c3dc0d144a",
+          "source_id": "py3146-tutorial-stdlib2",
+          "python_version": "3.14",
+          "section_anchor": "tools-for-working-with-lists",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4798.4775,
+        4700.3328,
+        4804.7573
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "path-glob-double-star",
+      "question": "Path.glob('**') 的结果是否可能包含起始路径本身？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "be867621-cedf-5b7f-9009-3e9027e88c1d"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.649721,
+          "chunk_id": "004c074f-c200-53d8-aafc-6e90017a5eb1",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "comparison-to-the-glob-module",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6491921,
+          "chunk_id": "be867621-cedf-5b7f-9009-3e9027e88c1d",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "comparison-to-the-glob-module",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.62835896,
+          "chunk_id": "6666cb6b-1e0e-5550-8f1e-0555f452f450",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "pattern-language",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6162728,
+          "chunk_id": "5c5d243d-1b66-5b39-98de-72b6f19d2328",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "reading-directories",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6072161,
+          "chunk_id": "a6516cca-0a22-5d69-b5c3-e3e15cd7c0fa",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "methods-and-properties",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4699.8328,
+        4761.8368,
+        4776.4473
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "json-loads-string",
+      "question": "怎样用 json.loads 把包含数组、对象和 null 的 JSON 字符串解码为 Python 对象？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "cf68f5cc-b91d-55cf-9411-037590863dba"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7895085,
+          "chunk_id": "c0aa2f2b-3fbd-5747-99af-bab6c09855a3",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.7832783,
+          "chunk_id": "8ea9b828-085e-5efb-b8b5-a2203a9155f8",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "encoders-and-decoders",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.77557707,
+          "chunk_id": "cf68f5cc-b91d-55cf-9411-037590863dba",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.7615884,
+          "chunk_id": "e6c8c462-2bc2-5454-82f5-b8d0a5eca893",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "encoders-and-decoders",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.7593123,
+          "chunk_id": "b7ab8138-223a-50fe-b045-e2825239a6d1",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "encoders-and-decoders",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 3,
+      "reciprocal_rank_at_5": 0.3333333333333333,
+      "ndcg_at_5": 0.5,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4743.0995,
+        4699.6164,
+        4772.763
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "venv-upgrade-deps",
+      "question": "调用 venv.create 时，哪个参数表示升级虚拟环境中的核心依赖？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "f0d71fc6-7847-5999-92ea-3952ba2bcab5"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.71728754,
+          "chunk_id": "38f2b390-95ac-5842-a0ff-936a59bbb6c1",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.7013032,
+          "chunk_id": "f0d71fc6-7847-5999-92ea-3952ba2bcab5",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6988779,
+          "chunk_id": "7d0a14ae-f711-5b6d-ae97-e445cebc9e47",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "creating-virtual-environments",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6936599,
+          "chunk_id": "ff77ff30-ee99-53b7-a944-d122c7bb9efd",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "an-example-of-extending-envbuilder",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6900996,
+          "chunk_id": "d90e487e-0195-5133-a584-ea89523ea52f",
+          "source_id": "py3146-library-venv",
+          "python_version": "3.14",
+          "section_anchor": "an-example-of-extending-envbuilder",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4735.6414,
+        4746.4965,
+        6371.656
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "list-sort-lambda-key",
+      "question": "怎样把 lambda 作为 list.sort 的 key，按元组第二项排序？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "03c36084-69e1-5c53-b13a-5c3dcdeb133d"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.65400183,
+          "chunk_id": "24c8964b-4798-5c12-a218-978d84c94791",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "dictionaries",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.62775403,
+          "chunk_id": "182b8bf9-90f5-5a02-862a-afd67efd5b85",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "more-on-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.61699986,
+          "chunk_id": "ca42418f-6b7a-582e-9695-7c8cd4d1a0b7",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "looping-techniques",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6152545,
+          "chunk_id": "3cfc88a6-24c1-575c-8cad-fdf26db3470a",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "using-lists-as-queues",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6151709,
+          "chunk_id": "992bf005-cbab-53eb-93a7-9d53f037260a",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "looping-techniques",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        9407.2171,
+        7792.0346,
+        5728.6634
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "raise-from-exception-chain",
+      "question": "把底层异常转换成 RuntimeError 时，怎样用 raise ... from ... 表明直接因果？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "040d9457-201b-5816-bac4-b03989b02987"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.598755,
+          "chunk_id": "197b4a03-4faf-5eac-a6c9-d6c9c67023d5",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "raising-exceptions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.59353286,
+          "chunk_id": "040d9457-201b-5816-bac4-b03989b02987",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "exception-chaining",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5934544,
+          "chunk_id": "0da238fd-53fc-5232-b4eb-bfc6455ea795",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "raising-exceptions",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.58272016,
+          "chunk_id": "59811e43-5d1d-5cd0-bb6e-d6b98e5cc0b2",
+          "source_id": "py3146-tutorial-errors",
+          "python_version": "3.14",
+          "section_anchor": "exception-chaining",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5679505,
+          "chunk_id": "58adebf3-6e2f-52f6-aa2d-2b7c93628f48",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "querying-file-type-and-status",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4907.931,
+        4991.0703,
+        4935.5581
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "math-fsum-accuracy",
+      "question": "大量浮点数几乎互相抵消时，math.fsum 为什么可能比普通 sum 更准确？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "f91d0391-349b-5716-9513-15c967128943"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6862833,
+          "chunk_id": "f91d0391-349b-5716-9513-15c967128943",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6324893,
+          "chunk_id": "a80785aa-c8de-5707-a124-69d858afcfc0",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6302093,
+          "chunk_id": "93afb094-50d6-540a-bfbf-8eb610dd9d72",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.62089515,
+          "chunk_id": "a191a776-70c4-56eb-a2fb-8f70ee3abf27",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.61744833,
+          "chunk_id": "7b61d668-df1c-547e-87a3-af0b40097d3a",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "representation-error",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4913.4394,
+        4951.4596,
+        4906.1757
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "package-all-star-import",
+      "question": "包的 __init__.py 定义 __all__ 后，from package import * 会怎样选子模块？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "b278bc64-750e-5adc-ba34-7259c2a52aa8"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.79277843,
+          "chunk_id": "af1632a1-4943-553b-bf68-fdb8d52bc52d",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.76356024,
+          "chunk_id": "f0a88719-4201-5c9d-b3e4-b4251423efaa",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "packages",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.7562203,
+          "chunk_id": "b278bc64-750e-5adc-ba34-7259c2a52aa8",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.74130815,
+          "chunk_id": "d128bf94-1f59-5d10-b421-29052cf60ac5",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "packages",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.71252465,
+          "chunk_id": "6bbbb21a-f8cd-5842-ae81-f691aa8aa73b",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "packages-in-multiple-directories",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 3,
+      "reciprocal_rank_at_5": 0.3333333333333333,
+      "ndcg_at_5": 0.5,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4925.2938,
+        5076.9598,
+        4891.9462
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "path-read-text-313",
+      "question": "Python 3.13 的 Path.read_text 有哪些可选参数，返回什么？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "8b0164ed-03b9-5700-b385-1fcba2207fb1"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7097376,
+          "chunk_id": "a68f933c-bddb-50e6-837b-ee971b25943b",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "deprecated-c-apis",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.68763065,
+          "chunk_id": "d9514461-b9cb-58b4-b2f0-25451f279793",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "id7",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6771283,
+          "chunk_id": "4abbd1fa-7c82-5322-a3ff-ddf90dcd315f",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "types",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.67323935,
+          "chunk_id": "f0cd5194-fcc9-5eca-a823-1dba56373d5e",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "tkinter",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6661304,
+          "chunk_id": "88ffe961-0ce3-575f-a664-663d3f8486a4",
+          "source_id": "py31314-library-pathlib",
+          "python_version": "3.13",
+          "section_anchor": "reading-and-writing-files",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        4897.0206,
+        4943.2316,
+        5520.2152
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-prog-313",
+      "question": "Python 3.13 的 ArgumentParser 默认如何确定帮助信息中的程序名？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "2068327f-db49-5a9f-b395-ed3fee465c4f"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.64585674,
+          "chunk_id": "a4ce758d-6eff-5c6a-a15e-d6962a3dabbc",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "changes-in-the-c-api",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.64328384,
+          "chunk_id": "2f2dc008-8f7f-5f3d-92d8-25ead89395c8",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "summary-release-highlights",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6408983,
+          "chunk_id": "6ad49168-a45b-5dfa-b525-4b6464daddea",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "pending-removal-in-python-3-14",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.64083385,
+          "chunk_id": "d4d683bb-f79a-547b-b6cb-5ee62c6c4430",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "to3",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.63657653,
+          "chunk_id": "70ccf814-fb40-5b7e-91c7-4727abc7a685",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "webbrowser",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5207.6842,
+        5145.6136,
+        5194.8147
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "argparse-color-314",
+      "question": "Python 3.14 的 ArgumentParser 怎样保证帮助信息始终不用 ANSI 彩色输出？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "d8124278-1bba-53dc-a1ea-f81e7205bf6c"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6279526,
+          "chunk_id": "c501ca05-9d49-5295-a5a5-8db84b93ad36",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "build-changes",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.62763935,
+          "chunk_id": "7dcfe4d1-af52-57be-b026-79a697006cad",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "pending-removal-in-python-3-18",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6133735,
+          "chunk_id": "b6171dc2-7c68-5824-bcb8-15dec3c5d4e5",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "discontinuation-of-pgp-signatures",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6124107,
+          "chunk_id": "d8124278-1bba-53dc-a1ea-f81e7205bf6c",
+          "source_id": "py3146-library-argparse",
+          "python_version": "3.14",
+          "section_anchor": "color",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.60837805,
+          "chunk_id": "48ada4ea-4870-5b66-92cc-71f3843fe646",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "from-future-import-annotations",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 4,
+      "reciprocal_rank_at_5": 0.25,
+      "ndcg_at_5": 0.43067655807339306,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5114.0229,
+        5177.5204,
+        5164.6577
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "path-copy-314",
+      "question": "Python 3.14 新增的 Path.copy 如何复制文件或目录树，返回什么？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "b4c65c6b-6c39-5000-a717-2abcf6ed154a"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7107885,
+          "chunk_id": "11ec117f-bee0-5bff-b58c-b1a6ce310ac7",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "pathlib",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6662822,
+          "chunk_id": "b4c65c6b-6c39-5000-a717-2abcf6ed154a",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "copying-moving-and-deleting",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6563647,
+          "chunk_id": "3a3a5a06-f73a-5c65-9733-85bdb6aa032c",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "itertools",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.65390515,
+          "chunk_id": "25bfd683-38de-55e4-b4f3-d9e0775e21f0",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "zipfile",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.64774513,
+          "chunk_id": "e8e3e307-2ab9-5466-bbf6-b574eb5ba282",
+          "source_id": "py3146-library-pathlib",
+          "python_version": "3.14",
+          "section_anchor": "copying-moving-and-deleting",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5079.5128,
+        5268.2494,
+        5155.5657
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "template-string-314",
+      "question": "Python 3.14 的 t 字符串与 f 字符串相比返回什么对象，而不是直接返回 str？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "46b61eae-1af7-52e3-8fe6-652851439242"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.66542554,
+          "chunk_id": "46b61eae-1af7-52e3-8fe6-652851439242",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "index-110",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6609539,
+          "chunk_id": "b89f51a8-82d4-5d85-aebf-43e95f00c4cc",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "typing",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6544709,
+          "chunk_id": "24233de1-95be-504d-9c8a-3c265043dfdd",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "typing",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6386398,
+          "chunk_id": "96dcab97-ec85-5b13-ac49-3d5c2251b99f",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "struct",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6299021,
+          "chunk_id": "caa3fc73-f545-5e24-97c5-07ac4714951d",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "unittest",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5148.2873,
+        5198.5306,
+        5232.9488
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "deferred-annotations-314",
+      "question": "Python 3.14 中函数、类和模块的标注何时求值，annotationlib 有什么作用？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "3814e803-0943-571b-8d9b-b56b5d94e413"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7441677,
+          "chunk_id": "5a40a983-1258-50d0-8d6d-36207fc6ff3c",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "implications-for-readers-of-annotations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.74332535,
+          "chunk_id": "b0095d3c-2c69-571d-9dd5-c115b6af2312",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "related-changes",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.7422536,
+          "chunk_id": "34d59a3c-463b-593b-bda9-5aa5711f94b8",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "inspect",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.73775965,
+          "chunk_id": "65d384c2-4903-525a-a8a7-93958add70eb",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "new-modules",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.7369926,
+          "chunk_id": "3814e803-0943-571b-8d9b-b56b5d94e413",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "index-104",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 5,
+      "reciprocal_rank_at_5": 0.2,
+      "ndcg_at_5": 0.38685280723454163,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5120.3035,
+        5140.2975,
+        5113.4061
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "free-threaded-cpython-313",
+      "question": "Python 3.13 的自由线程 CPython 是否默认启用，需要什么可执行文件或构建选项？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "bbc70ca3-03c3-5cf9-9098-2752ebb9cacb"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7398548,
+          "chunk_id": "bbc70ca3-03c3-5cf9-9098-2752ebb9cacb",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "free-threaded-cpython",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6977315,
+          "chunk_id": "1b340e99-a5cb-56ed-a97c-4292712f71ea",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "free-threaded-cpython",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6577891,
+          "chunk_id": "77df24c8-9bb2-5cf2-89e8-88f4d5cda148",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "free-threaded-cpython",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6350666,
+          "chunk_id": "17d32fe5-6cec-5210-9b4b-c58ff923ab0c",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "compileall",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.62250435,
+          "chunk_id": "fbf945b9-7ca9-5f5b-ade9-bd8a234b0938",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "multiprocessing",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5125.716,
+        5201.7063,
+        5157.9767
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "interactive-interpreter-313",
+      "question": "Python 3.13 新交互式解释器增加了哪些编辑、历史和快捷键能力？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "e484baa7-02ac-555c-8a8a-ba86f133af01"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.721449,
+          "chunk_id": "e484baa7-02ac-555c-8a8a-ba86f133af01",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "a-better-interactive-interpreter",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6943939,
+          "chunk_id": "2f2dc008-8f7f-5f3d-92d8-25ead89395c8",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "summary-release-highlights",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6809127,
+          "chunk_id": "53eb1b0f-78bb-51cb-83f8-acdb7f8888b9",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "summary-release-highlights",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6784117,
+          "chunk_id": "2933f38b-25a2-5244-bf95-f00ea647b332",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "id7",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.66813606,
+          "chunk_id": "fc9efb2b-7114-5d2e-8cda-d3c93d45236e",
+          "source_id": "py31314-whatsnew",
+          "python_version": "3.13",
+          "section_anchor": "id7",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5538.4171,
+        5208.1458,
+        5184.6273
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "module-name-attribute",
+      "question": "导入一个 Python 模块后，可以查看哪个属性来获得模块名称？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "00ad43d2-433d-535c-8070-ac3df2d7d4e5"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7150789,
+          "chunk_id": "b2d8732e-314f-5c5d-9e35-c502706f3fc1",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "more-on-modules",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6941502,
+          "chunk_id": "af1632a1-4943-553b-bf68-fdb8d52bc52d",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.69107777,
+          "chunk_id": "2aa20272-2667-50de-af1a-18c5209c8d94",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "more-on-modules",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6668883,
+          "chunk_id": "f77e4146-5176-5303-8f23-8663e5050fab",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "python-scopes-and-namespaces",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.65843576,
+          "chunk_id": "44bfc12f-9c6f-5ecc-a7c6-f71a5db07ca2",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "more-on-modules",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5236.9319,
+        5204.1487,
+        5263.9107
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "transpose-with-zip",
+      "question": "怎样用 zip 和参数解包转置一个矩阵？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "08fb7309-a8d4-5b2a-adc6-9eb4682a7179"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.61549973,
+          "chunk_id": "c0aa2f2b-3fbd-5747-99af-bab6c09855a3",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.61301005,
+          "chunk_id": "097dd64f-e1c6-5e3f-9e80-c71dccc0490e",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "special-parameters",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.61260444,
+          "chunk_id": "bdc870af-b321-5d3e-881c-144ba485da2b",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "unpacking-argument-lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.607524,
+          "chunk_id": "e7efab87-147e-55f8-9ea2-f7a960eee0fb",
+          "source_id": "py3146-tutorial-interpreter",
+          "python_version": "3.14",
+          "section_anchor": "argument-passing",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.59952843,
+          "chunk_id": "e88d6683-90e5-592c-a6e7-6d1ac1949705",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": false,
+      "first_relevant_rank_at_5": null,
+      "reciprocal_rank_at_5": 0.0,
+      "ndcg_at_5": 0.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5303.8008,
+        5099.1441,
+        5111.0706
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "mutable-default-once",
+      "question": "为什么把列表作为函数默认值会让多次调用共享之前追加的内容？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "c6626e0f-d16d-5ba9-87fa-30ed6b4da54b"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.70582974,
+          "chunk_id": "c6626e0f-d16d-5ba9-87fa-30ed6b4da54b",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "default-argument-values",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6911825,
+          "chunk_id": "c842efc3-2474-5882-8418-de5a5939f71a",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "default-argument-values",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6623945,
+          "chunk_id": "eefdacca-20c4-57be-b485-b5c62ee61355",
+          "source_id": "py3146-tutorial-controlflow",
+          "python_version": "3.14",
+          "section_anchor": "default-argument-values",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6157652,
+          "chunk_id": "4753395a-d4e7-5a9b-b979-feedf56bdbde",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "method-objects",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6123143,
+          "chunk_id": "2e7d34c2-a7a7-5872-8970-9b63533656cb",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "concurrent-futures",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5063.8862,
+        5175.8151,
+        5086.3832
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "singleton-tuple-comma",
+      "question": "只含一个元素的元组为什么必须写尾随逗号，空元组又怎样创建？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "development",
+      "relevant_chunk_ids": [
+        "5d32083a-eeab-5052-8e3a-eaa146503095"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6582654,
+          "chunk_id": "5d32083a-eeab-5052-8e3a-eaa146503095",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "tuples-and-sequences",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.5944644,
+          "chunk_id": "fb4dc1ea-1aba-5959-ad51-17013b99aedf",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "tuples-and-sequences",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.5384015,
+          "chunk_id": "47f7690f-d8d1-5b1f-b44c-c44cd48a7358",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "tuples-and-sequences",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.53580475,
+          "chunk_id": "3ce6a3cb-706a-5252-a9e5-5fff19d9889d",
+          "source_id": "py3146-tutorial-datastructures",
+          "python_version": "3.14",
+          "section_anchor": "tuples-and-sequences",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.5323085,
+          "chunk_id": "2f2d5bbd-83e3-569c-9710-73a2a2dea608",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "generator-expressions",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5192.73,
+        5076.2251,
+        5183.0376
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "json-duplicate-object-names",
+      "question": "JSON 对象出现多个同名键时，Python json 模块默认保留哪一个？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "c516d15d-8f49-5bf6-8fd7-82551c1f5c34"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7086314,
+          "chunk_id": "c516d15d-8f49-5bf6-8fd7-82551c1f5c34",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "repeated-names-within-an-object",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6743609,
+          "chunk_id": "4f22514b-c9a2-506b-83eb-fee53571e2ae",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6642333,
+          "chunk_id": "16626fb0-7f2e-5c16-8955-60159f1a6371",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "basic-usage",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.6592861,
+          "chunk_id": "daff72bb-c855-5e1e-bcf4-29d8a96df6da",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "module-json",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.652624,
+          "chunk_id": "e8bc339f-abb5-5963-a713-cdc7f7990d28",
+          "source_id": "py3146-library-json",
+          "python_version": "3.14",
+          "section_anchor": "infinite-and-nan-number-values",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5044.9621,
+        5195.447,
+        5060.2808
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "mutable-class-variable-sharing",
+      "question": "把 tricks=[] 写成类变量后，为什么两个 Dog 实例会看到彼此添加的技巧？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "d686efbd-78a4-5fa7-a307-990392148a1d"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6813499,
+          "chunk_id": "5b39c781-cf9e-5292-9f97-423683ecc208",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "class-and-instance-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6800887,
+          "chunk_id": "d686efbd-78a4-5fa7-a307-990392148a1d",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "class-and-instance-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.6752449,
+          "chunk_id": "7ef2d28e-0eea-5213-ad7c-ca04b6b1db98",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "class-and-instance-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.65796643,
+          "chunk_id": "1e9ea811-8bee-54fe-b943-d78af566840d",
+          "source_id": "py3146-tutorial-classes",
+          "python_version": "3.14",
+          "section_anchor": "private-variables",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.6442474,
+          "chunk_id": "24233de1-95be-504d-9c8a-3c265043dfdd",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "typing",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 2,
+      "reciprocal_rank_at_5": 0.5,
+      "ndcg_at_5": 0.6309297535714575,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5354.8489,
+        5106.0742,
+        5186.1446
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "list-alias-versus-copy",
+      "question": "rgba = rgb 与 rgba = rgb[:] 对后续列表修改为什么产生不同影响？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "03658565-3c7d-5f88-8e65-7ee82c11ae74"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6431297,
+          "chunk_id": "03658565-3c7d-5f88-8e65-7ee82c11ae74",
+          "source_id": "py3146-tutorial-introduction",
+          "python_version": "3.14",
+          "section_anchor": "lists",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.6127037,
+          "chunk_id": "4da06e72-127a-5e3a-8e26-01996bfd5a6e",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "curses",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.57021093,
+          "chunk_id": "6929131a-9208-5955-817b-e374e69873a7",
+          "source_id": "py3146-tutorial-floatingpoint",
+          "python_version": "3.14",
+          "section_anchor": "floating-point-arithmetic-issues-and-limitations",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.5655844,
+          "chunk_id": "cdd58ea1-74b5-545d-95fe-ae72ea958001",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "operator",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.56526244,
+          "chunk_id": "56255187-c89d-53d9-b27c-240f7ac663ad",
+          "source_id": "py3146-whatsnew",
+          "python_version": "3.14",
+          "section_anchor": "decimal",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5086.1232,
+        5186.2624,
+        5149.6812
+      ],
+      "error_code": null,
+      "error_reason": null
+    },
+    {
+      "case_id": "star-import-without-all",
+      "question": "包没有定义 __all__ 时，from sound.effects import * 为什么不会自动导入所有子模块？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "split": "locked-test",
+      "relevant_chunk_ids": [
+        "b1cf0b32-c930-5a54-b4fa-6e44dcbfdd2c"
+      ],
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8023369,
+          "chunk_id": "b1cf0b32-c930-5a54-b4fa-6e44dcbfdd2c",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 2,
+          "score": 0.79366916,
+          "chunk_id": "b278bc64-750e-5adc-ba34-7259c2a52aa8",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 3,
+          "score": 0.76647073,
+          "chunk_id": "b324b727-faa7-5fe5-9a2f-3f446b3078f9",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 4,
+          "score": 0.74077624,
+          "chunk_id": "af1632a1-4943-553b-bf68-fdb8d52bc52d",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "importing-from-a-package",
+          "retrieval_reason": "dense"
+        },
+        {
+          "rank": 5,
+          "score": 0.72657627,
+          "chunk_id": "85a69b06-7fed-5b5e-89d7-1b7f85fcaef5",
+          "source_id": "py3146-tutorial-modules",
+          "python_version": "3.14",
+          "section_anchor": "intra-package-references",
+          "retrieval_reason": "dense"
+        }
+      ],
+      "candidates": null,
+      "hit_at_5": true,
+      "first_relevant_rank_at_5": 1,
+      "reciprocal_rank_at_5": 1.0,
+      "ndcg_at_5": 1.0,
+      "candidate_hit_at_20": null,
+      "first_relevant_rank_at_20": null,
+      "latency_ms": [
+        5229.5884,
+        5079.3512,
+        5182.8082
+      ],
+      "error_code": null,
+      "error_reason": null
+    }
+  ]
+}

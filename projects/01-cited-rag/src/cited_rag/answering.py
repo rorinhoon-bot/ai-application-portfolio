@@ -13,6 +13,7 @@ from cited_rag.errors import (
     ModelOutputError,
 )
 from cited_rag.model_client import (
+    AnswerModelAttempt,
     AnswerModelClient,
     AnswerModelRequest,
     AnswerModelResponse,
@@ -24,6 +25,7 @@ from cited_rag.models import (
     RetrievalResult,
     RetrievedChunk,
 )
+from cited_rag.observability import current_observability
 
 SYSTEM_PROMPT = """\
 你是证据受限的 Python 官方文档问答器。
@@ -56,8 +58,28 @@ class AnsweringService:
                 build_id=retrieval.build_id,
             )
 
-        response = self._model_client.generate(
-            make_answer_model_request(retrieval)
+        telemetry = current_observability()
+        try:
+            response = self._model_client.generate(
+                make_answer_model_request(retrieval)
+            )
+        except Exception as error:
+            _record_model_attempts(
+                telemetry,
+                getattr(error, "model_attempts", ()),
+                fallback_outcome="error",
+            )
+            telemetry.record_model_completed(outcome="error")
+            raise
+        _record_model_attempts(
+            telemetry,
+            response.attempts,
+            fallback_outcome="success",
+        )
+        telemetry.record_model_completed(
+            outcome="success",
+            prompt_tokens=response.prompt_tokens,
+            completion_tokens=response.completion_tokens,
         )
         try:
             output = parse_model_answer(response.content)
@@ -112,6 +134,7 @@ def make_answer_model_request(
             "chunk_id": str(item.payload.chunk_id),
             "rank": item.rank,
             "score": item.score,
+            "score_kind": item.score_kind,
             "python_version": item.payload.python_version,
             "documentation_release": item.payload.documentation_release,
             "section_path": list(item.payload.section_path),
@@ -189,3 +212,31 @@ def _bind_citation(item: RetrievedChunk) -> AnswerCitation:
         citation_url=item.citation_url,
         excerpt=payload.text,
     )
+
+
+def _record_model_attempts(
+    telemetry,
+    attempts: object,
+    *,
+    fallback_outcome: str,
+) -> None:
+    safe_attempts = (
+        attempts
+        if isinstance(attempts, tuple)
+        and all(isinstance(item, AnswerModelAttempt) for item in attempts)
+        else ()
+    )
+    if not safe_attempts:
+        telemetry.record_model_attempt(
+            attempt=1,
+            outcome=fallback_outcome,
+        )
+        return
+    for item in safe_attempts:
+        telemetry.record_model_attempt(
+            attempt=item.attempt,
+            outcome=item.outcome,
+            retry_reason=item.retry_reason,
+            retry_delay_ms=item.retry_delay_ms,
+            billing_uncertain=item.billing_uncertain,
+        )
