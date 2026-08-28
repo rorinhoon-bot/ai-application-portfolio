@@ -1,4 +1,7 @@
 /data/hybrid-index-build-report.json text eol=lf
+/data/evaluation/retrieval-v2.json text eol=lf
+/data/retrieval-v2-dense-report.json text eol=lf
+/data/retrieval-v2-dense-plus-identifiers-report.json text eol=lf
 /data/retrieval-v2-hybrid-development-report.json text eol=lf
 /data/hybrid-locked-run-failure.json text eol=lf
 /data/hybrid-release-gate.json text eol=lf

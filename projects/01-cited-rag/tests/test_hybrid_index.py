@@ -42,12 +42,12 @@ def test_sparse_schema_extension_preserves_frozen_dense_identity() -> None:
         distance="cosine",
         normalize=True,
     )
-    manifest = IndexManifest.model_validate_json(
-        (
-            PROJECT_ROOT
-            / "data/server-indexes/manifests/418359df-7c62-4345-9bfe-57459c251dd3.json"
-        ).read_text(encoding="utf-8")
+    build_report = json.loads(
+        (PROJECT_ROOT / "data/server-index-build-report.json").read_text(
+            encoding="utf-8"
+        )
     )
+    manifest = IndexManifest.model_validate(build_report["index_manifest"])
 
     assert make_embedding_config_sha256(config) == (
         "db152eac59c563e8867b8debc577cccc0a267a632173845b3ac9a21013cd21bd"
