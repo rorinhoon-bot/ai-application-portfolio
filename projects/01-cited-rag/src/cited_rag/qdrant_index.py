@@ -1,4 +1,4 @@
-"""Build and validate a versioned local Qdrant collection."""
+"""Build and validate a versioned Qdrant collection."""
 
 from __future__ import annotations
 
@@ -31,8 +31,8 @@ from cited_rag.indexing import (
     write_index_manifest,
 )
 from cited_rag.models import DocumentChunk, IndexManifest, IndexSpecification
+from cited_rag.qdrant_connection import ClientFactory
 
-ClientFactory = Callable[[Path], QdrantClient]
 Clock = Callable[[], datetime]
 BuildIdFactory = Callable[[], UUID]
 
@@ -59,7 +59,7 @@ class IndexBuildResult:
 
 
 class QdrantIndexBuilder:
-    """Full-build then atomically activate a local collection."""
+    """Full-build then atomically activate a local or Server collection."""
 
     def __init__(
         self,

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; manifest-src 'none'"
+    >
+    <meta
+      name="description"
+      content="带引用的Python官方文档RAG项目：固定评估、录制问答、失败发布与恢复证据。静态证据，非实时推理。"
+    >
+    <meta property="og:title" content="P1 · 可核验的RAG工程证据">
+    <meta
+      property="og:description"
+      content="固定评估、真实引用、失败关闭、容器与可观测性。录制证据，非实时推理。"
+    >
+    <meta property="og:type" content="website">
+    <title>P1 · 可核验的RAG工程证据</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/evidence.js" defer></script>
+    <script src="assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="返回页面顶部">
+        <span class="brand-mark" aria-hidden="true">P1</span>
+        <span>Evidence-first RAG</span>
+      </a>
+      <nav aria-label="页面导航">
+        <a href="#results">结果</a>
+        <a href="#cases">案例</a>
+        <a href="#failures">失败证据</a>
+        <a href="#limits">限制</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">P1 · Python 官方文档知识服务</p>
+          <div class="evidence-badge">
+            <span class="status-dot" aria-hidden="true"></span>
+            录制证据 · 非实时推理
+          </div>
+          <h1 id="hero-title">让 RAG 回答可核验，<br>也让发布失败可追溯。</h1>
+          <p class="hero-summary">
+            从单机Demo升级到只读FastAPI、Qdrant Server、确定性Hybrid、
+            OpenTelemetry与离线CI合同。页面只展示已提交机器报告；不连接模型，不接收任意问题。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#cases">查看录制问答</a>
+            <a
+              class="button secondary"
+              href="https://github.com/rorinhoon-bot/ai-application-portfolio"
+              target="_blank"
+              rel="noopener noreferrer"
+            >查看源码仓库</a>
+          </div>
+          <p class="publication-note">当前：本地静态制品。GitHub Pages尚未启用。</p>
+        </div>
+
+        <aside class="hero-proof" aria-label="核心证据摘要">
+          <div class="proof-header">
+            <span>release_gate.json</span>
+            <span class="proof-state">PASSED</span>
+          </div>
+          <div class="proof-code" aria-hidden="true">
+            <span><b>mode</b> hybrid-client-rrf-v1</span>
+            <span><b>recall@5</b> 0.95</span>
+            <span><b>candidate@20</b> 1.00</span>
+            <span><b>checks</b> 14 / 14</span>
+            <span><b>external_calls</b> 0</span>
+          </div>
+          <p>同一新20题，Dense Recall@5为75%，确定性Hybrid为95%。</p>
+        </aside>
+      </section>
+
+      <section class="metric-strip" id="headline-metrics" aria-label="核心指标">
+        <noscript>
+          <p>JavaScript已关闭。核心结论：新20题Hybrid Recall@5为95%，引用绑定有效率100%，发布门14/14通过。</p>
+        </noscript>
+      </section>
+
+      <section class="section" id="results" aria-labelledby="results-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 · 同条件比较</p>
+            <h2 id="results-title">不是“效果不错”，是固定集上的差值。</h2>
+          </div>
+          <p>新20题在任何查询前冻结。三种模式使用同一语料、问题和相关Chunk；旧50题只做稳定性回归。</p>
+        </div>
+        <div class="comparison" id="retrieval-comparison" aria-live="polite"></div>
+        <p class="source-note">指标来自三份`retrieval-v3-*-report.json`；每种模式60个延迟样本，外部API调用均为0。</p>
+      </section>
+
+      <section class="section architecture-section" id="architecture" aria-labelledby="architecture-title">
+        <div class="section-heading light">
+          <div>
+            <p class="eyebrow">02 · 生产化边界</p>
+            <h2 id="architecture-title">模型只写答案，程序守住事实边界。</h2>
+          </div>
+          <p>URL、版本、章节、摘录和Chunk身份全部由程序绑定；在线API没有导入或索引写端点。</p>
+        </div>
+        <ol class="architecture-flow" id="architecture-flow"></ol>
+        <div class="architecture-rules">
+          <article>
+            <span class="rule-number">A</span>
+            <h3>读写隔离</h3>
+            <p>API只持有Qdrant read-only key；构建、快照与发布走独立操作员路径。</p>
+          </article>
+          <article>
+            <span class="rule-number">B</span>
+            <h3>失败关闭</h3>
+            <p>排名漂移、索引身份不符或依赖未就绪时停止发布，不用重跑掩盖失败。</p>
+          </article>
+          <article>
+            <span class="rule-number">C</span>
+            <h3>隐私默认</h3>
+            <p>问题、证据、回答、Key和绝对路径不进入日志、trace或metric label。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="cases" aria-labelledby="cases-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 · 录制问答</p>
+            <h2 id="cases-title">回答、拒答、跨版本比较，都保留来源。</h2>
+          </div>
+          <p>下列内容来自已提交评估报告。切换案例不会调用FastAPI、Qdrant或MiMo。</p>
+        </div>
+        <div class="case-shell">
+          <div class="case-tabs" id="case-tabs" role="tablist" aria-label="录制案例"></div>
+          <div id="case-panels"></div>
+        </div>
+      </section>
+
+      <section class="section image-section" id="screens" aria-labelledby="screens-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 · 本地运行截图</p>
+            <h2 id="screens-title">展示层复用同一服务，不复制回答逻辑。</h2>
+          </div>
+          <p>截图来自已验收本地运行，不代表在线服务。原图哈希进入证据manifest。</p>
+        </div>
+        <div class="image-grid">
+          <figure>
+            <img src="assets/streamlit-cited-answer.png" alt="Streamlit页面展示带引用的Python官方文档回答" loading="lazy">
+            <figcaption>Streamlit真实带引用回答 · 本地运行</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/cli-demo.png" alt="命令行展示结构化答案、状态和真实引用" loading="lazy">
+            <figcaption>CLI结构化输出 · 本地运行</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section failure-section" id="failures" aria-labelledby="failures-title">
+        <div class="section-heading light">
+          <div>
+            <p class="eyebrow">05 · 失败证据</p>
+            <h2 id="failures-title">真正的工程证据，也包括没有上线的版本。</h2>
+          </div>
+          <p>失败报告不覆盖、不删题、不把缺失指标补成0。</p>
+        </div>
+        <div class="failure-grid" id="failure-grid"></div>
+      </section>
+
+      <section class="section" id="runtime" aria-labelledby="runtime-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">06 · 运行证明</p>
+            <h2 id="runtime-title">容器、恢复、观测，各自有可复验合同。</h2>
+          </div>
+          <p>以下状态来自本地机器报告；远程CI尚未运行。</p>
+        </div>
+        <div class="runtime-grid" id="runtime-grid"></div>
+      </section>
+
+      <section class="section demo-script" id="demo" aria-labelledby="demo-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">07 · 90秒讲解</p>
+            <h2 id="demo-title">面试时，只讲能被证据支持的内容。</h2>
+          </div>
+        </div>
+        <ol>
+          <li><b>0–20秒：</b>问题不是“能回答”，而是回答必须绑定Python版本、章节和官方URL。</li>
+          <li><b>20–45秒：</b>展示新20题同条件结果：Dense 75%，旧生产80%，确定性Hybrid 95%。</li>
+          <li><b>45–65秒：</b>切换回答、拒答和版本比较；指出内容是录制证据，不是假装实时服务。</li>
+          <li><b>65–80秒：</b>展示服务端RRF排名漂移如何阻断发布，以及后续确定性修复。</li>
+          <li><b>80–90秒：</b>说明当前限制：本地容器已验收，Pages与受控实时服务尚未发布。</li>
+        </ol>
+      </section>
+
+      <section class="section limits-section" id="limits" aria-labelledby="limits-title">
+        <div class="section-heading light">
+          <div>
+            <p class="eyebrow">08 · 诚实限制</p>
+            <h2 id="limits-title">没有证据的能力，不写进简历。</h2>
+          </div>
+        </div>
+        <ul id="limitations"></ul>
+        <div class="manifest-callout">
+          <div>
+            <p class="eyebrow">机器可读证据</p>
+            <h3>输入报告、页面制品、截图都有SHA-256。</h3>
+          </div>
+          <a class="button secondary light-button" href="evidence-manifest.json">查看 evidence-manifest.json</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>
+        <strong>P1 · Cited RAG</strong>
+        <p>本地静态证据制品 · 非实时推理 · 未公开部署</p>
+      </div>
+      <a
+        href="https://github.com/rorinhoon-bot/ai-application-portfolio"
+        target="_blank"
+        rel="noopener noreferrer"
+      >GitHub源码</a>
+    </footer>
+  </body>
+</html>

@@ -24,6 +24,7 @@ from cited_rag.models import (
     IndexManifest,
     IndexSpecification,
 )
+from cited_rag.sparse import SparseCorpus
 
 INDEX_IDENTITY_NAMESPACE = uuid5(
     NAMESPACE_URL,
@@ -98,10 +99,46 @@ def make_index_specification(
     )
 
 
+def make_hybrid_index_specification(
+    *,
+    source_manifest: IndexManifest,
+    sparse_corpus: SparseCorpus,
+) -> IndexSpecification:
+    """Derive a Hybrid logical identity from one verified dense index."""
+
+    source = source_manifest.specification
+    if source.schema_version != "1":
+        raise IndexConsistencyError("hybrid source index must use schema v1")
+    if source.chunk_count != len(sparse_corpus.vectors):
+        raise IndexConsistencyError("sparse corpus count does not match source index")
+    return IndexSpecification(
+        schema_version="2",
+        corpus_id=source.corpus_id,
+        source_manifest_sha256=source.source_manifest_sha256,
+        parser_schema_version=source.parser_schema_version,
+        chunking_schema_version=source.chunking_schema_version,
+        chunk_config_sha256=source.chunk_config_sha256,
+        chunk_count=source.chunk_count,
+        embedding_config_sha256=source.embedding_config_sha256,
+        embedding_dimension=source.embedding_dimension,
+        distance=source.distance,
+        payload_schema_version=source.payload_schema_version,
+        index_kind="hybrid-dense-sparse",
+        source_index_fingerprint=source_manifest.index_fingerprint,
+        dense_vector_name="dense-bge-v1",
+        sparse_vector_name="lexical-bm25-v1",
+        sparse_config_sha256=sparse_corpus.config_sha256,
+        sparse_vocabulary_sha256=sparse_corpus.vocabulary_sha256,
+        sparse_vocabulary_token_count=len(sparse_corpus.vocabulary.tokens),
+        sparse_document_length_sum=sparse_corpus.document_length_sum,
+        sparse_document_count=len(sparse_corpus.vectors),
+    )
+
+
 def make_index_fingerprint(specification: IndexSpecification) -> str:
     """Hash every deterministic input to one logical index."""
 
-    return _canonical_model_sha256(specification)
+    return _canonical_model_sha256(specification, exclude_none=True)
 
 
 def make_index_id(specification: IndexSpecification) -> UUID:
@@ -350,17 +387,27 @@ def _validate_pointer_matches_manifest(
         )
 
 
-def _canonical_model_json(value: BaseModel) -> str:
+def _canonical_model_json(
+    value: BaseModel,
+    *,
+    exclude_none: bool = False,
+) -> str:
     return json.dumps(
-        value.model_dump(mode="json"),
+        value.model_dump(mode="json", exclude_none=exclude_none),
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
     )
 
 
-def _canonical_model_sha256(value: BaseModel) -> str:
-    return sha256(_canonical_model_json(value).encode("utf-8")).hexdigest()
+def _canonical_model_sha256(
+    value: BaseModel,
+    *,
+    exclude_none: bool = False,
+) -> str:
+    return sha256(
+        _canonical_model_json(value, exclude_none=exclude_none).encode("utf-8")
+    ).hexdigest()
 
 
 def _resolve_index_root(index_root: Path) -> Path:

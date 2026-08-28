@@ -1,0 +1,31 @@
+{
+  "schema_version": "1",
+  "audit_id": "retrieval-v3-evidence-audit",
+  "generated_at": "2026-08-25T06:23:17.931176+00:00",
+  "evaluation_set_id": "retrieval-v3",
+  "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01",
+  "previous_evaluation_set_id": "retrieval-v2",
+  "previous_evaluation_set_sha256": "a3b30c755dc2a4036b9d715a9df2bd891bfb850ce2bc2c369b43447c2a8abd13",
+  "source_index_fingerprint": "3bfd88168dbd24b626e9c58e5e88396f6df74b0052747946d237a7258cb991cc",
+  "source_build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+  "source_collection_name": "cited-rag-c1a14f1add33-740d893f20e4",
+  "production_build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+  "production_collection_name": "cited-rag-614f6c237c35-418359df7c62",
+  "case_count": 20,
+  "verified_payload_count": 20,
+  "case_kind_counts": {
+    "semantic-paraphrase": 4,
+    "exact-identifier": 4,
+    "mixed-semantic-identifier": 4,
+    "version-specific": 4,
+    "known-hard": 4
+  },
+  "question_overlap_with_v2_count": 0,
+  "relevant_chunk_overlap_with_v2_count": 0,
+  "payload_identity_mismatch_count": 0,
+  "version_mismatch_count": 0,
+  "query_runs_before_freeze": 0,
+  "authoring_used_retrieval_top_k": false,
+  "external_api_calls": 0,
+  "passed": true
+}

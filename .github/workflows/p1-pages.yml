@@ -1,0 +1,74 @@
+name: p1-pages
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/p1-pages.yml"
+      - "portfolio-site/p1/**"
+      - "projects/01-cited-rag/data/*.json"
+      - "projects/01-cited-rag/docs/images/cli-demo.png"
+      - "projects/01-cited-rag/docs/images/streamlit-cited-answer.png"
+      - "projects/01-cited-rag/scripts/export_portfolio_evidence.py"
+      - "projects/01-cited-rag/scripts/validate_pages_artifact.py"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/p1-pages.yml"
+      - "portfolio-site/p1/**"
+      - "projects/01-cited-rag/data/*.json"
+      - "projects/01-cited-rag/docs/images/cli-demo.png"
+      - "projects/01-cited-rag/docs/images/streamlit-cited-answer.png"
+      - "projects/01-cited-rag/scripts/export_portfolio_evidence.py"
+      - "projects/01-cited-rag/scripts/validate_pages_artifact.py"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: p1-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up CPython 3.14.3
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.14.3"
+
+      - name: Check deterministic evidence
+        run: python projects/01-cited-rag/scripts/export_portfolio_evidence.py --check
+
+      - name: Validate exact Pages artifact
+        run: python projects/01-cited-rag/scripts/validate_pages_artifact.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: portfolio-site/p1
+          retention-days: 1
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128

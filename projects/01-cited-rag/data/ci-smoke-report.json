@@ -1,0 +1,19 @@
+{
+  "schema_version": "1",
+  "smoke_id": "p1-ci-smoke-v1",
+  "status": "passed",
+  "question_sha256": "c0e2da1882914f1612aa7110de0506798602fee526587e0e1041c4a7d655d2a9",
+  "embedding_provider": "fake",
+  "qdrant_provider": "fake",
+  "model_provider": "fake",
+  "embedding_calls": 1,
+  "qdrant_calls": 1,
+  "model_calls": 1,
+  "retrieval_results": 1,
+  "citations_bound": true,
+  "total_tokens": 26,
+  "network_accessed": false,
+  "dotenv_read": false,
+  "model_downloaded": false,
+  "mimo_called": false
+}

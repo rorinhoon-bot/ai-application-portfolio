@@ -1,0 +1,313 @@
+{
+  "schema_version": "1",
+  "site_id": "p1-cited-rag-recorded-evidence-v1",
+  "exporter_version": "p1-portfolio-exporter-v1",
+  "language": "zh-CN",
+  "title": "带引用的 Python 官方文档知识库",
+  "headline": "让 RAG 回答可核验，也让发布失败可追溯",
+  "recorded_evidence": true,
+  "live_service": false,
+  "site_status": "local-static-artifact",
+  "publication_status": "not-published",
+  "remote_ci_status": "workflow-ready-remote-unrun",
+  "repository_url": "https://github.com/rorinhoon-bot/ai-application-portfolio",
+  "retrieval_comparison": [
+    {
+      "mode": "dense",
+      "label": "Dense 基线",
+      "evaluation_set_id": "retrieval-v3",
+      "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01",
+      "case_count": 20,
+      "hit_count": 15,
+      "recall_at_5": 0.75,
+      "mrr_at_5": 0.48666666666666664,
+      "ndcg_at_5": 0.5513923995665121,
+      "candidate_recall_at_20": null,
+      "p50_ms": 7431.7737,
+      "p95_ms": 8603.5701,
+      "sample_count": 60,
+      "external_api_calls": 0
+    },
+    {
+      "mode": "dense-plus-identifiers",
+      "label": "旧生产路径",
+      "evaluation_set_id": "retrieval-v3",
+      "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01",
+      "case_count": 20,
+      "hit_count": 16,
+      "recall_at_5": 0.8,
+      "mrr_at_5": 0.6125,
+      "ndcg_at_5": 0.660812753975107,
+      "candidate_recall_at_20": null,
+      "p50_ms": 7705.2776,
+      "p95_ms": 8113.0282,
+      "sample_count": 60,
+      "external_api_calls": 0
+    },
+    {
+      "mode": "hybrid-client-rrf-v1",
+      "label": "确定性 Hybrid",
+      "evaluation_set_id": "retrieval-v3",
+      "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01",
+      "case_count": 20,
+      "hit_count": 19,
+      "recall_at_5": 0.95,
+      "mrr_at_5": 0.71,
+      "ndcg_at_5": 0.7705285910760186,
+      "candidate_recall_at_20": 1.0,
+      "p50_ms": 7840.7331,
+      "p95_ms": 8011.0628,
+      "sample_count": 60,
+      "external_api_calls": 0
+    }
+  ],
+  "answer_quality": {
+    "evaluation_set_id": "answering-v3",
+    "evaluation_set_sha256": "78e2cb170b3cb56f807e469276f94ce64011f4166164085a060a11ff27381e97",
+    "case_count": 10,
+    "answerable_recall": 0.8,
+    "refusal_accuracy": 1.0,
+    "citation_binding_validity": 1.0,
+    "manual_faithfulness": "4/4",
+    "api_call_count": 10,
+    "total_tokens": 17768,
+    "automatic_retries": 0,
+    "source_path": "data/answering-v3-report.json",
+    "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
+  },
+  "headline_metrics": [
+    {
+      "label": "新20题 Recall@5",
+      "value": "95%",
+      "note": "确定性 Hybrid；同集 Dense 为75%",
+      "source_path": "data/retrieval-v3-hybrid-client-rrf-v1-report.json"
+    },
+    {
+      "label": "候选 Recall@20",
+      "value": "100%",
+      "note": "相关证据已进入前20",
+      "source_path": "data/retrieval-v3-hybrid-client-rrf-v1-report.json"
+    },
+    {
+      "label": "引用绑定有效率",
+      "value": "100%",
+      "note": "answering-v3 固定10题",
+      "source_path": "data/answering-v3-report.json"
+    },
+    {
+      "label": "发布门",
+      "value": "14/14",
+      "note": "通过后才切活动索引",
+      "source_path": "data/deterministic-fusion-release-report.json"
+    }
+  ],
+  "recorded_cases": [
+    {
+      "case_id": "answer-venv-activation",
+      "label": "有依据回答",
+      "kind": "answered",
+      "recorded_evidence": true,
+      "live_inference": false,
+      "question": "Python 3.14 创建虚拟环境后，在 Windows cmd.exe 和 POSIX bash 中分别怎样激活？",
+      "status": "answered",
+      "answer": "在 Windows cmd.exe 中激活虚拟环境的命令是：`<venv>\\Scripts\\activate.bat`。在 POSIX bash 中激活虚拟环境的命令是：`source <venv>/bin/activate`。",
+      "citations": [
+        {
+          "rank": 1,
+          "python_version": "3.14",
+          "documentation_release": "3.14.6",
+          "section_path": [
+            "venv --- 虚拟环境的创建",
+            "虚拟环境是如何实现的"
+          ],
+          "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#how-venvs-work",
+          "excerpt": "fish | $ source <venv>/bin/activate.fish\n\ncsh/tcsh | $ source <venv>/bin/activate.csh\n\npwsh | $ <venv>/bin/Activate.ps1\n\nWindows | cmd.exe | C:\\> <venv>\\Scripts\\activate.bat\n\nPowerShell | PS C:\\> <venv>\\Scripts\\Activate.ps1\n\nAdded in version 3.4: fish 和 csh 激活脚本。\n\nAdded in version 3.8: 在 POSIX 上安装 PowerShell 激活脚本，以支持 PowerShell Core。\n\n激活一个虚拟环境的操作 不是必需的，因为你完全可以在唤起 Python 时指明特定虚拟环境的 Python 解释器的完整路径。 更进一步地说，安装在虚拟环境中的所有脚本也都可以在不激活该虚拟环境的情况下运行。"
+        },
+        {
+          "rank": 4,
+          "python_version": "3.14",
+          "documentation_release": "3.14.6",
+          "section_path": [
+            "venv --- 虚拟环境的创建",
+            "虚拟环境是如何实现的"
+          ],
+          "citation_url": "https://docs.python.org/zh-cn/3.14/library/venv.html#how-venvs-work",
+          "excerpt": "当运行虚拟环境中的 Python 解释器时，sys.prefix 和 sys.exec_prefix 将指向该虚拟环境的相应目录，而 sys.base_prefix 和 sys.base_exec_prefix 将指向用于创建该虚拟环境的基础 Python 的相应目录。 只需检测 sys.prefix != sys.base_prefix 就足以确定当前解释器是否运行于虚拟环境中。\n\n一个虚拟环境可以通过位于其二进制文件目录 (在 POSIX 上为 bin；在 Windows 上为 Scripts ) 中的脚本来“激活”。 这会将该目录添加到你的 PATH，这样运行 python 时就会唤起虚拟环境的 Python 解释器，从而可以运行该目录中安装的脚本而不必使用其完整路径。 激活脚本的唤起方式是平台专属的 (<venv> 必须用包含虚拟环境目录的路径来替换):\n\n平台 | Shell | 用于激活虚拟环境的命令\n\nPOSIX | bash/zsh | $ source <venv>/bin/activate\n\nfish | $ source <venv>/bin/activate.fish"
+        }
+      ],
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+      "model_name": "mimo-v2.5",
+      "recorded_at": "2026-07-29T05:09:16.934930Z",
+      "total_tokens": 1747,
+      "source_path": "data/answering-v3-report.json",
+      "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
+    },
+    {
+      "case_id": "refuse-flask-app-context",
+      "label": "证据不足拒答",
+      "kind": "refused",
+      "recorded_evidence": true,
+      "live_inference": false,
+      "question": "Flask 的 current_app 代理在应用上下文之外访问时会怎样报错？",
+      "status": "refused",
+      "answer": "当前知识库没有检索到足够证据支持该问题。",
+      "citations": [],
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+      "model_name": "mimo-v2.5",
+      "recorded_at": "2026-07-29T05:09:16.934930Z",
+      "total_tokens": 1598,
+      "source_path": "data/answering-v3-report.json",
+      "source_sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065"
+    },
+    {
+      "case_id": "argparse-prog-balanced",
+      "label": "跨版本比较",
+      "kind": "version-comparison",
+      "recorded_evidence": true,
+      "live_inference": false,
+      "question": "Python 3.13 与 3.14 中，ArgumentParser 默认 prog 对通过 -m 执行模块的名称规则有什么不同？",
+      "status": "answered",
+      "answer": "在 Python 3.13 中，使用 -m 选项时，默认的 prog 是 Python 解释器名称后接 -m 再加模块或包的名称。在 Python 3.14 中，默认的 prog 值现在将反映出 __main__ 实际是如何被执行的，而不是始终为 os.path.basename(sys.argv[0])。",
+      "citations": [
+        {
+          "rank": 1,
+          "python_version": "3.13",
+          "documentation_release": "3.13.14",
+          "section_path": [
+            "argparse --- 用于命令行选项、参数和子命令的解析器",
+            "ArgumentParser 对象",
+            "prog"
+          ],
+          "citation_url": "https://docs.python.org/zh-cn/3.13/library/argparse.html#prog",
+          "excerpt": "默认情况下 ，ArgumentParser 根据Python 解释器 的运行方式，计算出要在帮助信息中显示的程序名称：\n\n如果作为参数传递的是文件，则是``sys.argv[0]`` 的 base name 。\n\n如果作为参数传递的是目录或 ZIP 文件，则是Python 解释器名称，后接 sys.argv[0]。\n\n如果使用 -m 选项则是在 Python 解释器名称后接 -m 再加模块或包的名称。\n\n默认行为几乎总是符合需求因为它将使帮助消息与在命令行上唤起程序所用的字符串相匹配。 不过，要更改此默认行为，可以将 prog= 参数传入 ArgumentParser 以提供另外的值:\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.print_help()\nusage: myprogram [-h]\n\noptions:\n -h, --help  show this help message and exit\n"
+        },
+        {
+          "rank": 2,
+          "python_version": "3.14",
+          "documentation_release": "3.14.6",
+          "section_path": [
+            "argparse --- 用于命令行选项、参数和子命令的解析器",
+            "ArgumentParser 对象",
+            "prog"
+          ],
+          "citation_url": "https://docs.python.org/zh-cn/3.14/library/argparse.html#prog",
+          "excerpt": "需要注意程序名称，无论是由 sys.argv[0]，由 __main__ 模块属性还是由 prog= 参数来确定的，都可以在帮助消息中使用 %(prog)s 格式说明符来引用。\n\n>>> parser = argparse.ArgumentParser(prog='myprogram')\n>>> parser.add_argument('--foo', help='foo of the %(prog)s program')\n>>> parser.print_help()\nusage: myprogram [-h] [--foo FOO]\n\noptions:\n -h, --help  show this help message and exit\n --foo FOO   foo of the myprogram program\n\n\n在 3.14 版本发生变更: 默认的 prog 值现在将反映出 __main__ 实际是如何被执行的，而不是始终为 os.path.basename(sys.argv[0])。"
+        }
+      ],
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "4facb454-cca4-476f-b623-fa29b40fcf00",
+      "model_name": "mimo-v2.5",
+      "recorded_at": "2026-07-29T05:46:38.563731+00:00",
+      "total_tokens": 1851,
+      "source_path": "data/conflict-v2-evaluation-report.json",
+      "source_sha256": "d53c91a40ed2b4ac5d4ef332c53e06b0d300a411467521837f93c0b9f26b9eee",
+      "review": {
+        "kind": "post-hoc-human-review",
+        "accepted": true,
+        "decision": "D-038",
+        "note": "The answer cites separate Python 3.13 and 3.14 prog sections.",
+        "original_automatic_correct": false,
+        "original_expected_status": "conflict",
+        "accepted_semantics": "Explicit cross-version comparisons may use answered when the answer labels each version and cited evidence supports every version claim.",
+        "review_source_path": "data/conflict-v2-human-review.json",
+        "review_source_sha256": "2460363c13afb45fa5e23b54bf133ea51574ff0f1ce04e739252516e078eaab9"
+      }
+    }
+  ],
+  "failure_cases": [
+    {
+      "label": "服务端 RRF 锁定集失败",
+      "status": "failed-before-report",
+      "error_code": "EVALUATION_ERROR",
+      "error_message": "V2 repeated retrieval ranking changed",
+      "evidence": "唯一一次 locked-test 在指标生成前发现重复排名漂移；未重跑、未激活。",
+      "resolution": "改用 exact 两路召回、同分边界闭合与客户端 Fraction RRF；新20题发布门14/14通过。",
+      "source_path": "data/hybrid-locked-run-failure.json",
+      "source_sha256": "0b3865bc752307b17a1453a99029e8dee96b56dc0437b8b01593021c3758d1d3"
+    },
+    {
+      "label": "Collector 故障隔离",
+      "status": "passed",
+      "error_code": null,
+      "error_message": null,
+      "evidence": "Collector停止时 health=200、ready=200、非法请求=422，API容器身份不变。",
+      "resolution": "遥测不参与 readiness；恢复Collector后metrics再次返回200。",
+      "source_path": "data/observability-runtime-release-report.json",
+      "source_sha256": "82db5ab167adbe54fd25997dc803200d39b9af2b34175442c0942af041c748cf"
+    },
+    {
+      "label": "429重试与计费不确定性",
+      "status": "success",
+      "error_code": null,
+      "error_message": null,
+      "evidence": "fake provider先返回429，再成功；共2次物理尝试、1次重试。",
+      "resolution": "最多一次重试；潜在已计费尝试显式记录为billing_uncertain，不伪造零费用。",
+      "source_path": "data/retry-smoke-report.json",
+      "source_sha256": "f154610ad6438a43518937d7340fc711a9666b3508bbf8eff43016ed84d4f48d"
+    }
+  ],
+  "runtime_proof": {
+    "active_retrieval_mode": "hybrid-client-rrf-v1",
+    "active_index_id": "c1a14f1a-dd33-59e8-8e4f-26a9f16846f1",
+    "active_build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+    "point_count": 1359,
+    "api_image": "cited-rag-api:v2-d1",
+    "api_image_size_bytes": 124906372,
+    "api_user": "10001:10001",
+    "api_read_only_rootfs": true,
+    "healthz": 200,
+    "readyz": 200,
+    "sensitive_fixture_occurrences": 0,
+    "qdrant_points": 1359,
+    "ci_smoke_status": "passed",
+    "ci_network_accessed": false,
+    "remote_ci_status": "workflow-ready-remote-unrun"
+  },
+  "architecture": [
+    {
+      "step": "01",
+      "title": "只读 FastAPI",
+      "detail": "严格请求模型、Problem Details、服务端request ID"
+    },
+    {
+      "step": "02",
+      "title": "确定性 Hybrid",
+      "detail": "Dense exact + 中文/代码 Sparse + Fraction RRF"
+    },
+    {
+      "step": "03",
+      "title": "Qdrant Server",
+      "detail": "读写Key隔离、不可变build、snapshot恢复"
+    },
+    {
+      "step": "04",
+      "title": "MiMo结构化回答",
+      "detail": "模型只选Chunk ID，引用元数据由程序绑定"
+    },
+    {
+      "step": "05",
+      "title": "可观测与CI",
+      "detail": "隐私安全trace/metrics；普通路径完全离线"
+    }
+  ],
+  "limitations": [
+    "当前页面是录制证据，不是实时推理服务；不接受任意问题。",
+    "GitHub Pages尚未启用；当前没有可宣传的在线URL。",
+    "远程GitHub Actions尚未运行，只能声称workflow-ready。",
+    "answering-v3只有10题；跨版本人工复核只有3题。",
+    "真实供应商故障、线上并发、硬费用上限和公网高可用仍无证据。",
+    "95 MB模型资产与Qdrant运行数据不进入Git，新环境需按README恢复。"
+  ],
+  "external_side_effects": {
+    "network_accessed": false,
+    "mimo_called": false,
+    "qdrant_written": false,
+    "docker_changed": false,
+    "dependency_installed": false,
+    "cloud_resource_created": false,
+    "public_deployment_created": false,
+    "remote_workflow_triggered": false
+  }
+}

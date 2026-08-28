@@ -1,8 +1,122 @@
 # STATUS
 
-- 状态：`completed`
-- 当前唯一目标：P1 已完成；等待学习者明确启动下一作品。
+- 状态：`in_progress`
+- 版本状态：V1 已完成并保留；V2-D1运行激活、V2-D2本地CI合同、V2-D3有限重试、V2-E1本地静态证据制品与V2-E2A本地发布就绪均完成；远程CI和公开部署未运行。
+- 当前唯一目标：停在V2-E2B公开激活审批点；未经再次批准，不push、不建PR、不运行远程Actions、不更改Pages设置、不公开URL。
+- 当前阶段：活动检索为`hybrid-client-rrf-v1`，运行API为`cited-rag-api:v2-d1`，Collector运行于固定digest并仅发布回环`9464`。C3前置门未通过，Reranker不下载。
+- 暂停记录：2026-08-25由学习者要求暂停；2026-08-27明确恢复。暂停期间活动运行基线未改。
 - 已完成：
+  - 从固定提交 `dcb164e95059b060ffd6aebbaa093a7626177614` 创建独立工作树与分支 `codex/p1-production-rag-v2`，不覆盖主工作树中的用户改动。
+  - 升级阶段与验收边界已记录在项目公开设计文档中。
+  - PRD 升级为 v0.3-draft：保留 V1 验收基线，新增 API、Qdrant Server、Hybrid/Rerank、摄取任务、可观测、CI 和受控部署需求。
+  - 架构升级为 v0.19-draft：定义端口/适配器、读写隔离、FastAPI 模块、错误边界和分阶段拓扑。
+  - 新增 `docs/API_CONTRACT_V2.md`：锁定 `/healthz`、`/readyz`、`/v1/answers`、请求 ID、Problem Details 和离线合同测试。
+  - 完成 V2-A 依赖 dry-run：完整现有锁与 `fastapi==0.141.1`、`annotated-doc==0.0.5`、既有 `uvicorn==0.51.0` 在 CPython 3.14.3 上解析成功，无冲突；未安装包。
+  - 设计阶段回归：现有 220 项普通测试在 V2 独立工作树中离线通过。
+  - 学习者批准创建 V2 独立 `.venv` 并安装 V2-A 精确依赖；CPython 3.14.3、`pip check` 和 Git 忽略规则验证通过。
+  - 新增严格 HTTP 模型、FastAPI 应用工厂、懒加载、服务端请求 ID、统一 Problem Details 和三个只读端点。
+  - 新增检索就绪检查：校验活动索引与 Qdrant 物理状态，不执行 Embedding 查询或 MiMo 回答。
+  - 新增 29 项 API 合同测试与 3 项就绪底层测试；全部 252 项普通测试离线通过，V1 测试零删除。
+  - Uvicorn 回环冒烟通过：health 200、独立工作树缺资产 readiness 503、非法 answer 422、OpenAPI 200、CORS 关闭；根目录 `start-p1-api.cmd` 已实际启动验证。
+  - V2-A 实现决定记录为 D-044；API 合同升级为 v0.2 accepted，架构升级为 v0.20-draft。
+  - 完成本机只读核验：Docker未安装；WSL 2.7.8/Ubuntu WSL2已配置，Windows 11 build 26200、31.8 GiB内存满足Docker Desktop官方基线；H盘可用109.36 GiB。
+  - 核实Docker Desktop 4.87.0安装包精确大小与SHA-256；核实Qdrant 1.19.0 unprivileged镜像的固定多平台摘要和amd64压缩层大小；没有下载安装。
+  - 新增并完成 `docs/QDRANT_SERVER_DESIGN.md` v0.2 implemented：V2-B拆为B1服务化存储与B2 API容器；B1回环Qdrant Server迁移、权限、重启与快照恢复均已验收。
+  - 固定Windows/WSL存储边界：Docker主要数据放H盘，Qdrant活数据使用Linux named volume；不把Windows目录bind mount为Qdrant storage。
+  - 在线API只使用read-only key、迁移命令使用admin key；只发布127.0.0.1:6333，关闭CORS、telemetry和远程snapshot URL recovery。
+  - V2-B1不加入PostgreSQL，不调用MiMo，不下载新模型，不公开部署；实现决定记录为D-045 accepted。
+  - V2-B1设计后全部252项普通测试再次离线通过；固定模型5个必需文件重新验真通过，共95,221,432字节。
+  - 学习者批准第11节精确副作用；安装Docker Desktop 4.87.0 per-user/WSL 2，Engine/CLI 29.7.2和Compose 5.4.0运行通过；安装命令没有自动接受许可。
+  - 拉取并固定Qdrant 1.19.0 unprivileged镜像index digest；linux/amd64与容器用户1000:1000验证通过。
+  - 生成三份Git忽略运行配置；admin/read-only密钥不同、不打印、不与MiMo Key混用、拒绝覆盖已有文件。
+  - 初始internal网络导致容器健康但宿主机端口不可达；经学习者单独批准改为专用非internal bridge，并用端口映射与bridge driver双重固定127.0.0.1。旧空internal网络已删，named volume未删；决定记录为D-046。
+  - Compose运行态加固通过：非root、只读rootfs、capabilities清空、no-new-privileges、1 GiB、2 CPU、512 PIDs、日志轮转；6334/6335未发布。
+  - 从确定性归档恢复26个语料文件、3,581,318字节；只复制清单中的5个模型文件、95,221,432字节，逐文件哈希通过；未联网下载模型。
+  - 本地ONNX在59.798秒内重建1359-point Server collection；512维Cosine、1359 payload、唯一ID、Python 3.13过滤和self-query top score 1.0全部通过。
+  - Server逻辑index ID保持`614f6c23-7c35-5832-8086-c29651d60866`；新build ID为`418359df-7c62-4345-9bfe-57459c251dd3`。
+  - 权限实测：read-only count/scroll/query均200，create/upsert/delete均403；权限探针collection不存在，报告无密钥。
+  - restart与不带`-v`的down/up后index/build/collection身份和全部验证值不漂移，embedded_count为0，两个named volume保留。
+  - snapshot下载9,922,560字节，SHA-256为`6f447e48ca32a7e60de2a5a1a01d5104881452c1c01ecca7067d1fa98ed36732`且匹配Qdrant checksum；上传恢复1359 points全验通过，临时collection已精确删除，活动collection不变。
+  - 真实Uvicorn使用read-only key连接Server：health/ready均200，configuration/index/retriever均ok，12.496秒，未发MiMo请求。
+  - 实测Qdrant storage为205,628,422字节，snapshot volume为19,845,184字节；最终只剩1个活动collection和1个snapshot。
+  - 新增48项V2-B1离线测试，总计300项通过；V1/V2-A测试零删除；compileall、pip check与Compose解析通过，普通测试不依赖Docker。
+  - 构建/权限/持久化/恢复脚本默认拒绝覆盖历史报告；新环境显式`--restore`可重跑验证并保留报告字节，决定记录为D-047。
+  - 学习者确认Docker Desktop桌面端许可已由本人同意；许可记录已更新，程序没有自动接受。
+  - Docker Desktop/Engine恢复运行，既有Qdrant容器healthy，`127.0.0.1:6333/readyz=200`；回环端口、collection和named volume未修改。
+  - 完成V2-B2只读registry/PyPI审计：固定Python 3.14.7 slim-bookworm index digest；amd64基础镜像压缩层44,791,060字节。
+  - 现有76包Windows锁中75包有Linux wheel，唯一不兼容项为Windows专用`pywin32==312`；首次真实构建发现元数据审计遗漏HTTP/2 extra的3包，安全失败后补齐为44包、65,250,778字节。
+  - `docs/API_CONTAINER_DESIGN.md` 升级为v0.2 implemented；固定API专用锁、Python基础镜像与BuildKit前端摘要、非root只读镜像、只读模型/Manifest挂载、container Qdrant profile、回环8000端口、验收、回滚和2 GiB磁盘上限。
+  - API容器设计决定D-048改为accepted；最终镜像 `cited-rag-api:v2-b2` 为linux/amd64、123,768,630字节、UID/GID 10001:10001。
+  - API容器44个依赖与锁完全一致，`pip check`通过；rootfs和两个资产挂载写入被拒绝，tmpfs可写，admin key不进入API环境。
+  - health、ready、OpenAPI均为200；非法问答为脱敏422且request ID一致；外域预检405、无CORS允许头；未发送合法问答，未调用MiMo。
+  - API restart后恢复healthy；Qdrant容器ID/启动时间、活动指针与Manifest哈希前后不变，活动collection仍为1359 points。
+  - V2-B2从拉取基础镜像前到最终验收净使用H盘908,906,496字节，低于批准的2 GiB上限；机器可读证据为`data/api-container-report.json`。
+  - V2-B2设计后验证：全部300项普通测试、`compileall`、`pip check`、Compose解析和`git diff --check`通过；Qdrant `/readyz=200`。
+  - 完成V2-C只读能力审计：Qdrant现有版本已支持named Sparse、IDF、Prefetch和RRF，无需新增Hybrid Python依赖。
+  - 否决FastEmbed `Qdrant/bm25`直接用于本项目：0.8.0无中文language且按空白切分，连续中文词元不可信。
+  - 设计 `unicode-code-bm25-v1`：Han双字gram、ASCII/dotted identifier、数字token、mmh3碰撞审计、BM25 TF/长度归一化与Qdrant IDF。
+  - 固定50题评估方案：五类题型，30 development+20 locked-test；四种模式同集比较Recall@5、MRR@5、nDCG@5、candidate Recall@20、P50/P95与资源。
+  - Reranker候选固定为MIT中英文 `BAAI/bge-reranker-base` revision `2cfc18c9415c912f9d8155881c133215df768a70`；所需5文件1,129,559,216字节，当前未下载。
+  - 新增`docs/HYBRID_RERANK_DESIGN.md` v0.1 proposed与机器审计`data/hybrid-rerank-capability-audit.json`；未安装包、未写Qdrant、未下载模型、未调用MiMo。
+  - 新增4项V2-C设计合同测试；P1全部326项离线测试、`compileall`、`pip check`与`git diff --check`通过。
+  - 学习者批准`docs/HYBRID_RERANK_DESIGN.md`第10.1节；V2-C1只修改Git工作树并对现有Qdrant执行只读查询。
+  - 新增独立schema v2评估模型、MRR@5、二元nDCG@5、nearest-rank P50/P95、分层聚合与重复排名稳定性合同；V1模型和语义哈希不改。
+  - 新建50题`retrieval-v2`：12语义、12精确标识符、10混合、8版本、8已知难例；30 development+20 locked-test；语义SHA-256为`a3b30c755dc2a4036b9d715a9df2bd891bfb850ce2bc2c369b43447c2a8abd13`。
+  - 50个唯一相关Chunk已从活动1359-point Server collection只读回查；point ID/payload ID一致，版本错配0。
+  - Dense真实结果42/50：Recall@5 84.0%、MRR@5 0.6313、nDCG@5 0.6840、P50 4.805秒、P95 5.304秒。
+  - 当前`dense-plus-identifiers`真实结果45/50：Recall@5 90.0%、MRR@5 0.7217、nDCG@5 0.7673、P50 4.807秒、P95 5.802秒。
+  - 当前路径相对Dense净增3个命中：新增4题、退化1题；`template-string-314`退化与5个最终失败均保留，不改题或相关证据。
+  - 两模式均单进程顺序执行5次warm-up和150个计时样本；模型95,221,432字节，collection 205,628,065字节，外部API调用0。
+  - 当前检索器没有独立候选层，candidate Recall@20显式为null；等待C2 Hybrid暴露候选后测量，不用Top-5伪造。
+  - 旧15题集与两份V1报告SHA-256复验不变；C1未写Qdrant、未下载模型、未调用MiMo、未安装依赖、未重启容器。
+  - V2-C1新增9项离线合同测试；P1全部335项测试通过，V1/V2-A/V2-B1/V2-B2测试零删除。
+  - 完成V2-C2只读预检：活动指针/index/build/collection和两个文件哈希未漂移；Git预检前干净；H盘可用113,626,398,720字节。
+  - Docker Engine当前未运行；预检没有擅自启动Docker或容器。C2第10.2节已把启动现有Docker Desktop/Engine列入待批准副作用。
+  - 冻结`unicode-code-bm25-v1`完整词元范围、正则、命名空间、mmh3 seed、BM25公式、named vector和RRF参数；配置SHA-256为`53400f58436e2faf179eb5383aac62e63ca8ab86d161e7c8a05b413ee3b9d8a2`。
+  - 对固定1359 Chunk离线审计：158,321次词元、25,836个唯一词元、118,664个Sparse非零项、平均文档长度116.4982、空向量0、mmh3碰撞0。
+  - C2发布流程改为候选collection先评估后激活；未过门不切指针、不重启API。门槛同时约束Dense与当前`dense-plus-identifiers`生产路径，决定草案记录为D-051。
+  - 新增机器证据`data/hybrid-index-preflight.json`并细化`docs/HYBRID_RERANK_DESIGN.md` v0.3第10.2节；预检未写Qdrant、未安装依赖、未下载模型、未调用MiMo、未重启容器。
+  - V2-C2设计后全部337项离线测试、`compileall`、`pip check`、JSON解析与`git diff --check`通过；V1/V2-A/V2-B1/V2-B2/V2-C1测试零删除。
+  - 学习者批准`docs/HYBRID_RERANK_DESIGN.md`第10.2节；使用既有Docker、本地BGE和现有依赖执行V2-C2，未下载模型、未安装依赖、未调用MiMo。
+  - 新增schema v2 Hybrid索引身份、确定性中文/代码Sparse BM25、不可变词表、named Dense/Sparse vector、候选构建器、RRF查询、候选层、失败关闭发布门和旧schema v1回退兼容。
+  - 构建并验证1个1359-point候选collection `cited-rag-c1a14f1add33-740d893f20e4`；118,664个Sparse非零项、碰撞0、空向量0；活动指针未改变。
+  - 构建前恢复检查暴露规范JSON错误：新增可选Hybrid字段被错误排除，短暂生成错误Dense身份。修复后立即把指针切回固定旧build，删除仅本次误建且未激活的collection/Manifest，并增加冻结Dense身份回归测试。
+  - development 30题三次重复稳定：29/30，Recall@5与candidate Recall@20均为96.67%，P50 7.572秒、P95 8.309秒；配置随后冻结。
+  - 唯一一次locked运行在生成指标前触发`EVALUATION_ERROR: V2 repeated retrieval ranking changed`；不重跑、不调参，机器失败证据与发布门报告保留。
+  - V2-C2发布门`passed=false`：没有Hybrid锁定质量/延迟指标，活动指针未切换，API未构建或重启；旧API镜像仍为`cited-rag-api:v2-b2`且health/ready均200。
+  - 候选collection新增H盘33,865,728字节，低于1 GiB上限；旧collection、snapshot、两个named volume和旧镜像均保留。
+  - V2-C2最终354项离线测试、`compileall`和`pip check`通过；失败门禁无法激活，Sparse词表目录拒绝链接/非目录替换；外部API调用0。C3前置条件未满足，Reranker仍未下载。
+  - 完成V2-C2.1设计：Dense exact、Dense/Sparse同分边界闭合、`Fraction`客户端RRF和RetrievalConfig schema v3；复用现有候选索引，不写Qdrant。
+  - 冻结评估隔离：旧50题只做稳定性回归；新20题`retrieval-v3`必须在查询前冻结，且证据/问题不与V2重复；同集一次比较Dense、当前生产和确定性Hybrid。
+  - 冻结新发布门和C3前置门；决定草案记录为D-053，精确副作用与批准语句见`docs/DETERMINISTIC_FUSION_DESIGN.md` v0.1第10节。
+  - V2-C2.1设计后354项离线测试、`compileall`、`pip check`和`git diff --check`通过；本步没有查询Qdrant、启动容器或改运行态。
+  - 学习者批准`docs/DETERMINISTIC_FUSION_DESIGN.md`第10节；实现RetrievalConfig schema v3、Dense exact、两路同分窗口闭合、客户端`Fraction` RRF、融合后payload按ID回查及完整失败边界。
+  - 旧`retrieval-v2`仅做稳定性回归：50/50题各3次排名、候选源路rank和窗口诊断一致；报告明确`quality_metrics_used_for_release=false`。
+  - `retrieval-v3`在首次查询前人工冻结20题，五类各4题；语义SHA-256为`689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01`，与V2问题/相关Chunk重合均为0，生产与候选payload逐项一致20/20。
+  - V3按唯一顺序各运行一次：Dense Recall/MRR/nDCG为75.0%/0.4867/0.5514；当前生产为80.0%/0.6125/0.6608；Client RRF为95.0%/0.7100/0.7705，candidate Recall@20为100%，三模式均20/20重复稳定。
+  - 发布门14/14通过：Hybrid相对生产Recall +0.15、MRR +0.0975、nDCG +0.1097，新增生产命中失败0，P95 8.011秒不高于生产8.113秒的2倍，payload验证100%，外部API调用0。
+  - C3前置门未通过：candidate Recall@20与Recall@5差0.05，仅1题相关Chunk位于6～20名；不下载1.13 GiB Reranker，不把V3复用于后续调参。
+  - 活动指针已切到Hybrid build`740d893f-20e4-4677-8e7c-74a4d45de92e`；构建并运行`cited-rag-api:v2-c2-1`。health/ready为200、非法请求422、CORS关闭、三次检索稳定；Qdrant容器身份未变，未写collection、未调用MiMo。
+  - V2-C2.1最终372项离线测试通过；API镜像新增磁盘33,685,504字节，低于1 GiB上限；机器证据见`data/deterministic-fusion-*.json`与三份V3报告。
+  - 学习者于2026-08-27恢复升级计划；先执行约定的V2-D可观测性与CI设计，不进入V2-C3。
+  - 新增`docs/OBSERVABILITY_CI_DESIGN.md` v0.1 proposed：拆分D1可观测性、D2 CI与后置D3有限重试，固定隐私、故障隔离、发布门和回滚边界。
+  - OpenTelemetry官方能力审计选择稳定`opentelemetry-api/sdk/exporter==1.44.0`手工埋点；不选择pre-release FastAPI自动埋点。CPython 3.14.3 binary-only dry-run通过，未安装包。
+  - 固定官方Collector contrib 0.159.0 GHCR index与linux/amd64 digest；只读manifest检查通过，镜像未拉取、容器未修改。
+  - 运行态只读复验确认Docker Engine当前停止；设计阶段不需Docker，故未启动Engine或容器。
+  - 固定GitHub官方Action完整SHA：checkout v7.0.1与setup-python v7.0.0；当前无workflow、无远程Actions运行，不声称CI已通过。
+  - 新增机器审计`data/observability-ci-capability-audit.json`与5项设计合同测试；未调用MiMo、未写Qdrant、未下载模型、未创建云资源。
+  - 学习者批准`docs/OBSERVABILITY_CI_DESIGN.md`第12.1节；在现有`.venv`安装3个直接OpenTelemetry依赖与4个固定递归包，现有包未升级，Windows/Linux锁均更新，`pip check`通过。
+  - 新增`observability.py`：固定字段JSON日志、request ID上下文、手工OTel trace、八类低基数metrics、OTLP/HTTP exporter和2秒有界关闭；遥测默认关闭。
+  - HTTP、answer、retrieval、embedding、Dense、Sparse、fusion和generation已形成父子span；422错误根span为ERROR并与响应request ID一致。
+  - 隐私夹具覆盖问题、证据、回答、伪Key和绝对路径，日志字节/span attributes/metric labels出现次数均为0；index/build不进入metrics label。
+  - tracer或metric调用抛错时fake回答仍为200；Collector不加入readiness依赖，默认关闭或不可用不会改变业务结果。
+  - 新增固定digest Collector Compose配置：OTLP 4318不发布，Prometheus仅`127.0.0.1:9464`；非root、只读rootfs、capabilities清空、256 MiB与日志轮转。
+  - D1代码阶段最终384项离线测试、`compileall`、`pip check`和JSON解析通过；V1至V2-C2.1测试零删除。
+  - Docker Engine仍停止；启动Engine可能按`unless-stopped`自动重启Qdrant，直接执行会违反已批准边界。因此未拉取Collector、未构建/重启API、未改容器、未写Qdrant、未调用MiMo。
+  - 学习者补充授权启动Engine并允许Qdrant因restart策略发生一次受控重启；启动等待180秒后失败，Docker报`remove .../sailor-ingest.sock: The file cannot be accessed by the system.`。
+  - 失败后已停止Docker进程；两个WSL发行版均为Stopped，`wsl --shutdown`仍无法移动失效socket，非提权会话无权重启WslService。未执行factory reset或修改系统配置。
+  - 失败关闭证据：Engine/Qdrant均未启动，Docker VHDX大小与修改时间不变，活动指针/Manifest哈希不变；Collector未拉取、API未构建、容器/volume/Qdrant数据未改变。见`data/observability-runtime-preflight.json`。
+  - V2-D设计回归：P1全部377项离线测试、`compileall`、`pip check`、JSON解析与`git diff --check`通过；现有运行依赖与容器未改变。
   - P0 已通过最终验收。
   - 从 `codex/p0-implementation` 创建并切换到 `codex/p1-cited-knowledge-base`。
   - 确认 P1 使用版本化官方技术文档，主要语种为简体中文。
@@ -234,7 +348,44 @@
   - PRD更新为v0.2，架构更新为v0.18；Streamlit展示层决定记录为D-039。
   - 新增仓库根目录 `start-p1-web-ui.cmd`；双击即可使用P1本地`.venv`启动Streamlit并自动打开浏览器，缺少虚拟环境时安全停止并提示README；已用8502本地端口实际启动验证。
   - 首次用户实测暴露Streamlit邮箱激活提示会阻塞启动；增加 `server.showEmailPrompt=false` 项目配置与脚本参数，首次运行无需输入邮箱。
+  - Windows重启后Docker Engine恢复；按补充授权允许Qdrant发生一次restart策略重启，Qdrant容器ID、启动时间（启动后）、镜像digest、活动指针/Manifest哈希、collection points和named volume保持不变。
+  - 固定digest OpenTelemetry Collector已启动；容器非root、只读rootfs、`cap_drop=ALL`、256 MiB，仅发布`127.0.0.1:9464`，`/metrics=200`。
+  - `cited-rag-api:v2-d1`构建通过：Linux/amd64、`10001:10001`、124,906,372 bytes，H盘增量407,826,432 bytes，`pip check`通过；API healthy。
+  - D1运行验收通过：health/ready/OpenAPI/非法422；Collector可用时`rag_*`指标和debug trace产生；Collector停止时API仍返回200/200/422，恢复后metrics=200。
+  - 回滚验证通过：API实际切换至`cited-rag-api:v2-c2-1`并恢复`v2-d1`，两次health/ready均为200；MiMo调用0、合法真实问答0、敏感夹具泄漏0。
+  - 运行证据：`data/observability-runtime-release-report.json`；失败启动遗留的socket备份目录保持可恢复，未执行factory reset。
+  - D2新增`.github/workflows/p1-ci.yml`：Windows CPython 3.14.3离线合同job、Ubuntu固定API镜像构建job；官方Action完整SHA、`contents: read`、`persist-credentials: false`、timeout与并发取消已固定。
+  - 新增`run_ci_smoke.py`与`ci-smoke-report.json`：fake Embedding/Qdrant/Model固定链路、Pydantic重验、网络/.env/模型/MiMo均为0；新增`check_git_boundaries.py`拒绝敏感生成文件入Git。
+  - D2本地等价验证通过：`387 passed`、`compileall`、`pip check`、smoke、Git边界与workflow合同通过；状态仅为`workflow-ready`，无远程CI结果。
+  - 先新增`docs/RETRY_DESIGN.md`并冻结D3最多两次物理尝试、HTTP/连接阶段白名单、`Retry-After`与250毫秒退避、总时限、取消、幂等/计费不确定性、可观测字段、离线fake测试与回滚边界；该设计阶段未改变运行行为。
+  - 新增`tests/test_retry_design_contract.py`，锁定设计文档关键边界；未安装依赖、未调用MiMo、未写Qdrant。
+  - 学习者批准`RETRY_DESIGN.md`第10.1节；MiMo适配器实现最多一次白名单重试、总预算、阶段元数据与相同请求体复用，读取/写入阶段异常保持不重试。
+  - `rag.model.calls`改为物理尝试计数，新增`rag.model.retries`和`rag.model.attempt`；逻辑完成与已知Token继续单独记录，费用不确定值不伪造为0。
+  - 新增固定离线`run_retry_smoke.py`和`retry-smoke-report.json`，五类fake序列覆盖429、连接失败、读取超时、5xx耗尽和非法JSON；CI加入smoke。
+  - 独立`cited-rag-api:v2-d3`镜像通过health 200、ready 200、非法answer 422与安全配置验收；临时容器已移除，活动`v2-d1`未切流量。
+  - Qdrant身份、启动时间、活动指针/Manifest哈希和两个named volume零变化；真实MiMo调用0、合法问题0、新依赖0。机器证据见`data/retry-runtime-release-report.json`。
+  - 完成P1-F / V2-E只读平台审计，选择GitHub Pages作为静态证据宿主；Cloud Run + Qdrant Cloud仅保留为条件实时候选。
+  - 新增`docs/RESTRICTED_DEPLOYMENT_DESIGN.md`与`data/deployment-capability-audit.json`，冻结录制证据标识、无后端/密钥/任意输入、身份、持久配额、费用断路器、Secret、恢复和逐阶段审批边界。
+  - 设计阶段创建云账户0、云资源0、公开部署0、远程workflow 0、真实模型调用0、费用0；未改活动API、Qdrant、Collector或Docker运行态。
+  - 新增7项部署设计合同；完整离线回归`436 passed`。Codex运行器的中文路径子进程问题使用获批的临时`P:/R:`映射复验，映射随后在`finally`中移除，`.venv`配置恢复原值。
+  - 学习者批准`RESTRICTED_DEPLOYMENT_DESIGN.md`第12.1节；在`portfolio-site/p1/`实现纯静态HTML/CSS/JS证据页，显著标注“录制证据 · 非实时推理”，无表单、任意问题、后端连接或第三方运行资源。
+  - 新增标准库确定性导出器：固定读取11份机器报告和2张已追踪截图，生成`evidence.json`、同源JS数据、图片副本及输入/输出SHA-256清单；`--check`可在CI拒绝证据漂移。
+  - 页面展示同一V3新20题Dense/旧生产/确定性Hybrid对比、10题回答质量、3个录制案例、3类失败证据、运行身份和诚实限制；跨版本案例保留原自动判定失败与事后人工复核，不改写历史。
+  - 新增10项静态证据合同，锁定指标、哈希、无外部副作用、CSP、无网络API、无动态HTML注入、键盘tab、360～380px响应式与本地路径/密钥边界；CI监听`portfolio-site/p1/**`并执行导出`--check`。
+  - 本地静态服务器仅绑定`127.0.0.1:8765`，首页实测HTTP 200并打开Codex本地预览；没有启用GitHub Pages、公开URL或远程workflow。
+  - 2026-08-28重新核验GitHub官方Pages与Actions合同：远程仓库public、默认分支`main`，项目站预期URL形状为`https://rorinhoon-bot.github.io/ai-application-portfolio/`，实际URL仍为null。
+  - 新增`docs/PAGES_RELEASE_DESIGN.md`与`data/pages-release-capability-audit.json`；把V2-E2拆为E2A本地发布就绪和E2B公开激活，前者不授权push、PR、远程Actions或Pages设置。
+  - 冻结四个GitHub官方Action完整SHA、顶层零权限、verify仅`contents: read`、deploy仅`pages: write/id-token: write`、只允许`main`部署、PR验证不部署及失败回滚合同。
+  - 当前静态artifact为9文件、233,881 bytes；冻结32文件/1 MiB总量/256 KiB单文件上限、扩展名allowlist、无符号链接/隐藏文件/secret/绝对路径/远程运行资源的验证要求。
+  - E2设计阶段没有创建workflow、push、PR、远程run、Pages deployment、公开URL、secret或云资源；没有调用MiMo、写Qdrant或修改Docker。
+  - E2新增7项发布设计合同；P1完整离线回归`453 passed`，`compileall`、`pip check`、证据`--check`、Git边界与`git diff --check`通过。
+  - 学习者批准`PAGES_RELEASE_DESIGN.md`第11.1节；新增独立`.github/workflows/p1-pages.yml`，顶层权限为空，verify仅`contents: read`，deploy仅`pages: write/id-token: write`。
+  - Pages workflow只在PR验证及`main`发布；PR和非main手工运行不部署。四个GitHub官方Action全部固定完整commit SHA，checkout关闭凭据持久化，不使用PAT、repository secret、第三方Action或依赖安装。
+  - 新增标准库`validate_pages_artifact.py`：先复核确定性证据，再拒绝符号链接、隐藏/非普通/越界文件、非法扩展、超限制品、远程子资源、运行时网络API、表单/iframe、本机绝对路径和疑似secret赋值。
+  - 生成`data/pages-release-readiness-report.json`：当前精确artifact仍为9文件、233,881 bytes，逐文件SHA-256、总量、限制、安全断言及外部副作用均可机器复核；报告与实时重算由测试绑定。
+  - 新增19项Pages artifact/workflow实施合同；完整离线回归`471 passed, 1 skipped`。跳过项仅为当前Windows无符号链接创建权限，校验器的拒绝逻辑仍存在；`compileall`、`pip check`、证据漂移、artifact验证和Git边界通过。
+  - E2A未push、未建PR、未触发远程Actions、未更改Pages设置、未创建deployment/公开URL/云资源；未安装依赖、未调用MiMo、未写Qdrant、未修改Docker。
 - 下一步：
-  - P1已完成；进入P2前由学习者明确启动。
+  - 提交E2A本地commit SHA、计划push分支、PR标题、远程门禁、Pages设置动作、公开内容、回滚与停止公开步骤；只有学习者批准第11.2节后才执行V2-E2B。
 - 阻塞：
-  - 无。
+  - 无当前阻塞。Docker Desktop历史失效socket问题已由Windows重启解决。

@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "gate_id": "deterministic-fusion-release-gate",
+  "generated_at": "2026-08-25T06:52:36.539445+00:00",
+  "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01",
+  "checks": {
+    "old_v2_stability_passed": true,
+    "same_frozen_v3_set": true,
+    "all_modes_repeat_stable": true,
+    "candidate_recall_available": true,
+    "hybrid_recall_not_below_dense": true,
+    "hybrid_recall_not_below_production": true,
+    "hybrid_recall_at_least_080": true,
+    "hybrid_mrr_within_002_of_production": true,
+    "hybrid_ndcg_within_002_of_production": true,
+    "at_least_one_quality_gain_003": true,
+    "no_new_production_hit_failures": true,
+    "hybrid_p95_within_2x_production": true,
+    "payload_validation_100_percent": true,
+    "external_api_calls_zero": true
+  },
+  "passed": true,
+  "metrics": {
+    "dense": {
+      "case_count": 20,
+      "hit_count": 15,
+      "recall_at_5": 0.75,
+      "mrr_at_5": 0.48666666666666664,
+      "ndcg_at_5": 0.5513923995665121,
+      "candidate_recall_at_20": null
+    },
+    "production": {
+      "case_count": 20,
+      "hit_count": 16,
+      "recall_at_5": 0.8,
+      "mrr_at_5": 0.6125,
+      "ndcg_at_5": 0.660812753975107,
+      "candidate_recall_at_20": null
+    },
+    "hybrid": {
+      "case_count": 20,
+      "hit_count": 19,
+      "recall_at_5": 0.95,
+      "mrr_at_5": 0.71,
+      "ndcg_at_5": 0.7705285910760186,
+      "candidate_recall_at_20": 1.0
+    },
+    "hybrid_minus_production": {
+      "recall_at_5": 0.1499999999999999,
+      "mrr_at_5": 0.09749999999999992,
+      "ndcg_at_5": 0.1097158371009116
+    },
+    "production_p95_ms": 8113.0282,
+    "hybrid_p95_ms": 8011.0628
+  },
+  "new_production_hit_failures": [],
+  "c3_precondition": {
+    "checks": {
+      "candidate_recall_gap_at_least_010": false,
+      "at_least_two_cases_rank_6_to_20": false
+    },
+    "candidate_recall_gap": 0.050000000000000044,
+    "rank_6_to_20_case_ids": [
+      "try-else-no-exception"
+    ],
+    "passed": false
+  },
+  "external_api_calls": 0
+}

@@ -1,9 +1,10 @@
 # 带引用的 Python 官方文档知识库问答架构
 
-- 文档状态：`accepted`
-- 版本：`0.18`
-- 日期：`2026-07-29`
-- 对应需求：`docs/PRD.md` v0.2
+- 文档状态：`draft`
+- 版本：`0.36-draft`
+- 日期：`2026-08-28`
+- 对应需求：`docs/PRD.md` v0.13-draft
+- 版本说明：第 1～22 节保留已验收 V1 架构；第 23 节定义 V2 生产化覆盖层。
 
 ## 1. 架构目标
 
@@ -15,7 +16,7 @@ P1 使用本地 CLI、Streamlit 展示页和可替换组件实现可运行 RAG�
 - 无资料拒答和版本冲突处理。
 - 自动测试、固定评估、基线与优化对比。
 
-首版不引入 LangChain、LlamaIndex、Docker或公开部署。Streamlit 仅作为本地展示层。
+V1不引入 LangChain、LlamaIndex、Docker或公开部署。V2-B1只用Docker运行Qdrant Server，FastAPI仍在Windows宿主机；Streamlit仍是本地展示层。
 
 问题明确同时包含3.13和3.14时，v0.18沿用已验收的双版本过滤检索，再以2+2+1合并为5条证据。显式版本比较可返回 `answered`；无法安全化解的矛盾才返回 `conflict`。
 
@@ -23,17 +24,19 @@ P1 使用本地 CLI、Streamlit 展示页和可替换组件实现可运行 RAG�
 
 | 能力 | 首版实现 |
 |---|---|
-| 运行入口 | Python `argparse` 本地 CLI + Streamlit |
+| 运行入口 | Python `argparse` 本地 CLI + Streamlit + FastAPI/Uvicorn |
 | 输入输出模型 | Pydantic |
 | 配置 | Pydantic Settings |
 | HTML 解析 | Beautiful Soup + 标准库 `html.parser` |
 | Embedding | FastEmbed |
 | Embedding 模型 | `BAAI/bge-small-zh-v1.5` |
 | 推理后端 | ONNX Runtime CPU |
-| 向量存储 | Qdrant Client 本地持久化模式 |
+| 向量存储 | Qdrant Client本地适配器 + Qdrant Server `1.19.0`回环适配器 |
 | 生成模型 | MiMo `mimo-v2.5` |
 | HTTP | HTTPX |
 | 本地 Web UI | Streamlit `1.60.0` |
+| HTTP API | FastAPI `0.141.1` + Uvicorn `0.51.0` |
+| 容器 | Docker Desktop `4.87.0` + Compose `5.4.0`；仅Qdrant |
 | 测试 | pytest |
 
 完整精确依赖与验证记录见 `docs/DEPENDENCIES.md`。依赖、固定Embedding资产和预算内真实MiMo评估均已批准并完成。
@@ -872,3 +875,307 @@ chunk_id
 - 扩大版本比较与机器可读冲突评估集。
 - 评估相关性/Reranker组件是否值得加入。
 - 决定 Docker和部署平台。
+
+## 23. V2 生产化架构覆盖层
+
+### 23.1 架构原则
+
+1. **保留已验证核心**：`CitedRagService`、严格模型、引用绑定、拒答和索引一致性继续作为单一业务真相。
+2. **端口与适配器**：HTTP、Qdrant Server、Embedding、生成模型和遥测是可替换边界；核心不依赖 FastAPI 对象。
+3. **读写隔离**：在线问答只读；摄取、构建和发布在受保护的独立执行路径中完成。
+4. **先合同后部署**：先用假服务锁定 HTTP 行为，再连接真实本地资源，最后考虑公网。
+5. **可比较优化**：Hybrid/Rerank 不覆盖 Dense 基线，所有方案在同一固定集下评估。
+
+### 23.2 分阶段拓扑
+
+```text
+Browser / P2 Agent / P3 MCP
+             |
+             v
+      FastAPI read-only API
+      health | ready | answer
+             |
+             v
+       CitedRagService
+        /           \
+       v             v
+Retriever ports   ModelClient port
+  |       |             |
+Dense   Sparse          MiMo
+  \       /
+   Fusion -> optional Reranker
+       |
+       v
+Qdrant local adapter (tests)
+Qdrant Server adapter (runtime)
+
+Protected operator -> ingestion job API -> worker -> build -> validate -> publish
+```
+
+V2-A 只实现图中的只读 API，并继续连接现有核心。Qdrant Server、Sparse、Reranker、worker 和遥测在后续独立切片加入。
+
+### 23.3 V2-A 模块
+
+计划新增：
+
+```text
+src/cited_rag/
+├── api.py          # FastAPI 应用工厂、路由、中间件和异常映射
+└── api_models.py   # 仅属于 HTTP 边界的严格请求/响应模型
+
+tests/
+└── test_api.py     # 注入假服务和假就绪探针的离线合同测试
+```
+
+职责：
+
+- `api_models.py` 不复制 `AnswerResult`；只定义 `AnswerRequest`、成功包络、健康/就绪模型和 Problem Details。
+- `api.py` 通过应用工厂接收回答服务与就绪探针，测试不加载真实模型和索引。
+- 路由只做校验、调用、异常翻译和响应封装，不包含检索或 Prompt 逻辑。
+- `streamlit_app.py` 与 CLI 保持可运行；三种入口都复用同一核心。
+
+### 23.4 请求生命周期
+
+1. 中间件生成 UUID 请求 ID，并放入请求状态和响应头；日志传播留给 V2-D。
+2. Pydantic 拒绝未知字段和非法输入。
+3. `/v1/answers` 调用注入的同步 `CitedRagService.answer`；框架线程池负责避免阻塞事件循环。
+4. 服务返回现有 `AnswerResult`，HTTP 层只增加 `schema_version` 和 `request_id` 包络。
+5. 已知领域异常映射到稳定错误码；未知异常返回通用 500，不回传堆栈。安全诊断日志留给 V2-D。
+
+首个切片不实现自动重试。现有模型客户端的重试与超时语义保持不变，避免 HTTP 层与模型层叠加重试。
+
+### 23.5 健康与就绪
+
+- `/healthz` 只证明进程可响应，不能初始化 BGE、Qdrant 或 MiMo。
+- `/readyz` 通过独立探针检查配置和只读依赖；不得调用生成模型或产生费用。
+- 未就绪返回 503，不让真实问答请求在缺失索引时进入深层调用。
+- 探针返回枚举状态；绝对路径、API Key 和供应商原始错误不进入 HTTP 响应。
+
+### 23.6 错误边界
+
+HTTP 层使用 `application/problem+json`：
+
+- 请求校验：422 `request_validation_failed`。
+- 配置/索引/检索器未就绪：503 `service_not_ready`。
+- 模型上游失败：502 `model_upstream_failed`。
+- 模型超时：504 `model_upstream_timeout`。
+- 未知异常：500 `internal_error`。
+
+低证据拒答与证据冲突仍是 200 业务结果。详细合同见 `docs/API_CONTRACT_V2.md`。
+
+### 23.7 安全边界
+
+- API 默认监听 `127.0.0.1`，CORS 默认关闭。
+- 客户端不能传模型、Prompt、温度、API Key、路径、任意 URL 或索引控制参数。
+- 首个切片没有写端点，因此不接受上传和索引变更。
+- 日志只记录请求 ID、状态、耗时、计数和安全错误类别；问题正文按默认策略不记录。
+- 公网前必须新增身份、限流、配额、代理头信任边界、请求大小限制和密钥管理。
+- 公开静态证据页不得复用实时API身份，不接受任意输入，不连接后端，并明确区分录制证据与实时推理。
+- 长期公网实时问答还必须使用跨重启持久配额和费用断路器；平台预算告警或最大实例不能替代这两个边界。
+
+### 23.8 Qdrant Server 与发布
+
+V2-B 新增远程适配器，但保留现有本地适配器供离线测试：
+
+- 应用配置只接受受控 URL/集合名，不能由用户请求覆盖。
+- 启动时验证集合维度、距离函数、payload schema 和活动构建身份。
+- 索引构建写入新构建；验证通过后再发布。继续保留项目拥有的活动构建指针，除非 Qdrant 原生发布语义经过单独验证并记录决定。
+- 在线 API 使用只读凭据；worker 使用独立、最小化写权限凭据。
+- Docker 数据卷、备份、重启和失败恢复必须有自动测试或可重复运行记录。
+
+### 23.9 Hybrid 与 Reranker
+
+V2-C拆为评估合同、Hybrid索引、可选Reranker三段。先把15题扩为50题，并固定30题development与20题locked-test；旧集合和报告不覆盖。
+
+FastEmbed `0.8.0` 自带BM25没有中文language，且SimpleTokenizer按空白切分，不直接采用。Sparse使用确定性 `unicode-code-bm25-v1`：Han双字gram、ASCII/dotted identifier与数字token；现有mmh3生成32-bit index并在构建前执行全语料碰撞审计。文档保存BM25 TF/长度归一化部分，Qdrant `Modifier.IDF`负责IDF。
+
+新collection使用named vectors：`dense-bge-v1`为512维Cosine，`lexical-bm25-v1`为Sparse+IDF。Dense与Sparse各预取20条，版本Filter相同；Qdrant使用显式等权 `RRF(k=2)`，最终返回5条。配置、tokenizer、平均长度和融合常量进入索引/检索身份。
+
+Reranker候选为FastEmbed已支持、MIT且覆盖中英文的 `BAAI/bge-reranker-base`；固定候选revision `2cfc18c9415c912f9d8155881c133215df768a70`。只处理Hybrid前20，不能扩大来源。只有candidate Recall@20证明存在排序空间后才下载约1.13 GB资产；超长pair使用显式token审计与固定窗口，禁止静默截断。
+
+四种模式输出Recall@5、MRR@5、二元nDCG@5、candidate Recall@20、分层结果、P50/P95、cold-start和资源说明。默认进入门、失败边界、回滚和审批副作用见`docs/HYBRID_RERANK_DESIGN.md` v0.4。没有锁定集收益时不启用新增复杂度。
+
+### 23.10 摄取任务
+
+摄取在 V2-D 之后实现，使用受保护管理面：
+
+- API 只创建任务并返回稳定 job ID。
+- worker 执行恢复/导入、清洗、切分、嵌入、写入、验证和发布。
+- job 状态至少包含 queued、running、succeeded、failed；保存阶段、时间和安全失败类别。
+- 相同语料 manifest 与配置产生可比较构建身份；重复请求必须定义幂等规则。
+- 发布前失败不能改变当前活动索引。
+
+### 23.11 可观测性与 CI
+
+- 使用结构化日志传播请求 ID、job ID、index ID 和 build ID。
+- OpenTelemetry span 分层为 HTTP、retrieval、rerank、generation；导出器默认可关闭，离线测试不依赖采集器。
+- 指标至少覆盖请求数、状态、阶段耗时、候选数、拒答率、错误类别和 Token 计数。
+- CI 普通路径运行离线测试、合同测试、静态检查和快速固定评估；真实模型评估只允许手动、有预算地运行。
+
+### 23.12 V2-A 测试矩阵
+
+| 层 | 验证 | 外部依赖 |
+| --- | --- | --- |
+| API 模型 | 严格字段、长度、枚举、包络 | 无 |
+| 健康 | 无初始化、稳定响应 | 无 |
+| 就绪 | ready 与安全 503 | 假探针 |
+| 回答 | answered/refused/conflict 原样封装 | 假服务 |
+| 异常 | 已知映射、未知脱敏、请求 ID | 假服务 |
+| 回归 | 现有 220 项普通测试 | 离线 |
+
+### 23.13 当前暂停点
+
+FastAPI/Uvicorn、独立`.venv`、Qdrant Server、API镜像、Hybrid、可观测性、本地CI合同与有限重试均已获批准并完成。以下动作仍需单独批准：
+
+- 触发远程GitHub Actions、修改GitHub Pages设置、push公开站点或声明在线URL。
+- 继续修改系统设置、删除镜像、collection、snapshot或named volume。
+- 调用真实 MiMo、下载新模型或产生费用。
+- 创建云资源、写入真实数据或公开部署。
+
+### 23.14 V2-A 实际实现
+
+实现文件：
+
+```text
+src/cited_rag/api_models.py
+src/cited_rag/api.py
+tests/test_api.py
+```
+
+实现细节：
+
+- `create_app()` 接收应用工厂和可选就绪探针；重资源只在 `/readyz` 或首次合法问答时创建，并只缓存成功实例。
+- 同步路由由 FastAPI 在线程池执行；核心保持同步，不引入第二套异步业务实现。
+- 服务端忽略客户端 `X-Request-ID`，每次生成新 UUID；成功问答和全部错误体与响应头保持一致。
+- 请求模型使用严格 Pydantic 配置，拒绝未知字段、缺少 schema 版本、非法版本、首尾空白和超长问题。
+- 中间件兜底未知异常，错误体不包含领域 `reason`、原始输入、绝对路径、堆栈或供应商响应。
+- `CitedRagService.check_ready()` 委托 `QdrantRetrievalService.check_ready()`；后者检查活动指针、Manifest、Embedding 维度、collection 配置和 point 数，不生成查询向量。
+- 默认没有 CORS 中间件；Uvicorn 文档命令固定 `127.0.0.1`。
+- 测试使用既有 HTTPX ASGI transport；FastAPI/Starlette 的测试客户端弃用提示没有导致新增未批准依赖。
+
+验证：29 项 API 合同测试、3 项就绪底层测试、全部 252 项离线回归通过。真实 Uvicorn 回环冒烟通过；独立工作树缺少 Git 忽略资产时 `/readyz` 正确返回脱敏 503。
+
+### 23.15 V2-B1 服务化存储实现
+
+V2-B1 只替换运行时向量存储，不同时容器化 API：
+
+```text
+Windows FastAPI --read-only key--> 127.0.0.1:6333
+                                      |
+                                      v
+                           Qdrant Server container
+                                      |
+                                      v
+                       Linux named storage/snapshot volumes
+                       Docker Desktop WSL disk located on H:
+```
+
+- `qdrant_connection.py` 负责本地/Server客户端工厂；Server URL必须精确为`http://127.0.0.1:6333`，保留Client/Server兼容性检查。检索、构建和物理验证继续复用既有业务实现。
+- Server URL、Key、timeout 和 profile 只来自操作员环境；HTTP 请求不能覆盖。
+- `configure_qdrant_runtime.py`一次性生成`.env.qdrant-server`、`.env.qdrant-admin`和`.env.qdrant-read`；角色密钥不同、至少32字符、文件拒绝覆盖且不打印值。
+- 在线进程只接收read-only key；受控构建、权限清理和备份命令单独接收admin key。
+- `data/indexes/` 保留 V1 本地回退；Server Manifest 与活动指针写入独立 `data/server-indexes/`。
+- 活数据使用 Docker named volume。Windows bind mount 只允许用于只读代码/模型或导出备份，不能承载 Qdrant storage。
+- Compose使用专用非internal bridge，并同时把端口映射与bridge默认绑定地址固定为`127.0.0.1`；6334/6335不发布。初始internal网络虽能让容器健康，但会阻断Windows宿主机访问，故经单独批准修正。
+- 容器固定unprivileged镜像摘要、UID/GID `1000:1000`、只读根文件系统、capabilities清空、no-new-privileges、1 GiB/2 CPU/512 PIDs与日志轮转；关闭CORS、telemetry、cluster和远程snapshot URL恢复。
+- 项目活动指针继续是发布真相；本切片不切换到 alias。失败构建不得改写旧指针。
+- 固定语料与BGE资产在`HF_HUB_OFFLINE=1`下重建1359 points；Server使用新build/collection，逻辑`index_id`保持不变。
+- 运维验收脚本依次证明read-only权限、restart、无`-v`的down/up、snapshot下载校验与上传恢复；恢复到新的临时collection，不覆盖活动collection，只按精确名称清理临时collection。
+- 历史机器可读报告不可覆盖；新环境显式`--restore`重跑真实验证并保留报告字节。
+- V2-B1已经稳定通过；V2-B2也已把FastAPI置于只读Linux容器。两个容器通过专用bridge通信，宿主机入口继续只绑定回环。
+
+实际验收：Qdrant `/readyz=200`；read key读操作200、三类写操作403；1359 points的配置、payload、ID、过滤与self-query通过；restart和down/up身份不漂移；9,922,560-byte snapshot恢复通过；P1 `/readyz=200`且不调用MiMo；最终300项离线测试通过。
+
+精确版本、磁盘、迁移、恢复、验收和批准边界见 `docs/QDRANT_SERVER_DESIGN.md` v0.2。
+
+### 23.16 V2-B2 API 容器实现
+
+V2-B2采用固定 `python:3.14.7-slim-bookworm` digest、固定BuildKit前端和API专用44包Linux wheel锁。API镜像不含Streamlit、开发工具、模型、语料、索引或密钥；模型与Server Manifest从宿主机只读挂载。
+
+API新增严格`container` Qdrant profile，只允许Compose DNS地址`http://qdrant:6333`；宿主机`server` profile仍只允许`http://127.0.0.1:6333`。两种边界不能静默互换。
+
+API与Qdrant继续使用专用非internal bridge：API需要向MiMo HTTPS出站，宿主机运维脚本仍需回环访问Qdrant。API只发布`127.0.0.1:8000`，Qdrant回环端口与named volume边界不变。
+
+API固定单worker、非root UID/GID `10001:10001`、只读rootfs、只读资产挂载、tmpfs、capabilities清空、no-new-privileges和资源上限。`/readyz`作为容器healthcheck，会验证本地模型与Qdrant，但不调用MiMo。
+
+最终镜像大小 `123,768,630` bytes。API重启后恢复healthy；Qdrant容器身份和活动索引证据哈希不变，point数保持1359。rootfs及两个资产挂载写入被拒绝；44个运行包与锁完全匹配。精确实施、失败修正、验收与回滚见`docs/API_CONTAINER_DESIGN.md` v0.2和`data/api-container-report.json`。
+
+### 23.17 V2-C1分层评估实现
+
+V2-C1新增独立schema v2，不修改V1评估模型或语义哈希：
+
+- `RetrievalEvaluationSetV2`严格固定50题、五类题型、30/20拆分、Top-5与candidate-20合同。
+- `RetrievalEvaluationCaseResultV2`保存最终排名、二元相关性、首个相关排名、倒数排名、nDCG和三次warm延迟。
+- `RetrievalEvaluationReportV2`重新验证总体、split、case kind聚合及150个延迟样本；伪造聚合不能通过合同。
+- evaluator先执行5次warm-up，再对每题顺序执行3次；同一问题重复排名漂移或成功/失败状态漂移时安全失败。
+- 当前`RetrievalResult`只暴露最终Top-5，因此candidate字段为空并带显式不可用状态；C2不得把最终结果冒充候选层。
+
+评估脚本只读取固定本地模型、Server Manifest和Qdrant read-only接口。资源采样只执行`du`、`docker stats --no-stream`和进程线程读取；不调用回答服务。
+
+真实结果：Dense为42/50、Recall 84.0%、MRR 0.6313、nDCG 0.6840、P95 5.304秒；当前生产路径为45/50、Recall 90.0%、MRR 0.7217、nDCG 0.7673、P95 5.802秒。详细证据见`docs/RETRIEVAL_V2_EVALUATION.md`和两份机器可读V2报告。
+
+### 23.18 V2-C2候选索引与失败关闭发布
+
+V2-C2新增schema v2 Hybrid Manifest、不可变Sparse词表、候选构建器和候选层。新collection从固定旧build复制Dense向量和payload，再写入Sparse；完整验证后仍保持inactive。活动指针只接受显式发布脚本，旧schema v1继续可读。
+
+检索器对同一版本Filter分别执行Dense20、Sparse20与Qdrant RRF20，返回最终5条并保存candidate的Dense/Sparse来源排名和RRF分数。客户端对已返回结果执行`score desc, point ID asc`同分规则，但Qdrant内部Prefetch/RRF仍可能在同分名次或候选边界漂移。
+
+development 30题三次重复通过；唯一一次locked运行由评估器检测到重复签名漂移，并在指标/报告生成前失败。发布门缺失locked证据时安全返回`passed=false`；不切活动指针，不构建或重启API。当前生产仍使用旧schema v1的`dense-plus-identifiers`。
+
+### 23.19 V2-C2.1确定性融合提案
+
+新检索模式`hybrid-client-rrf-v1`复用schema v2候选索引。Dense查询启用`SearchParams(exact=True)`；Sparse保持exact。两路从limit 64开始，若第20名与窗口末尾同分则倍增窗口，最大到Manifest point count；同分组完整后按score降序、point ID升序截取Top-20。
+
+客户端使用`Fraction`和zero-based rank计算`sum(1/(2+r))`，再按精确RRF分数降序、point ID升序取融合Top-20。只对最终20个ID批量读取并验证payload。该模式使用RetrievalConfig schema v3；索引Manifest不变。
+
+旧50题只验证重复签名稳定，不再提供发布质量。新20题`retrieval-v3`在任何查询前冻结；同集一次性比较Dense、当前生产路径和确定性Hybrid。门禁通过前活动指针和API不变。完整设计见`docs/DETERMINISTIC_FUSION_DESIGN.md` v0.2。
+
+### 23.20 V2-C2.1确定性融合发布
+
+活动生产检索已切换为`hybrid-client-rrf-v1`。Dense/Sparse各自完成同分边界闭合并稳定取Top-20；客户端以zero-based rank、`k=2`、等权和`Fraction`计算RRF，融合Top-20后才按ID读取payload。最终Top-5严格是candidate前缀。
+
+旧50题只提供50/50三次稳定性证据。新V3在查询前冻结20题并一次运行三模式：Hybrid Recall@5为0.95、candidate Recall@20为1.00，当前生产基线为0.80；14项发布门全部通过。活动build为`740d893f-20e4-4677-8e7c-74a4d45de92e`，API镜像为`cited-rag-api:v2-c2-1`。
+
+旧Dense build、旧API镜像、失败的服务端RRF报告和候选构建证据均保留。若发布后验收失败，指针可原子回到build`418359df-7c62-4345-9bfe-57459c251dd3`。C3门未过，不引入Reranker。
+
+### 23.21 V2-D可观测性与CI实现边界
+
+新增`observability.py`作为跨入口的手工遥测边界：OpenTelemetry API无SDK时为no-op；API启动可选择配置OTLP/HTTP trace与metrics exporter。现有request ID通过`contextvars`传播，并与trace ID写入标准logging JSON。核心业务不依赖FastAPI自动埋点，也不让Collector成为readiness依赖。
+
+span按`HTTP/answer/retrieval/embedding/dense/sparse/fusion/generation`分层。metrics只使用route、method、状态、阶段、outcome、错误码、候选来源和Token类型等低基数标签；index/build只进入日志与span。问题、证据、回答、引用摘录、密钥、上游响应和绝对路径禁止进入全部遥测信号。
+
+Compose可选Collector只在内部4318接收OTLP/HTTP，并将Prometheus exporter绑定到宿主机`127.0.0.1:9464`；4317/4318不发布。Collector停止或导出失败不改变业务结果。详细模块、指标、固定镜像摘要、依赖、测试与批准边界见`docs/OBSERVABILITY_CI_DESIGN.md` v0.2。
+
+当前D1代码已按上述边界实现并通过384项离线测试。Compose中的Collector固定digest、非root、只读rootfs，只发布回环9464；API用`P1_OTEL_ENABLED=true`显式启用导出，默认关闭。运行激活已完成：Collector运行、API使用`v2-d1`且healthy；Collector停止时API health/ready/422不变，恢复后metrics可用；Qdrant容器身份与活动索引证据哈希不变。`v2-c2-1`已实际回滚验证并保留作失败恢复基线。运行证据见`data/observability-runtime-release-report.json`。
+
+CI使用Windows CPython 3.14.3运行完整离线测试、编译、依赖和Git边界检查；固定fake Embedding/Qdrant/Model smoke输出Pydantic验证JSON；Ubuntu只构建固定API镜像且不push。官方Action使用完整commit SHA，workflow只授予`contents: read`，不使用业务secret或`pull_request_target`。D2本地等价命令已通过，状态为`workflow-ready`；仓库未发布前不能声称远程CI绿色。
+
+D3有限重试已实现。MiMo适配器只对固定HTTP/连接阶段白名单做一次重试；每个逻辑请求最多两次物理尝试，读取/写入超时和模型输出合同错误不重试。退避与`Retry-After`均有2秒上限，总时限为单次超时加2秒；同一请求对象复用相同请求体，潜在计费不确定性显式记录。
+
+模型响应和模型错误均携带严格尝试记录；回答服务把物理尝试写入`rag.model.calls`与`rag.model.attempt`，只在确实安排第二次调用时增加`rag.model.retries`，逻辑完成继续由`rag.model.completed`记录。离线fake smoke覆盖HTTP白名单、连接阶段、读取超时、非法JSON、总预算和请求体一致性。独立`v2-d3`镜像完成只读运行验收后移除，活动`v2-d1`保持不变。证据见`docs/RETRY_DESIGN.md`和两份retry报告。
+
+### 23.22 P1-F / V2-E双路径展示架构
+
+公开首发不把FastAPI直接暴露到互联网。E1/E2把已追踪报告确定性导出为`portfolio-site/p1/`纯静态制品：固定录制案例、指标、架构、失败路径、截图与证据manifest全部在构建时生成；浏览器运行时不访问FastAPI、Qdrant、MiMo或第三方脚本。GitHub Pages只承担静态分发，现有`p1-ci.yml`继续保持`contents: read`，Pages发布权限由后续独立workflow限定到部署job。
+
+静态层使用同源本地资产、`connect-src 'none'`、无表单/分析/追踪，并显著标注`recorded_evidence=true`与“非实时推理”。`evidence-manifest.json`把展示字段绑定到输入报告路径和SHA-256。GitHub Pages不能设置项目自定义安全响应头，因此仅靠响应头生效的防点击劫持保护属于已知平台限制，不能虚构已启用。
+
+E3只保留条件拓扑：受控身份进入Cloud Run只读API，API用Secret Manager读取MiMo与Qdrant read-only凭据，Qdrant Cloud从固定snapshot恢复到新collection。认证、`4 KiB`候选请求体上限、可信代理、跨重启持久配额和费用断路器必须在Embedding/Qdrant/MiMo初始化前执行。初始`min=0/max=1/concurrency=1/2 GiB`仅是待资源预检验证的候选值，不是已部署规格。
+
+免费层、价格与生命周期会变化；执行E2/E3前重新核验官方来源。完整平台比较、威胁模型、验收、回滚和批准边界见`docs/RESTRICTED_DEPLOYMENT_DESIGN.md`与`data/deployment-capability-audit.json`。
+
+### 23.23 V2-E1本地静态证据实现
+
+标准库导出器固定读取11份已追踪JSON报告与2张截图，把页面数据规范化写入`portfolio-site/p1/assets/evidence.json`和同源JS，并为全部输入、静态文件和生成输出记录SHA-256。`--check`只重算预期字节并比较，不启动Qdrant、Embedding或MiMo。
+
+浏览器层只用静态HTML/CSS与DOM `textContent`渲染；CSP禁止连接、对象、frame、表单提交和远程默认资源。页面没有任意问题输入、fetch/XHR/WebSocket、iframe、分析脚本或密钥。回答、拒答与跨版本案例均为录制证据，原自动失败和事后人工复核同时保留。
+
+现有Windows离线CI增加站点路径触发和导出一致性检查。E1本地预览绑定`127.0.0.1`并返回200；它不改变活动API/Qdrant/Collector，也不代表GitHub Pages或远程CI已经运行。
+
+### 23.24 V2-E2最小权限发布架构
+
+Pages发布分为`verify`与`deploy` job。`verify`读取仓库、重算证据、执行artifact安全检查并上传唯一`portfolio-site/p1/`制品；`deploy`不checkout源码，只消费已验证artifact并调用Pages部署。顶层权限为空，两个job分别只获得`contents: read`和`pages: write/id-token: write`。
+
+PR和非`main`手工运行不能进入deploy。四个GitHub官方Action固定完整SHA；没有PAT、repository secret、第三方脚本、包安装或后端。项目站使用相对资源URL，artifact根直接映射仓库项目站根。
+
+本地workflow实现与公开激活分开审批。V2-E2A已创建`.github/workflows/p1-pages.yml`和标准库artifact门；`data/pages-release-readiness-report.json`绑定9文件、233,881 bytes与逐文件SHA-256。Pages Source、远程run、deployment、实际URL和线上响应仍无证据。

@@ -1,0 +1,129 @@
+{
+  "schema_version": "1",
+  "manifest_id": "p1-static-evidence-manifest-v1",
+  "exporter_version": "p1-portfolio-exporter-v1",
+  "recorded_evidence": true,
+  "live_inference": false,
+  "publication_status": "not-published",
+  "inputs": [
+    {
+      "path": "projects/01-cited-rag/data/answering-v3-report.json",
+      "sha256": "e19ed530c7608b9a7de9f0d1e64a24c12652268cb14bee72be38cc17814f6065",
+      "byte_count": 16960
+    },
+    {
+      "path": "projects/01-cited-rag/data/conflict-v2-evaluation-report.json",
+      "sha256": "d53c91a40ed2b4ac5d4ef332c53e06b0d300a411467521837f93c0b9f26b9eee",
+      "byte_count": 9893
+    },
+    {
+      "path": "projects/01-cited-rag/data/conflict-v2-human-review.json",
+      "sha256": "2460363c13afb45fa5e23b54bf133ea51574ff0f1ce04e739252516e078eaab9",
+      "byte_count": 1533
+    },
+    {
+      "path": "projects/01-cited-rag/data/retrieval-v3-dense-report.json",
+      "sha256": "65141410a97e86ebd897439654492366a2872d478c39466e0308330e32f3164f",
+      "byte_count": 58005
+    },
+    {
+      "path": "projects/01-cited-rag/data/retrieval-v3-dense-plus-identifiers-report.json",
+      "sha256": "8951c419c93fcc1bb99e2a7432425a85b59bd844d3b42ac2b7e8b6a2c8db85df",
+      "byte_count": 58293
+    },
+    {
+      "path": "projects/01-cited-rag/data/retrieval-v3-hybrid-client-rrf-v1-report.json",
+      "sha256": "16085abd2703a3dfbb0028e2bc37ddb3614015b08de117c6c490df4500e943bb",
+      "byte_count": 242893
+    },
+    {
+      "path": "projects/01-cited-rag/data/deterministic-fusion-release-report.json",
+      "sha256": "63f77f8ada04a7dd54715d66663950f340dc6ada404be3f6cac1f956f5f10cdc",
+      "byte_count": 3172
+    },
+    {
+      "path": "projects/01-cited-rag/data/hybrid-locked-run-failure.json",
+      "sha256": "0b3865bc752307b17a1453a99029e8dee96b56dc0437b8b01593021c3758d1d3",
+      "byte_count": 840
+    },
+    {
+      "path": "projects/01-cited-rag/data/observability-runtime-release-report.json",
+      "sha256": "82db5ab167adbe54fd25997dc803200d39b9af2b34175442c0942af041c748cf",
+      "byte_count": 3996
+    },
+    {
+      "path": "projects/01-cited-rag/data/retry-smoke-report.json",
+      "sha256": "f154610ad6438a43518937d7340fc711a9666b3508bbf8eff43016ed84d4f48d",
+      "byte_count": 1869
+    },
+    {
+      "path": "projects/01-cited-rag/data/ci-smoke-report.json",
+      "sha256": "3859713b8f9c31f8e425077fb09986a02c31d3735306e2b4dfcaf06c0d8aaaf8",
+      "byte_count": 506
+    },
+    {
+      "path": "projects/01-cited-rag/docs/images/streamlit-cited-answer.png",
+      "sha256": "6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5",
+      "byte_count": 56771
+    },
+    {
+      "path": "projects/01-cited-rag/docs/images/cli-demo.png",
+      "sha256": "213b64f66a6a5dfe0b2a7301c03882b1ad561703cd39045f40d11602ab70c471",
+      "byte_count": 101067
+    }
+  ],
+  "outputs": [
+    {
+      "path": "portfolio-site/p1/index.html",
+      "sha256": "76e3352d25280d234d648bd7739bbff62018505b3821b2d4c8e59c5d2ab7f220",
+      "byte_count": 10488,
+      "generated": false
+    },
+    {
+      "path": "portfolio-site/p1/assets/app.js",
+      "sha256": "fec037cfc68859629722399a787e03ded6b4aaabbb99a9f19d2235ea89963b07",
+      "byte_count": 7839,
+      "generated": false
+    },
+    {
+      "path": "portfolio-site/p1/assets/styles.css",
+      "sha256": "349c634608acd6685561076fb990dd371aa1a1d3c67e715da160a2d7beeb16b1",
+      "byte_count": 16789,
+      "generated": false
+    },
+    {
+      "path": "portfolio-site/p1/assets/evidence.json",
+      "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac",
+      "byte_count": 15262,
+      "generated": true
+    },
+    {
+      "path": "portfolio-site/p1/assets/evidence.js",
+      "sha256": "d1bc7001376e3fba58e52e3e05d29475e70d8e30bc9fed31e8768da89ad8701f",
+      "byte_count": 20300,
+      "generated": true
+    },
+    {
+      "path": "portfolio-site/p1/assets/streamlit-cited-answer.png",
+      "sha256": "6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5",
+      "byte_count": 56771,
+      "generated": true
+    },
+    {
+      "path": "portfolio-site/p1/assets/cli-demo.png",
+      "sha256": "213b64f66a6a5dfe0b2a7301c03882b1ad561703cd39045f40d11602ab70c471",
+      "byte_count": 101067,
+      "generated": true
+    }
+  ],
+  "external_side_effects": {
+    "network_accessed": false,
+    "mimo_called": false,
+    "qdrant_written": false,
+    "docker_changed": false,
+    "dependency_installed": false,
+    "cloud_resource_created": false,
+    "public_deployment_created": false,
+    "remote_workflow_triggered": false
+  }
+}

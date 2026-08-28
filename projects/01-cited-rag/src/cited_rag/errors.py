@@ -8,6 +8,7 @@ class CitedRagError(ValueError):
 
     def __init__(self, reason: str) -> None:
         self.reason = reason
+        self.model_attempts: tuple[object, ...] = ()
         super().__init__(f"{self.code}: {reason}")
 
 
@@ -82,11 +83,19 @@ class ModelTimeoutError(CitedRagError):
 
     code = "MODEL_TIMEOUT"
 
+    def __init__(self, reason: str, *, phase: str = "unknown") -> None:
+        self.phase = phase
+        super().__init__(reason)
+
 
 class ModelNetworkError(CitedRagError):
     """Raised when no model HTTP response is received."""
 
     code = "MODEL_NETWORK_ERROR"
+
+    def __init__(self, reason: str, *, phase: str = "unknown") -> None:
+        self.phase = phase
+        super().__init__(reason)
 
 
 class ModelHttpError(CitedRagError):

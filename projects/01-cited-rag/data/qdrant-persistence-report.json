@@ -1,0 +1,63 @@
+{
+  "schema_version": "1",
+  "status": "passed",
+  "validated_at": "2026-08-23T14:57:37.852236+00:00",
+  "compose_down_used_volume_removal": false,
+  "named_volumes_preserved": [
+    "cited-rag-qdrant_qdrant_storage",
+    "cited-rag-qdrant_qdrant_snapshots"
+  ],
+  "phases": [
+    {
+      "phase": "before_restart",
+      "validated_at": "2026-08-23T14:56:53.813273+00:00",
+      "server_version": "1.19.0",
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+      "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+      "chunk_count": 1359,
+      "embedded_count": 0,
+      "validation": {
+        "point_count": 1359,
+        "payload_count": 1359,
+        "unique_point_count": 1359,
+        "self_query_top_score": 1.0,
+        "version_filter_checked": true
+      }
+    },
+    {
+      "phase": "after_restart",
+      "validated_at": "2026-08-23T14:57:15.428229+00:00",
+      "server_version": "1.19.0",
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+      "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+      "chunk_count": 1359,
+      "embedded_count": 0,
+      "validation": {
+        "point_count": 1359,
+        "payload_count": 1359,
+        "unique_point_count": 1359,
+        "self_query_top_score": 1.0,
+        "version_filter_checked": true
+      }
+    },
+    {
+      "phase": "after_down_up",
+      "validated_at": "2026-08-23T14:57:37.852198+00:00",
+      "server_version": "1.19.0",
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+      "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+      "chunk_count": 1359,
+      "embedded_count": 0,
+      "validation": {
+        "point_count": 1359,
+        "payload_count": 1359,
+        "unique_point_count": 1359,
+        "self_query_top_score": 1.0,
+        "version_filter_checked": true
+      }
+    }
+  ]
+}

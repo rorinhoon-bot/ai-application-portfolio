@@ -1,0 +1,112 @@
+{
+  "schema_version": "1",
+  "slice": "V2-D1-runtime-activation",
+  "recorded_at": "2026-08-27T12:53:58.4620694Z",
+  "status": "passed",
+  "authorization": {
+    "docker_engine_start": true,
+    "one_qdrant_restart_if_triggered_by_restart_policy": true,
+    "qdrant_writes": false,
+    "qdrant_deletes": false,
+    "qdrant_configuration_changes": false,
+    "volume_changes": false
+  },
+  "runtime": {
+    "docker_engine": "29.7.2",
+    "compose": "5.4.0",
+    "qdrant_container_id": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "qdrant_started_at": "2026-08-27T12:00:41.48993888Z",
+    "qdrant_image": "qdrant/qdrant:v1.19.0-unprivileged@sha256:a0e04fe623cb064502cd869cefc1dc7ce359d8edd481063b5bd351c0a0a2c91e",
+    "qdrant_observed_restart": "one daemon-start restart; container identity unchanged",
+    "active_build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+    "active_collection": "cited-rag-c1a14f1add33-740d893f20e4",
+    "active_pointer_sha256": "5a905dc41cebc1a9b40d73ef19840629ebd490398a34bfd1639bdb9f0bd54e84",
+    "manifest_sha256": "4c8f38c0547fa575a8bef783a4065679153b6c3f5ec5fa86645d83f78f193697",
+    "active_collection_points": 1359,
+    "qdrant_read_only_collection_status": "green"
+  },
+  "collector": {
+    "image": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.159.0",
+    "index_digest": "sha256:1f2c54a30e713fac6b3ae77a1ec84010c2007e29ced8ec666214fc2f6739c1cc",
+    "linux_amd64_digest": "sha256:4f4276c07cee9055f2ab630a86330243f85e208c388ee697bea2a44dab896c3f",
+    "image_size_bytes": 108615156,
+    "disk_delta_bytes": 503578624,
+    "disk_limit_bytes": 536870912,
+    "container_status": "running",
+    "container_user": "10001:10001",
+    "read_only_rootfs": true,
+    "cap_drop": ["ALL"],
+    "memory_limit_bytes": 268435456,
+    "published_ports": ["127.0.0.1:9464"],
+    "otlp_ports_published": false,
+    "metrics_http_status": 200,
+    "startup_log_ready": true
+  },
+  "api": {
+    "image": "cited-rag-api:v2-d1",
+    "image_id": "sha256:2bc7922f9a3f5490c40a33cce93047ef2814acf2c5e16bc100eee4215f115e8a",
+    "image_size_bytes": 124906372,
+    "disk_delta_bytes": 407826432,
+    "disk_limit_bytes": 536870912,
+    "architecture": "amd64",
+    "os": "linux",
+    "container_user": "10001:10001",
+    "read_only_rootfs": true,
+    "cap_drop": ["ALL"],
+    "health": "healthy",
+    "otel_enabled": true,
+    "packages": {
+      "fastapi": "0.141.1",
+      "annotated-doc": "0.0.5",
+      "uvicorn": "0.51.0",
+      "opentelemetry-api": "1.44.0",
+      "opentelemetry-sdk": "1.44.0",
+      "opentelemetry-exporter-otlp-proto-http": "1.44.0"
+    },
+    "pip_check": true
+  },
+  "endpoint_checks": {
+    "healthz": 200,
+    "readyz": 200,
+    "openapi_json": 200,
+    "invalid_answer": 422,
+    "legal_real_question_sent": false,
+    "mimo_calls": 0,
+    "model_downloaded": false
+  },
+  "observability_checks": {
+    "prometheus_metrics_contain_rag_series": true,
+    "collector_debug_trace_batches": true,
+    "json_business_log_records": 30,
+    "sensitive_fixture_occurrences": 0,
+    "collector_not_readiness_dependency": true
+  },
+  "failure_isolation": {
+    "collector_stopped_state": "exited",
+    "healthz_while_stopped": 200,
+    "readyz_while_stopped": 200,
+    "invalid_answer_while_stopped": 422,
+    "api_id_unchanged_while_stopped": true,
+    "collector_restored": true,
+    "metrics_after_restore": 200
+  },
+  "rollback": {
+    "baseline_image": "cited-rag-api:v2-c2-1",
+    "rollback_healthz": 200,
+    "rollback_readyz": 200,
+    "restored_image": "cited-rag-api:v2-d1",
+    "restored_health": "healthy",
+    "qdrant_identity_unchanged": true
+  },
+  "side_effects": {
+    "qdrant_written": false,
+    "qdrant_deleted": false,
+    "qdrant_configuration_changed": false,
+    "named_volumes_changed": false,
+    "collections_changed": false,
+    "mimo_called": false,
+    "model_downloaded": false,
+    "github_remote_changed": false,
+    "cloud_resource_created": false
+  }
+}

@@ -1,0 +1,9 @@
+**
+!requirements-api.txt
+!src/
+!src/cited_rag/
+!src/cited_rag/**
+!data/
+!data/model-assets.json
+!deploy/
+!deploy/Dockerfile.api

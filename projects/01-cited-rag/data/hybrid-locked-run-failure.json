@@ -1,0 +1,20 @@
+{
+  "schema_version": "1",
+  "slice": "V2-C2-hybrid-locked-test",
+  "status": "failed-before-report",
+  "generated_at": "2026-08-25T05:28:17.3541735Z",
+  "evaluation_set_sha256": "a3b30c755dc2a4036b9d715a9df2bd891bfb850ce2bc2c369b43447c2a8abd13",
+  "candidate_index_id": "c1a14f1a-dd33-59e8-8e4f-26a9f16846f1",
+  "candidate_build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+  "candidate_collection_name": "cited-rag-c1a14f1add33-740d893f20e4",
+  "retrieval_mode": "hybrid-rrf",
+  "phase": "locked-test-repeated-ranking-stability",
+  "error_code": "EVALUATION_ERROR",
+  "error_message": "V2 repeated retrieval ranking changed",
+  "locked_evaluation_attempts": 1,
+  "locked_report_written": false,
+  "metrics_available": false,
+  "configuration_changed_after_development": false,
+  "external_api_calls": 0,
+  "activation_performed": false
+}

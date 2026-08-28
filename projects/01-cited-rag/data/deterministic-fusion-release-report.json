@@ -1,0 +1,86 @@
+{
+  "schema_version": "1",
+  "slice": "V2-C2.1",
+  "status": "passed-and-activated",
+  "tested_at": "2026-08-25T06:56:00+00:00",
+  "approved_design": "docs/DETERMINISTIC_FUSION_DESIGN.md#10",
+  "release_gate": {
+    "gate_id": "deterministic-fusion-release-gate",
+    "passed": true,
+    "check_count": 14,
+    "passed_check_count": 14,
+    "evaluation_set_sha256": "689873c28f5b9528a9d5b32c73e1cbac80fcfa9abe5aa6cb12057641235b4c01"
+  },
+  "active_index": {
+    "before": {
+      "index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+      "build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+      "collection_name": "cited-rag-614f6c237c35-418359df7c62",
+      "pointer_sha256": "e636265d4bba2188ee1d6b00fb24f0378d87f184f9af2bfa700a6f0dd0a54d27"
+    },
+    "after": {
+      "index_id": "c1a14f1a-dd33-59e8-8e4f-26a9f16846f1",
+      "build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+      "collection_name": "cited-rag-c1a14f1add33-740d893f20e4",
+      "index_fingerprint": "3bfd88168dbd24b626e9c58e5e88396f6df74b0052747946d237a7258cb991cc",
+      "point_count": 1359,
+      "pointer_sha256": "5a905dc41cebc1a9b40d73ef19840629ebd490398a34bfd1639bdb9f0bd54e84"
+    }
+  },
+  "api": {
+    "image_tag": "cited-rag-api:v2-c2-1",
+    "image_id": "sha256:2b0a8843d8ee61ea2360a2f334a843546df7f31846b2c8a579fea7f53cd5c9bb",
+    "image_size_bytes": 123829575,
+    "platform": "linux/amd64",
+    "container_id_before": "1f16adf0fcada841d259f28984ed587315d57c65942e195e31bfe70d9f499376",
+    "container_id_after": "57c5322925534c4f07c8c044fc2856c45ed3784d897b55e14e0ce1e9f433358e",
+    "healthy": true,
+    "user": "10001:10001",
+    "read_only_rootfs": true
+  },
+  "qdrant_unchanged": {
+    "container_id_before": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "container_id_after": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "started_at_before": "2026-08-25T05:02:26.615153739Z",
+    "started_at_after": "2026-08-25T05:02:26.615153739Z",
+    "healthy": true
+  },
+  "disk": {
+    "h_drive_free_before_bytes": 109109018624,
+    "h_drive_free_after_bytes": 109075333120,
+    "h_drive_consumed_bytes": 33685504,
+    "approved_incremental_cap_bytes": 1073741824,
+    "within_cap": true
+  },
+  "post_activation_retrieval_smoke": {
+    "mode": "hybrid-client-rrf-v1",
+    "build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+    "repetitions": 3,
+    "stable": true,
+    "candidate_count": 20,
+    "dense_fetch_limit": 64,
+    "sparse_fetch_limit": 64
+  },
+  "checks": {
+    "healthz_status": 200,
+    "readyz_status": 200,
+    "ready_configuration": "ok",
+    "ready_index": "ok",
+    "ready_retriever": "ok",
+    "invalid_request_status": 422,
+    "cors_allow_origin_absent": true,
+    "api_image_updated": true,
+    "api_healthy": true,
+    "api_non_root": true,
+    "api_rootfs_read_only": true,
+    "qdrant_identity_stable": true,
+    "active_pointer_matches_candidate": true,
+    "post_activation_ranking_stable": true,
+    "legal_answer_request_sent": false,
+    "mimo_called": false,
+    "qdrant_write_performed": false,
+    "collection_created_or_deleted": false
+  },
+  "external_api_calls": 0,
+  "rollback_performed": false
+}

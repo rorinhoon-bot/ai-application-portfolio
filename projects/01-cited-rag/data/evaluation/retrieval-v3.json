@@ -1,0 +1,170 @@
+{
+  "schema_version": "3",
+  "evaluation_set_id": "retrieval-v3",
+  "source_index_fingerprint": "3bfd88168dbd24b626e9c58e5e88396f6df74b0052747946d237a7258cb991cc",
+  "top_k": 5,
+  "candidate_k": 20,
+  "authoring_method": "manual-from-verified-payloads-before-retrieval",
+  "cases": [
+    {
+      "case_id": "enumerate-index-and-value",
+      "question": "遍历序列时，怎样同时取得每个元素的位置和值？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "relevant_chunk_ids": ["ca42418f-6b7a-582e-9695-7c8cd4d1a0b7"],
+      "rationale": "人工回查教程循环技巧 payload；证据直接演示 enumerate 同时产生位置索引和值。"
+    },
+    {
+      "case_id": "delete-list-index-slice-variable",
+      "question": "若要按索引删除列表项、删除一段切片，甚至解除整个变量绑定，应使用什么语句？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "relevant_chunk_ids": ["6613e40c-0c9a-56ce-9c97-41151b6bb41a"],
+      "rationale": "人工回查数据结构教程 payload；同一证据明确覆盖索引、切片和变量三种删除。"
+    },
+    {
+      "case_id": "filter-nan-with-new-list",
+      "question": "遍历数据时需要剔除 NaN，为什么推荐构造新列表而不是原地修改正在遍历的列表？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "relevant_chunk_ids": ["b6274c18-da96-518e-9c43-d9e232f0a69b"],
+      "rationale": "人工回查循环技巧 payload；证据说明循环中修改列表时构造新列表更简单安全并给出 NaN 示例。"
+    },
+    {
+      "case_id": "try-else-no-exception",
+      "question": "try/except 后面的 else 子句在什么情况下执行，为什么适合放置依赖 try 成功的代码？",
+      "python_version": "3.14",
+      "case_kind": "semantic-paraphrase",
+      "relevant_chunk_ids": ["bb083a66-e317-5d5b-8bf8-2c898197b278"],
+      "rationale": "人工回查异常处理教程 payload；证据明确 else 位于 except 之后且仅在 try 未抛异常时执行。"
+    },
+    {
+      "case_id": "path-rglob-recursive-equivalence",
+      "question": "Path.rglob(pattern) 与调用 Path.glob() 时给 pattern 加上什么前缀等价？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "relevant_chunk_ids": ["5c5d243d-1b66-5b39-98de-72b6f19d2328"],
+      "rationale": "人工回查 pathlib payload；证据给出 Path.rglob 签名及其等价的 **/ 前缀语义。"
+    },
+    {
+      "case_id": "argparse-exit-on-error-false",
+      "question": "怎样设置 ArgumentParser(exit_on_error=...)，让无效参数抛出 ArgumentError 而不是直接退出？",
+      "python_version": "3.13",
+      "case_kind": "exact-identifier",
+      "relevant_chunk_ids": ["3e990795-37aa-51bc-9239-15bbb9f79dd9"],
+      "rationale": "人工回查 argparse payload；证据完整演示 exit_on_error=False 和捕获 ArgumentError。"
+    },
+    {
+      "case_id": "json-dumps-sort-keys",
+      "question": "json.dumps 要按字母顺序输出字典键，应把 sort_keys 设成什么值？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "relevant_chunk_ids": ["4f22514b-c9a2-506b-83eb-fee53571e2ae"],
+      "rationale": "人工回查 json payload；证据直接展示 json.dumps(..., sort_keys=True) 的排序输出。"
+    },
+    {
+      "case_id": "envbuilder-post-setup-hook",
+      "question": "继承 venv.EnvBuilder 时，哪个 post_setup(context) 钩子适合安装预置包？",
+      "python_version": "3.14",
+      "case_kind": "exact-identifier",
+      "relevant_chunk_ids": ["95d1a9e1-fab5-59b0-bb10-135066842cb5"],
+      "rationale": "人工回查 venv API payload；证据定义 post_setup 的用途及 context 参数。"
+    },
+    {
+      "case_id": "required-subcommands-dispatch",
+      "question": "用 argparse 构建必须选择子命令的 CLI 时，add_subparsers 的 required 参数怎样设置？",
+      "python_version": "3.13",
+      "case_kind": "mixed-semantic-identifier",
+      "relevant_chunk_ids": ["07185405-bdf9-508b-9715-d3f2956098c2"],
+      "rationale": "人工回查 argparse 子命令 payload；证据以 add_subparsers(required=True) 构建完整分派示例。"
+    },
+    {
+      "case_id": "path-resolve-dot-dot",
+      "question": "Path.resolve(strict=False) 如何处理符号链接和路径中的 .. 部分？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "relevant_chunk_ids": ["4bd8c4b6-f487-5aba-976a-0bec0154ba24"],
+      "rationale": "人工回查 pathlib payload；证据说明 resolve 会解析符号链接并消除 ..。"
+    },
+    {
+      "case_id": "and-or-short-circuit-value",
+      "question": "and 和 or 为什么称为短路运算符；把它们当普通值使用时通常返回哪个操作数？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "relevant_chunk_ids": ["9d21529b-aff6-5255-9b3f-97110b5b3908"],
+      "rationale": "人工回查条件控制 payload；证据同时说明从左到右停止求值和返回最后已求值参数。"
+    },
+    {
+      "case_id": "reload-changed-module",
+      "question": "同一解释器会话里模块通常只导入一次；修改模块后怎样用 importlib.reload 重新载入？",
+      "python_version": "3.14",
+      "case_kind": "mixed-semantic-identifier",
+      "relevant_chunk_ids": ["2aa20272-2667-50de-af1a-18c5209c8d94"],
+      "rationale": "人工回查模块教程 payload；证据给出只导入一次的原因和 importlib.reload(modulename) 用法。"
+    },
+    {
+      "case_id": "path-move-cross-filesystem-314",
+      "question": "Python 3.14 的 Path.move 跨文件系统移动目录树时采用什么步骤，并返回什么？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "relevant_chunk_ids": ["e8e3e307-2ab9-5466-bbf6-b574eb5ba282"],
+      "rationale": "人工回查 3.14 pathlib payload；证据说明跨文件系统时复制后删除并返回新 Path。"
+    },
+    {
+      "case_id": "json-module-cli-314",
+      "question": "Python 3.14 能否直接运行 python -m json，旧的 python -m json.tool 是否仍兼容？",
+      "python_version": "3.14",
+      "case_kind": "version-specific",
+      "relevant_chunk_ids": ["83db8fa9-f0b4-5eb8-bd9d-7836c279fdf5"],
+      "rationale": "人工回查 3.14 json payload；证据明确直接执行是 3.14 变化且旧入口仍受支持。"
+    },
+    {
+      "case_id": "itertools-batched-strict-313",
+      "question": "Python 3.13 给 itertools.batched 增加 strict 后，最后一批不足指定大小会怎样？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "relevant_chunk_ids": ["33f1e942-d657-5333-8dfa-20a714d990e8"],
+      "rationale": "人工回查 3.13 新变化 payload；证据说明 strict 会在末批不足时抛 ValueError。"
+    },
+    {
+      "case_id": "argparse-deprecated-option-313",
+      "question": "Python 3.13 的 add_argument(deprecated=True) 在弃用选项被实际使用时会产生什么行为？",
+      "python_version": "3.13",
+      "case_kind": "version-specific",
+      "relevant_chunk_ids": ["58a7f4e9-b4c8-5c44-8829-1db245275a80"],
+      "rationale": "人工回查 3.13 argparse payload；证据演示仅在使用弃用参数时向 stderr 打警告。"
+    },
+    {
+      "case_id": "except-subclass-order",
+      "question": "异常类 D 继承 C、C 继承 B 时，为什么把 except B 放在最前会让三种异常都进入 B 分支？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "relevant_chunk_ids": ["84a2b39f-6c6e-565e-9986-02cc3f9a9bb9"],
+      "rationale": "人工回查异常教程 payload；证据用 B/C/D 继承示例说明首个匹配 except 的顺序陷阱。"
+    },
+    {
+      "case_id": "dict-get-missing-key",
+      "question": "访问可能不存在的字典键时，d[key] 与 d.get(key) 的失败行为有何不同？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "relevant_chunk_ids": ["bb7ac6c9-d66a-5e24-b424-59286e395c7d"],
+      "rationale": "人工回查字典教程 payload；证据明确下标抛 KeyError，而 get 返回 None 或默认值。"
+    },
+    {
+      "case_id": "list-copy-is-shallow",
+      "question": "list.copy() 创建深拷贝还是浅拷贝，它与哪种切片写法等价？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "relevant_chunk_ids": ["16be3a44-7657-5f7a-b091-90421f6477c4"],
+      "rationale": "人工回查列表方法 payload；证据明确 list.copy 返回浅拷贝并等价于 a[:]。"
+    },
+    {
+      "case_id": "local-nonlocal-global-binding",
+      "question": "嵌套函数分别做普通赋值、nonlocal 赋值和 global 赋值时，外层函数与模块级绑定各怎样变化？",
+      "python_version": "3.14",
+      "case_kind": "known-hard",
+      "relevant_chunk_ids": ["cf03159a-1cb4-568a-a413-9040d0f0f0a0"],
+      "rationale": "人工回查作用域示例 payload；证据逐项给出 local、nonlocal、global 对两层绑定的结果。"
+    }
+  ]
+}

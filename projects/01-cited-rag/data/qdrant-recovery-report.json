@@ -1,0 +1,38 @@
+{
+  "schema_version": "1",
+  "status": "passed",
+  "validated_at": "2026-08-23T14:59:55.187086+00:00",
+  "active_collection": "cited-rag-614f6c237c35-418359df7c62",
+  "active_index_id": "614f6c23-7c35-5832-8086-c29651d60866",
+  "active_build_id": "418359df-7c62-4345-9bfe-57459c251dd3",
+  "snapshot": {
+    "name": "cited-rag-614f6c237c35-418359df7c62-4564589608209320-2026-08-23-14-59-51.snapshot",
+    "server_reported_bytes": 9922560,
+    "downloaded_bytes": 9922560,
+    "sha256": "6f447e48ca32a7e60de2a5a1a01d5104881452c1c01ecca7067d1fa98ed36732",
+    "qdrant_checksum_matched": true,
+    "host_backup_relative_path": "data/backups/qdrant/cited-rag-614f6c237c35-418359df7c62-4564589608209320-2026-08-23-14-59-51.snapshot",
+    "manifest_backup_relative_path": "data/backups/qdrant/cited-rag-614f6c237c35-418359df7c62-4564589608209320-2026-08-23-14-59-51.snapshot.manifest.json",
+    "manifest_backup_sha256": "496cbfa8941a275f6e9a2c1aa94a7b317e62260b1be528c5fe3ed14fd2cbabd8"
+  },
+  "recovery": {
+    "temporary_collection": "cited-rag-recovery-85360a7384484b13b74bfe837606bfdd",
+    "upload_only": true,
+    "validation": {
+      "point_count": 1359,
+      "payload_count": 1359,
+      "unique_point_count": 1359,
+      "self_query_top_score": 1.0,
+      "version_filter_checked": true
+    },
+    "temporary_collection_deleted": true
+  },
+  "active_collection_validation_after_cleanup": {
+    "point_count": 1359,
+    "payload_count": 1359,
+    "unique_point_count": 1359,
+    "self_query_top_score": 1.0,
+    "version_filter_checked": true
+  },
+  "secrets_recorded": false
+}

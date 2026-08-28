@@ -1,0 +1,92 @@
+{
+  "schema_version": "1",
+  "manifest_id": "p1-pages-artifact-readiness-v1",
+  "validator_version": "p1-pages-artifact-validator-v1",
+  "status": "local-verified",
+  "artifact_root": "portfolio-site/p1",
+  "entrypoint": "index.html",
+  "files": [
+    {
+      "path": "README.md",
+      "byte_count": 788,
+      "sha256": "f7bf82c8dbe8badf7147ca56fd4b8c30d460d74c1b5eae6b36f91ed2ff5edaea"
+    },
+    {
+      "path": "assets/app.js",
+      "byte_count": 7839,
+      "sha256": "fec037cfc68859629722399a787e03ded6b4aaabbb99a9f19d2235ea89963b07"
+    },
+    {
+      "path": "assets/cli-demo.png",
+      "byte_count": 101067,
+      "sha256": "213b64f66a6a5dfe0b2a7301c03882b1ad561703cd39045f40d11602ab70c471"
+    },
+    {
+      "path": "assets/evidence.js",
+      "byte_count": 20300,
+      "sha256": "d1bc7001376e3fba58e52e3e05d29475e70d8e30bc9fed31e8768da89ad8701f"
+    },
+    {
+      "path": "assets/evidence.json",
+      "byte_count": 15262,
+      "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac"
+    },
+    {
+      "path": "assets/streamlit-cited-answer.png",
+      "byte_count": 56771,
+      "sha256": "6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5"
+    },
+    {
+      "path": "assets/styles.css",
+      "byte_count": 16789,
+      "sha256": "349c634608acd6685561076fb990dd371aa1a1d3c67e715da160a2d7beeb16b1"
+    },
+    {
+      "path": "evidence-manifest.json",
+      "byte_count": 4576,
+      "sha256": "79358ab82634bdb956e47f340d1fd2a7bd3e732744ddb852ad9ff3eec9f56410"
+    },
+    {
+      "path": "index.html",
+      "byte_count": 10488,
+      "sha256": "76e3352d25280d234d648bd7739bbff62018505b3821b2d4c8e59c5d2ab7f220"
+    }
+  ],
+  "totals": {
+    "file_count": 9,
+    "byte_count": 233880
+  },
+  "limits": {
+    "maximum_file_count": 32,
+    "maximum_total_bytes": 1048576,
+    "maximum_single_file_bytes": 262144,
+    "allowed_extensions": [
+      ".css",
+      ".html",
+      ".js",
+      ".json",
+      ".md",
+      ".png"
+    ]
+  },
+  "security": {
+    "symlinks": false,
+    "hidden_files": false,
+    "remote_subresources": false,
+    "runtime_network_api": false,
+    "forms": false,
+    "iframes": false,
+    "absolute_local_paths": false,
+    "secret_like_assignments": false
+  },
+  "external_side_effects": {
+    "network_accessed": false,
+    "mimo_called": false,
+    "qdrant_written": false,
+    "docker_changed": false,
+    "dependency_installed": false,
+    "cloud_resource_created": false,
+    "public_deployment_created": false,
+    "remote_workflow_triggered": false
+  }
+}

@@ -36,6 +36,8 @@ projects/00-structured-content-generator/learning-note.json
 projects/01-cited-rag/data/sources/html/
 projects/01-cited-rag/data/sources/license/
 projects/01-cited-rag/data/indexes/
+projects/01-cited-rag/data/server-indexes/
+projects/01-cited-rag/data/backups/
 
 # Local-only project data and media
 tmp/

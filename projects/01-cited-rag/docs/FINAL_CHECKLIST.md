@@ -54,4 +54,21 @@
 
 ## 结论
 
-达到项目验收清单。P1可以标记为 `completed`。保留的小样本与机器可读 `conflict` 基线限制已在README、架构、评估和学习总结中公开。
+V1达到项目验收清单并保持completed。保留的小样本与机器可读`conflict`基线限制已在README、架构、评估和学习总结中公开。
+
+## V2-B1 追加验收（2026-08-23）
+
+- [x] Local/Server客户端工厂分离；URL、角色Key、timeout和profile严格校验。
+- [x] Qdrant镜像固定tag与digest；容器非root、只读rootfs、最小capability并设置资源/日志上限。
+- [x] 专用bridge只发布`127.0.0.1:6333`；6334/6335未发布。
+- [x] 两个角色密钥分文件保存、不同且Git忽略；在线API只使用read-only key。
+- [x] 1359-point离线迁移的维度、距离、payload、ID、过滤和self-query通过。
+- [x] read-only读操作200，create/upsert/delete均403。
+- [x] restart与无`-v`的down/up后身份与查询不漂移，两个named volume保留。
+- [x] snapshot大小与SHA-256固定；上传恢复到临时collection全验通过，临时collection已删，活动collection不变。
+- [x] Qdrant与P1`/readyz`均200；P1就绪检查未调用MiMo。
+- [x] 历史报告可追踪；运行数据、snapshot、模型、语料、密钥和Server元数据不进入Git。
+- [x] README、架构、PRD、决定、演示和`LLH_Study.md`已更新，并明确B1不等于API容器或公网生产。
+- [x] 全部300项pytest、`compileall`、`pip check`和Compose解析通过；V1/V2-A测试零删除。
+
+V2-B1达到本切片完成定义；P1 V2整体仍为in_progress。V2-B2、Hybrid/Rerank、可观测、CI与受控部署尚未完成。

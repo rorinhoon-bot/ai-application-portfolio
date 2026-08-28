@@ -1,0 +1,65 @@
+{
+  "schema_version": "1",
+  "slice": "V2-D3-runtime-acceptance",
+  "recorded_at": "2026-08-27T14:12:16Z",
+  "status": "passed",
+  "candidate_image": {
+    "tag": "cited-rag-api:v2-d3",
+    "image_id": "sha256:63588d650d2818192d64faf86658232e6784ec2ab059e20145b497c9a3a1885a",
+    "image_size_bytes": 124915409,
+    "architecture": "amd64",
+    "os": "linux",
+    "container_user": "10001:10001"
+  },
+  "isolated_acceptance": {
+    "container_id": "dc3fae9197803c4ba19a20ea1a8402fa7c8253730ab929ba5583a1b228357952",
+    "published_port": "127.0.0.1:8001",
+    "network": "cited-rag-qdrant_qdrant_bridge",
+    "read_only_rootfs": true,
+    "cap_drop": ["ALL"],
+    "no_new_privileges": true,
+    "pids_limit": 256,
+    "memory_limit_bytes": 1073741824,
+    "healthz": 200,
+    "readyz": 200,
+    "invalid_answer": 422,
+    "legal_real_question_sent": false,
+    "mimo_calls": 0,
+    "container_removed_after_acceptance": true
+  },
+  "rollback_baseline": {
+    "tag": "cited-rag-api:v2-d1",
+    "container_id": "4b209f74f1e6451131e51036c809f63d753d86a19c17f51428fc8ba5cad18189",
+    "started_at": "2026-08-27T12:52:38.908550554Z",
+    "identity_unchanged": true,
+    "health": "healthy",
+    "healthz_after_acceptance": 200,
+    "readyz_after_acceptance": 200,
+    "traffic_switched": false
+  },
+  "qdrant_immutability": {
+    "container_id": "dab049138856613b941d31bea52846669fa25530a197251b83f398a03ad57d85",
+    "started_at": "2026-08-27T12:00:41.48993888Z",
+    "identity_unchanged": true,
+    "health": "healthy",
+    "active_build_id": "740d893f-20e4-4677-8e7c-74a4d45de92e",
+    "active_collection": "cited-rag-c1a14f1add33-740d893f20e4",
+    "active_pointer_sha256": "5a905dc41cebc1a9b40d73ef19840629ebd490398a34bfd1639bdb9f0bd54e84",
+    "manifest_sha256": "4c8f38c0547fa575a8bef783a4065679153b6c3f5ec5fa86645d83f78f193697",
+    "named_volumes": [
+      "cited-rag-qdrant_qdrant_snapshots",
+      "cited-rag-qdrant_qdrant_storage"
+    ]
+  },
+  "side_effects": {
+    "qdrant_written": false,
+    "qdrant_deleted": false,
+    "qdrant_configuration_changed": false,
+    "named_volumes_changed": false,
+    "docker_configuration_changed": false,
+    "mimo_called": false,
+    "model_downloaded": false,
+    "github_remote_changed": false,
+    "cloud_resource_created": false
+  }
+}
