@@ -600,9 +600,9 @@
 ## D-065：V2-E2B公开激活以远程门禁、内容哈希和静态边界收口
 
 - 状态：`accepted；implemented；public-verified`
-- 发布：学习者明确批准`2041a6a`全部144个文件公开；PR #1通过Pages verify、Windows离线合同和Linux API镜像合同后，以squash合并为`0748abfa2f0ec579179ca8095513c0ac3462a2b1`。
+- 发布：学习者明确批准`2041a6a`全部144个文件公开；PR #1通过Pages verify、Windows离线合同和Linux API镜像合同后，以squash合并为`0748abfa2f0ec579179ca8095513c0ac3462a2b1`。补充PR #2修正公开状态文案并回填发布证据，通过全部远程门禁后以squash合并为`1faaf45d3752b6277fe1fdab9a0c77d90ad185f0`。
 - 跨平台修复：远程CI暴露JSON换行、artifact换行、本地模型资产依赖和冻结评估输入缺失；均以窄范围合同修复，不提交95 MB模型、不改变冻结指标、不绕过失败门。
-- Pages：Source固定为GitHub Actions并强制HTTPS；首次run `33173696014`、deployment `6141599225`成功，URL为`https://rorinhoon-bot.github.io/ai-application-portfolio/`。
-- 在线验收：首页、CSS、JS、证据JSON和两张截图均HTTP 200且SHA-256匹配；桌面与360px视觉通过。首次页面暴露旧“Pages尚未启用”文案，使用后续提交修正并保留首发报告。
+- Pages：Source固定为GitHub Actions并强制HTTPS；首次run `33173696014`、deployment `6141599225`成功。补充合并后的最终run `33233267570`、deployment `6152214475`成功，URL为`https://rorinhoon-bot.github.io/ai-application-portfolio/`。
+- 在线验收：首页、CSS、JS、证据JSON和两张截图均HTTP 200且SHA-256匹配；桌面与360px视觉通过。首次页面暴露旧“Pages尚未启用”文案，后续提交已修正且保留首发报告；最终页面只显示“GitHub Pages 已公开发布”。
 - 真实性：公开状态与远程CI结果由`pages-public-release-report.json`绑定；页面继续标注“录制证据 · 非实时推理”，不把静态托管写成实时后端或公网高可用。
 - 边界：E2B不包含E3、实时FastAPI/Qdrant/MiMo公网服务、自定义域名、DNS、收费云资源或真实模型调用。

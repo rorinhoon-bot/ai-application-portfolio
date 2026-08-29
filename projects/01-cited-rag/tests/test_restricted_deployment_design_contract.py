@@ -91,7 +91,8 @@ def test_public_project_documents_share_the_restricted_deployment_contract() -> 
 
     assert "#### FR-V2-07：受限求职展示" in prd
     assert "### 23.22 P1-F / V2-E双路径展示架构" in architecture
-    assert "当前唯一目标：完成V2-E2B发布状态回填" in status
+    assert "当前唯一目标：V2-E2B已完成" in status
+    assert "停在V2-E3设计审批前" in status
     assert "## D-061：P1-F先公开静态证据" in decisions
     assert "## D-062：V2-E1使用确定性静态证据制品" in decisions
     assert "## D-065：V2-E2B公开激活" in decisions
