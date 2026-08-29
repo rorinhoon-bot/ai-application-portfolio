@@ -14,14 +14,15 @@
 - Qdrant Local 离线适配器，以及 Docker Qdrant Server、读写密钥隔离、持久化、快照恢复和API重启零漂移验收。
 - V2-C2.1全新20题发布集达到Recall@5 95%、candidate Recall@20 100%，门禁通过并激活Hybrid build；旧失败实现与Dense回滚build均保留。
 - V2-D1已加入隐私安全JSON日志、手工OpenTelemetry trace/metrics和本地Collector；384项离线测试通过，运行态已激活并完成故障隔离与回滚验证。
-- V2-D2已加入最小权限、完整SHA固定的GitHub Actions workflow、fake provider smoke和Git边界检查；本地等价命令通过，状态为`workflow-ready`，未声称远程CI通过。
+- V2-D2最小权限GitHub Actions已在公开仓库通过：Windows离线合同与Linux API镜像合同均为`success`，run `33173695996`。
 - V2-D3有限重试已实现：最多两次物理尝试、固定瞬态错误白名单、退避/总时限、费用不确定语义、物理调用观测和离线fake验收；独立镜像运行验收通过，活动`v2-d1`未切流量。
-- P1-F / V2-E1已实现本地纯静态证据页；V2-E2A最小权限Pages workflow与确定性artifact门已本地验收。Pages尚未启用，Cloud Run + Qdrant Cloud实时路径仅作条件候选。
+- P1-F / V2-E2B静态证据页已发布到 <https://rorinhoon-bot.github.io/ai-application-portfolio/>；它显著标注录制证据，不连接实时后端。Cloud Run + Qdrant Cloud仅作条件候选。
 
 ## GitHub 展示与演示
 
 - **真实证据**：同一V3新20题Dense `Recall@5=75%`、确定性Hybrid `95%`、candidate `Recall@20=100%`；引用绑定 `100%`；锁定回答集拒答准确率 `100%`；人工忠实度 `4/4`。
 - **演示入口**：下文提供 CLI 和 Streamlit 启动命令；引用必须来自程序绑定的固定官方文档元数据。
+- **公开证据页**：<https://rorinhoon-bot.github.io/ai-application-portfolio/>；仅静态录制证据，不接受任意问题。
 - **面试学习**：项目数据流、引用绑定、评估解释和追问见 [LLH_Study.md](LLH_Study.md)。
 - **截图状态**：已提交两张真实截图：Streamlit 引用回答与 CLI 结果，见下方“演示”区；截图来自本地运行，不代表在线服务。
 
@@ -258,7 +259,7 @@ Collector只把Prometheus exporter发布到`127.0.0.1:9464`；OTLP `4318`仅在C
 .\.venv\Scripts\python.exe scripts\run_ci_smoke.py
 ```
 
-机器结果见`data/ci-smoke-report.json`；当前仅标记`workflow-ready`，远程GitHub Actions尚未运行。
+本地机器结果见`data/ci-smoke-report.json`；远程公开运行见 <https://github.com/rorinhoon-bot/ai-application-portfolio/actions/runs/33173695996>，Windows与Linuxjob均为`success`。
 
 ### V2-D3有限重试
 
@@ -276,7 +277,7 @@ Collector只把Prometheus exporter发布到`127.0.0.1:9464`；OTLP `4318`仅在C
 
 首发选择GitHub Pages纯静态证据页：只展示可追溯的固定指标、录制问答、失败案例、架构与运行证据，并显著标注“非实时推理”。页面不接受任意问题，不连接FastAPI、Qdrant或MiMo，不持有密钥。
 
-E1本地制品已位于`../../portfolio-site/p1/`。标准库导出器固定读取11份机器报告和2张已追踪截图，生成规范数据、同源JS、图片副本与输入/输出SHA-256清单：
+制品位于`../../portfolio-site/p1/`。标准库导出器固定读取12份机器报告和2张已追踪截图，生成规范数据、同源JS、图片副本与输入/输出SHA-256清单：
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\export_portfolio_evidence.py --check
@@ -285,9 +286,9 @@ E1本地制品已位于`../../portfolio-site/p1/`。标准库导出器固定读�
 
 浏览器打开`http://127.0.0.1:8765/`。这只是本地录制证据预览，不是在线AI服务。
 
-Cloud Run + Qdrant Cloud只保留为后续受控实时演示候选；资源实测、独立身份、跨重启持久配额、费用断路器、Secret和snapshot恢复未通过前不公开。设计、官方来源和零副作用审计见`docs/RESTRICTED_DEPLOYMENT_DESIGN.md`与`data/deployment-capability-audit.json`。GitHub Pages尚未启用，当前没有可宣传的在线URL。
+Cloud Run + Qdrant Cloud只保留为后续受控实时演示候选；资源实测、独立身份、跨重启持久配额、费用断路器、Secret和snapshot恢复未通过前不公开。设计见`docs/RESTRICTED_DEPLOYMENT_DESIGN.md`。GitHub Pages只公开静态录制证据，不代表实时服务已部署。
 
-Pages发布设计见`docs/PAGES_RELEASE_DESIGN.md`。E2A已实现最小权限workflow与artifact验证器；可运行`python scripts/validate_pages_artifact.py`重算9文件清单。E2B的push、PR、Pages设置和公开部署仍需单独批准，预期URL形状不是已上线URL。
+Pages发布设计见`docs/PAGES_RELEASE_DESIGN.md`。E2B经批准完成：PR #1 squash合并，Pages Source为GitHub Actions，首次deployment `6141599225`成功；根页面、CSS、JS、JSON与两张图片均返回200且SHA-256匹配本地制品。机器证据见`data/pages-public-release-report.json`。
 
 ## 测试
 
@@ -297,7 +298,7 @@ Pages发布设计见`docs/PAGES_RELEASE_DESIGN.md`。E2A已实现最小权限wor
 
 普通测试不访问网络，不调用 MiMo，不下载模型。
 
-当前为 `471 passed, 1 skipped`；唯一跳过项是当前Windows会话不能创建测试用symlink，校验器仍显式拒绝symlink。V1/V2-A/V2-B1/B2测试零删除；V2-C新增Sparse/Hybrid与确定性融合，V2-D新增可观测、CI和有限重试，V2-E新增部署、静态证据、Pages设计与19项发布实施合同。普通测试不要求Docker。运行证据见`data/observability-runtime-release-report.json`、`data/retry-runtime-release-report.json`和`data/pages-release-readiness-report.json`。
+本次发布证据回填后的准确测试数以最新CI为准；Windows测试环境若不能创建symlink，只跳过攻击夹具，校验器的拒绝分支未放宽。V1/V2-A/V2-B1/B2测试零删除；普通测试不要求Docker。运行证据见`data/observability-runtime-release-report.json`、`data/retry-runtime-release-report.json`、`data/pages-release-readiness-report.json`和`data/pages-public-release-report.json`。
 
 ## 评估结果
 
@@ -356,4 +357,4 @@ V2-C1报告已提交且默认不可覆盖。Qdrant Server运行时，可把复�
 - V2-B2 API容器仍是单机回环形态；没有公网认证、TLS、限流、弹性扩容或高可用证据。
 - Qdrant 的 API Key 通过本机回环 HTTP 传输；没有 TLS，因此不得改成局域网或公网监听。
 - FastAPI 当前只读且仅适合本地回环访问；D1只有本地短期遥测，无持久化、告警或云后端，公网认证、限流、配额和部署仍属于后续 V2 阶段。
-- GitHub Pages静态证据页已实现本地制品但尚未发布；不得把`localhost`或规划URL描述为在线作品。
+- GitHub Pages只发布静态录制证据；不得描述为实时AI服务、生产后端或公网高可用证明。

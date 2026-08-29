@@ -25,6 +25,7 @@ SOURCE_REPORTS = (
     "data/observability-runtime-release-report.json",
     "data/retry-smoke-report.json",
     "data/ci-smoke-report.json",
+    "data/pages-public-release-report.json",
 )
 
 SOURCE_IMAGES = (
@@ -207,6 +208,7 @@ def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
     observability = reports["data/observability-runtime-release-report.json"]
     retry = reports["data/retry-smoke-report.json"]
     ci = reports["data/ci-smoke-report.json"]
+    publication = reports["data/pages-public-release-report.json"]
 
     retry_rate_limit = next(
         item
@@ -251,9 +253,10 @@ def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
         "headline": "让 RAG 回答可核验，也让发布失败可追溯",
         "recorded_evidence": True,
         "live_service": False,
-        "site_status": "local-static-artifact",
-        "publication_status": "not-published",
-        "remote_ci_status": "workflow-ready-remote-unrun",
+        "site_status": "public-static-artifact",
+        "publication_status": publication["status"],
+        "remote_ci_status": publication["continuous_integration"]["status"],
+        "public_url": publication["pages"]["url"],
         "repository_url": "https://github.com/rorinhoon-bot/ai-application-portfolio",
         "retrieval_comparison": [
             _retrieval_view(reports[dense_path], "Dense 基线"),
@@ -364,7 +367,27 @@ def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "qdrant_points": observability["runtime"]["active_collection_points"],
             "ci_smoke_status": ci["status"],
             "ci_network_accessed": ci["network_accessed"],
-            "remote_ci_status": "workflow-ready-remote-unrun",
+            "remote_ci_status": publication["continuous_integration"]["status"],
+        },
+        "publication_proof": {
+            "source_path": "data/pages-public-release-report.json",
+            "source_sha256": source_hashes["data/pages-public-release-report.json"],
+            "pull_request_url": publication["release"]["pull_request_url"],
+            "merge_commit": publication["release"]["merge_commit"],
+            "ci_run_url": publication["continuous_integration"]["run_url"],
+            "pages_run_url": publication["pages"]["run_url"],
+            "deployment_id": publication["pages"]["deployment_id"],
+            "public_url": publication["pages"]["url"],
+            "https_enforced": publication["pages"]["https_enforced"],
+            "public_http_files_verified": len(
+                publication["public_http_verification"]["files"]
+            ),
+            "public_http_all_status_200": publication["public_http_verification"][
+                "all_status_200"
+            ],
+            "public_http_all_sha256_match": publication[
+                "public_http_verification"
+            ]["all_sha256_match_local_artifact"],
         },
         "architecture": [
             {"step": "01", "title": "只读 FastAPI", "detail": "严格请求模型、Problem Details、服务端request ID"},
@@ -375,8 +398,8 @@ def build_evidence(project_root: Path = PROJECT_ROOT) -> dict[str, Any]:
         ],
         "limitations": [
             "当前页面是录制证据，不是实时推理服务；不接受任意问题。",
-            "GitHub Pages尚未启用；当前没有可宣传的在线URL。",
-            "远程GitHub Actions尚未运行，只能声称workflow-ready。",
+            "GitHub Pages只托管静态录制证据，不提供实时问答后端。",
+            "公开CI只证明离线合同与Linux API镜像可构建，不证明公网高可用。",
             "answering-v3只有10题；跨版本人工复核只有3题。",
             "真实供应商故障、线上并发、硬费用上限和公网高可用仍无证据。",
             "95 MB模型资产与Qdrant运行数据不进入Git，新环境需按README恢复。",
@@ -483,7 +506,9 @@ def _manifest(
         "exporter_version": EXPORTER_VERSION,
         "recorded_evidence": True,
         "live_inference": False,
-        "publication_status": "not-published",
+        "publication_status": _load_report(
+            project_root, "data/pages-public-release-report.json"
+        )["status"],
         "inputs": _source_manifest(project_root),
         "outputs": output_entries,
         "external_side_effects": {

@@ -35,7 +35,7 @@ def test_current_artifact_has_deterministic_exact_manifest() -> None:
 
     assert first == second
     assert first["artifact_root"] == "portfolio-site/p1"
-    assert first["totals"] == {"file_count": 9, "byte_count": 233880}
+    assert first["totals"] == {"file_count": 9, "byte_count": 236063}
     paths = [item["path"] for item in first["files"]]
     assert paths == sorted(paths)
     assert paths[0] == "README.md"

@@ -1,8 +1,8 @@
 # STATUS
 
 - 状态：`in_progress`
-- 版本状态：V1 已完成并保留；V2-D1运行激活、V2-D2本地CI合同、V2-D3有限重试、V2-E1本地静态证据制品与V2-E2A本地发布就绪均完成；远程CI和公开部署未运行。
-- 当前唯一目标：停在V2-E2B公开激活审批点；未经再次批准，不push、不建PR、不运行远程Actions、不更改Pages设置、不公开URL。
+- 版本状态：V1 已完成并保留；V2-D1运行激活、V2-D2远程CI、V2-D3有限重试、V2-E1静态证据制品与V2-E2B GitHub Pages公开激活均完成。
+- 当前唯一目标：完成V2-E2B发布状态回填、补充PR与二次公开验收；不进入E3实时服务。
 - 当前阶段：活动检索为`hybrid-client-rrf-v1`，运行API为`cited-rag-api:v2-d1`，Collector运行于固定digest并仅发布回环`9464`。C3前置门未通过，Reranker不下载。
 - 暂停记录：2026-08-25由学习者要求暂停；2026-08-27明确恢复。暂停期间活动运行基线未改。
 - 已完成：
@@ -385,7 +385,13 @@
   - 生成`data/pages-release-readiness-report.json`：当前精确artifact仍为9文件、233,881 bytes，逐文件SHA-256、总量、限制、安全断言及外部副作用均可机器复核；报告与实时重算由测试绑定。
   - 新增19项Pages artifact/workflow实施合同；完整离线回归`471 passed, 1 skipped`。跳过项仅为当前Windows无符号链接创建权限，校验器的拒绝逻辑仍存在；`compileall`、`pip check`、证据漂移、artifact验证和Git边界通过。
   - E2A未push、未建PR、未触发远程Actions、未更改Pages设置、未创建deployment/公开URL/云资源；未安装依赖、未调用MiMo、未写Qdrant、未修改Docker。
+  - 学习者批准将`2041a6a`全部144个公开安全文件push并继续E2B；候选分支、PR #1及远程门禁均保留可审计记录。
+  - PR阶段Pages verify、Windows离线合同与Linux API镜像合同全部通过；跨平台换行、缺少本地模型资产及冻结评估合同问题分别以5个小提交修复，未放宽质量门。
+  - PR #1以squash方式合并到`main`，merge commit为`0748abfa2f0ec579179ca8095513c0ac3462a2b1`。
+  - Pages Source设为GitHub Actions并强制HTTPS；首次run `33173696014`、deployment `6141599225`成功，公开URL为`https://rorinhoon-bot.github.io/ai-application-portfolio/`。
+  - `main` CI run `33173695996`完成，Windows与Linux两个job均为`success`；六个公开文件HTTP 200且SHA-256与本地制品逐项一致。
+  - 浏览器桌面与360px视觉检查通过；发现页面仍显示旧的“尚未启用”状态，按失败可追溯原则创建独立补充分支修正，不改写首次发布证据。
 - 下一步：
-  - 提交E2A本地commit SHA、计划push分支、PR标题、远程门禁、Pages设置动作、公开内容、回滚与停止公开步骤；只有学习者批准第11.2节后才执行V2-E2B。
+  - 完成发布证据补充PR的本地门禁、远程门禁、合并、二次Pages部署及最终URL验收。
 - 阻塞：
   - 无当前阻塞。Docker Desktop历史失效socket问题已由Windows重启解决。

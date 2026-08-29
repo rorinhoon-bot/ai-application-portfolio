@@ -117,13 +117,29 @@ def test_manifest_hashes_every_fixed_input_and_generated_output() -> None:
         assert item["sha256"] == sha256(output)
 
 
-def test_export_records_zero_external_side_effects() -> None:
+def test_export_records_published_static_boundary() -> None:
     evidence = load_evidence()
 
-    assert evidence["site_status"] == "local-static-artifact"
-    assert evidence["publication_status"] == "not-published"
+    assert evidence["site_status"] == "public-static-artifact"
+    assert evidence["publication_status"] == "published-and-verified"
+    assert evidence["remote_ci_status"] == "passed"
+    assert evidence["public_url"] == (
+        "https://rorinhoon-bot.github.io/ai-application-portfolio/"
+    )
     assert evidence["live_service"] is False
     assert set(evidence["external_side_effects"].values()) == {False}
+
+
+def test_publication_proof_is_bound_to_tracked_release_report() -> None:
+    evidence = load_evidence()
+    proof = evidence["publication_proof"]
+
+    assert proof["merge_commit"] == "0748abfa2f0ec579179ca8095513c0ac3462a2b1"
+    assert proof["deployment_id"] == 6141599225
+    assert proof["public_http_files_verified"] == 6
+    assert proof["public_http_all_status_200"] is True
+    assert proof["public_http_all_sha256_match"] is True
+    assert len(proof["source_sha256"]) == 64
 
 
 def test_html_has_static_security_and_accessibility_contracts() -> None:
@@ -150,7 +166,7 @@ def test_html_has_static_security_and_accessibility_contracts() -> None:
         if tag == "a" and attrs.get("target") == "_blank":
             assert set((attrs.get("rel") or "").split()) >= {"noopener", "noreferrer"}
     assert "录制证据 · 非实时推理" in html
-    assert "GitHub Pages尚未启用" in html
+    assert "GitHub Pages 已公开发布" in html
     assert "<noscript>" in html
 
 
