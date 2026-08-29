@@ -1,6 +1,6 @@
 # P1静态证据页
 
-V2-E1本地制品。当前未部署，不作为在线链接宣传。
+V2-E2B公开静态证据页：<https://rorinhoon-bot.github.io/ai-application-portfolio/>。
 
 边界：
 
@@ -17,4 +17,4 @@ V2-E1本地制品。当前未部署，不作为在线链接宣传。
 .\.venv\Scripts\python.exe scripts\export_portfolio_evidence.py --check
 ```
 
-本地预览可使用Python标准库静态服务器；预览不等于GitHub Pages发布。公开发布属于V2-E2，需单独批准。
+本地预览可使用Python标准库静态服务器；线上Pages仍只展示同一份确定性静态制品，不提供实时推理。

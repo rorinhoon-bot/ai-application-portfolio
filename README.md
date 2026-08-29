@@ -9,7 +9,7 @@
 | 项目 | 解决的问题 | 核心技术 | 可核验证据 |
 |---|---|---|---|
 | [P0：结构化内容生成器](projects/00-structured-content-generator/) | 将不稳定模型文本变成可校验学习笔记 JSON | Python、Pydantic、JSON Schema、HTTPX、Prompt 评估 | 90 测试通过；10 例固定评估；Schema 100%；人工事实支持率 97.3% |
-| [P1：带引用知识库问答](projects/01-cited-rag/) | 基于固定 Python 官方文档回答，并给出程序绑定引用 | 本地 BGE、Qdrant、MiMo、Streamlit | `Recall@5` 86.7%；引用绑定 100%；拒答准确率 100%；人工忠实度 4/4 |
+| [P1：带引用知识库问答](projects/01-cited-rag/) · [公开证据页](https://rorinhoon-bot.github.io/ai-application-portfolio/) | 基于固定 Python 官方文档回答，并给出程序绑定引用 | FastAPI、Qdrant、Hybrid RRF、OpenTelemetry、GitHub Actions/Pages | 新20题 `Recall@5` 95%；引用绑定 100%；发布门 14/14；公开静态证据可核验 |
 | [P2：LangGraph 研究报告工作流](projects/02-agent-research-workflow/) | 将技术选型研究做成可暂停、恢复、人工批准的工作流 | LangGraph、SQLite checkpoint、Tool Calling、幂等导出 | 144 测试通过；12/12 固定案例；4.8/5 人工报告评分；SVG 演示 |
 | [P3：本地 MCP 安全工具服务](projects/03-mcp-tool-server/) | 受限笔记检索与人工确认任务创建 | MCP、SQLite、Windows HANDLE、状态机 | 240 测试；C 评估 11/11；D-6 评估 40/40；stdio 演示 8/8 |
 

@@ -1,0 +1,113 @@
+{
+  "schema_version": "1",
+  "report_id": "p1-pages-public-release-v1",
+  "recorded_on": "2026-08-28",
+  "status": "published-and-verified",
+  "repository": {
+    "url": "https://github.com/rorinhoon-bot/ai-application-portfolio",
+    "visibility": "public",
+    "default_branch": "main"
+  },
+  "release": {
+    "approved_source_commit": "2041a6afd3e56acc8eb0d691abac6b358cf4dc62",
+    "pull_request_number": 1,
+    "pull_request_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/pull/1",
+    "merge_strategy": "squash",
+    "merge_commit": "0748abfa2f0ec579179ca8095513c0ac3462a2b1"
+  },
+  "continuous_integration": {
+    "status": "passed",
+    "run_id": 33173695996,
+    "run_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/actions/runs/33173695996",
+    "head_sha": "0748abfa2f0ec579179ca8095513c0ac3462a2b1",
+    "jobs": [
+      {
+        "name": "Windows offline contract",
+        "conclusion": "success",
+        "job_id": 98856810013
+      },
+      {
+        "name": "Linux API image contract",
+        "conclusion": "success",
+        "job_id": 98856810127
+      }
+    ]
+  },
+  "pages": {
+    "source": "github-actions",
+    "https_enforced": true,
+    "status": "deployed",
+    "url": "https://rorinhoon-bot.github.io/ai-application-portfolio/",
+    "run_id": 33173696014,
+    "run_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/actions/runs/33173696014",
+    "verify_job_id": 98856810132,
+    "deploy_job_id": 98856901777,
+    "deployment_id": 6141599225,
+    "deployed_sha": "0748abfa2f0ec579179ca8095513c0ac3462a2b1"
+  },
+  "public_http_verification": {
+    "all_status_200": true,
+    "all_sha256_match_local_artifact": true,
+    "files": [
+      {
+        "path": "index.html",
+        "status": 200,
+        "byte_count": 10488,
+        "sha256": "76e3352d25280d234d648bd7739bbff62018505b3821b2d4c8e59c5d2ab7f220"
+      },
+      {
+        "path": "assets/styles.css",
+        "status": 200,
+        "byte_count": 16789,
+        "sha256": "349c634608acd6685561076fb990dd371aa1a1d3c67e715da160a2d7beeb16b1"
+      },
+      {
+        "path": "assets/app.js",
+        "status": 200,
+        "byte_count": 7839,
+        "sha256": "fec037cfc68859629722399a787e03ded6b4aaabbb99a9f19d2235ea89963b07"
+      },
+      {
+        "path": "assets/evidence.json",
+        "status": 200,
+        "byte_count": 15262,
+        "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac"
+      },
+      {
+        "path": "assets/cli-demo.png",
+        "status": 200,
+        "byte_count": 101067,
+        "sha256": "213b64f66a6a5dfe0b2a7301c03882b1ad561703cd39045f40d11602ab70c471"
+      },
+      {
+        "path": "assets/streamlit-cited-answer.png",
+        "status": 200,
+        "byte_count": 56771,
+        "sha256": "6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5"
+      }
+    ]
+  },
+  "browser_verification": {
+    "desktop_visual": "passed",
+    "mobile_360px_visual": "passed",
+    "keyboard_contract": "source-and-offline-test-passed",
+    "external_link_security": "source-and-offline-test-passed"
+  },
+  "security": {
+    "secrets_used_by_pages_workflow": false,
+    "remote_subresources": false,
+    "runtime_backend": false,
+    "arbitrary_input": false,
+    "live_model_inference": false
+  },
+  "external_side_effects": {
+    "network_accessed": true,
+    "public_deployment_created": true,
+    "remote_workflow_triggered": true,
+    "mimo_called": false,
+    "qdrant_written": false,
+    "docker_changed": false,
+    "dependency_installed": false,
+    "paid_cloud_resource_created": false
+  }
+}

@@ -208,7 +208,7 @@
       ["API运行用户", proof.api_user],
       ["只读rootfs", proof.api_read_only_rootfs ? "verified" : "not verified"],
       ["health / ready", `${proof.healthz} / ${proof.readyz}`],
-      ["远程CI", "workflow-ready · 未运行"],
+      ["远程CI", proof.remote_ci_status],
     ];
     items.forEach(([label, value]) => {
       const card = element("article", "runtime-card");

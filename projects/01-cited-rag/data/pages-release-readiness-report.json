@@ -8,13 +8,13 @@
   "files": [
     {
       "path": "README.md",
-      "byte_count": 788,
-      "sha256": "f7bf82c8dbe8badf7147ca56fd4b8c30d460d74c1b5eae6b36f91ed2ff5edaea"
+      "byte_count": 812,
+      "sha256": "2dfcbb577047641138ae4f3c7118e63a88529e497abb787f8f9e590e1db0b7ee"
     },
     {
       "path": "assets/app.js",
-      "byte_count": 7839,
-      "sha256": "fec037cfc68859629722399a787e03ded6b4aaabbb99a9f19d2235ea89963b07"
+      "byte_count": 7832,
+      "sha256": "4d36a51860ebba200f082eb8ca5e8da03d38ab9c687768f76c0ee4a9a8840b20"
     },
     {
       "path": "assets/cli-demo.png",
@@ -23,13 +23,13 @@
     },
     {
       "path": "assets/evidence.js",
-      "byte_count": 20300,
-      "sha256": "d1bc7001376e3fba58e52e3e05d29475e70d8e30bc9fed31e8768da89ad8701f"
+      "byte_count": 21290,
+      "sha256": "50855399f9015341220fdf17d126b3b559b5b4b7103247e1bf1ef44ac7879e5b"
     },
     {
       "path": "assets/evidence.json",
-      "byte_count": 15262,
-      "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac"
+      "byte_count": 16142,
+      "sha256": "fc8a5808eb5050682512f689bc83a8f192907a1d58febe3115f7e380da26d8e4"
     },
     {
       "path": "assets/streamlit-cited-answer.png",
@@ -43,18 +43,18 @@
     },
     {
       "path": "evidence-manifest.json",
-      "byte_count": 4576,
-      "sha256": "79358ab82634bdb956e47f340d1fd2a7bd3e732744ddb852ad9ff3eec9f56410"
+      "byte_count": 4784,
+      "sha256": "9ba1c42c5708fa6589563182aa493e413c52dbcd9ef0c9b64a19787303d45168"
     },
     {
       "path": "index.html",
-      "byte_count": 10488,
-      "sha256": "76e3352d25280d234d648bd7739bbff62018505b3821b2d4c8e59c5d2ab7f220"
+      "byte_count": 10576,
+      "sha256": "1e5863d6022545102fa1fc661079dda24b39002a3679b42c5194f7f7ec236cd7"
     }
   ],
   "totals": {
     "file_count": 9,
-    "byte_count": 233880
+    "byte_count": 236063
   },
   "limits": {
     "maximum_file_count": 32,

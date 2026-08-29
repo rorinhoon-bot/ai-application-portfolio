@@ -4,7 +4,7 @@
   "exporter_version": "p1-portfolio-exporter-v1",
   "recorded_evidence": true,
   "live_inference": false,
-  "publication_status": "not-published",
+  "publication_status": "published-and-verified",
   "inputs": [
     {
       "path": "projects/01-cited-rag/data/answering-v3-report.json",
@@ -62,6 +62,11 @@
       "byte_count": 506
     },
     {
+      "path": "projects/01-cited-rag/data/pages-public-release-report.json",
+      "sha256": "1cceaba37314720de9b038543233ffad7ff4c3b5249cabf3752d5b014327d708",
+      "byte_count": 3593
+    },
+    {
       "path": "projects/01-cited-rag/docs/images/streamlit-cited-answer.png",
       "sha256": "6fef657899aa82e46c2c385b11c35f67e0a2ed93e2d65bf50a9f000f60de1eb5",
       "byte_count": 56771
@@ -75,14 +80,14 @@
   "outputs": [
     {
       "path": "portfolio-site/p1/index.html",
-      "sha256": "76e3352d25280d234d648bd7739bbff62018505b3821b2d4c8e59c5d2ab7f220",
-      "byte_count": 10488,
+      "sha256": "1e5863d6022545102fa1fc661079dda24b39002a3679b42c5194f7f7ec236cd7",
+      "byte_count": 10576,
       "generated": false
     },
     {
       "path": "portfolio-site/p1/assets/app.js",
-      "sha256": "fec037cfc68859629722399a787e03ded6b4aaabbb99a9f19d2235ea89963b07",
-      "byte_count": 7839,
+      "sha256": "4d36a51860ebba200f082eb8ca5e8da03d38ab9c687768f76c0ee4a9a8840b20",
+      "byte_count": 7832,
       "generated": false
     },
     {
@@ -93,14 +98,14 @@
     },
     {
       "path": "portfolio-site/p1/assets/evidence.json",
-      "sha256": "c0ee4191be4dbe182e49426fba0816bfbd398b4e223c161dfc74dca77d9631ac",
-      "byte_count": 15262,
+      "sha256": "fc8a5808eb5050682512f689bc83a8f192907a1d58febe3115f7e380da26d8e4",
+      "byte_count": 16142,
       "generated": true
     },
     {
       "path": "portfolio-site/p1/assets/evidence.js",
-      "sha256": "d1bc7001376e3fba58e52e3e05d29475e70d8e30bc9fed31e8768da89ad8701f",
-      "byte_count": 20300,
+      "sha256": "50855399f9015341220fdf17d126b3b559b5b4b7103247e1bf1ef44ac7879e5b",
+      "byte_count": 21290,
       "generated": true
     },
     {

@@ -7,9 +7,10 @@
   "headline": "让 RAG 回答可核验，也让发布失败可追溯",
   "recorded_evidence": true,
   "live_service": false,
-  "site_status": "local-static-artifact",
-  "publication_status": "not-published",
-  "remote_ci_status": "workflow-ready-remote-unrun",
+  "site_status": "public-static-artifact",
+  "publication_status": "published-and-verified",
+  "remote_ci_status": "passed",
+  "public_url": "https://rorinhoon-bot.github.io/ai-application-portfolio/",
   "repository_url": "https://github.com/rorinhoon-bot/ai-application-portfolio",
   "retrieval_comparison": [
     {
@@ -263,7 +264,21 @@
     "qdrant_points": 1359,
     "ci_smoke_status": "passed",
     "ci_network_accessed": false,
-    "remote_ci_status": "workflow-ready-remote-unrun"
+    "remote_ci_status": "passed"
+  },
+  "publication_proof": {
+    "source_path": "data/pages-public-release-report.json",
+    "source_sha256": "1cceaba37314720de9b038543233ffad7ff4c3b5249cabf3752d5b014327d708",
+    "pull_request_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/pull/1",
+    "merge_commit": "0748abfa2f0ec579179ca8095513c0ac3462a2b1",
+    "ci_run_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/actions/runs/33173695996",
+    "pages_run_url": "https://github.com/rorinhoon-bot/ai-application-portfolio/actions/runs/33173696014",
+    "deployment_id": 6141599225,
+    "public_url": "https://rorinhoon-bot.github.io/ai-application-portfolio/",
+    "https_enforced": true,
+    "public_http_files_verified": 6,
+    "public_http_all_status_200": true,
+    "public_http_all_sha256_match": true
   },
   "architecture": [
     {
@@ -294,8 +309,8 @@
   ],
   "limitations": [
     "当前页面是录制证据，不是实时推理服务；不接受任意问题。",
-    "GitHub Pages尚未启用；当前没有可宣传的在线URL。",
-    "远程GitHub Actions尚未运行，只能声称workflow-ready。",
+    "GitHub Pages只托管静态录制证据，不提供实时问答后端。",
+    "公开CI只证明离线合同与Linux API镜像可构建，不证明公网高可用。",
     "answering-v3只有10题；跨版本人工复核只有3题。",
     "真实供应商故障、线上并发、硬费用上限和公网高可用仍无证据。",
     "95 MB模型资产与Qdrant运行数据不进入Git，新环境需按README恢复。"

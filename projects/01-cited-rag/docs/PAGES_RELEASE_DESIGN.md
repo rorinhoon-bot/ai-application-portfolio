@@ -1,7 +1,7 @@
 # P1 V2-E2 GitHub Pages发布设计
 
-- 文档状态：`accepted；e2a-implemented；local-verified；external-unexecuted`
-- 版本：`0.2`
+- 文档状态：`accepted；e2b-implemented；public-verified`
+- 版本：`0.3`
 - 日期：`2026-08-28`
 - 前置基线：V2-E1本地静态证据制品完成，`446 passed`，本地HTTP 200
 - 当前范围：冻结Pages制品、workflow、权限、URL、发布验证和回滚；不实施公开发布
@@ -218,7 +218,7 @@ jobs:
 
 E2A通过后，必须先提交：本地提交SHA、计划push分支、PR标题、远程门禁、Pages设置动作、实际公开内容清单、回滚提交和停止公开步骤。只有再次批准，才允许执行第8节外部动作。
 
-E2B批准不包含E3实时服务、域名购买、自定义DNS、MiMo调用或任何收费云资源。
+E2B批准不包含E3实时服务、域名购买、自定义DNS、MiMo调用或任何收费云资源；本次批准结果不扩大这些边界。
 
 ## 12. 官方来源
 
@@ -239,4 +239,15 @@ E2B批准不包含E3实时服务、域名购买、自定义DNS、MiMo调用或�
 - 安全合同覆盖符号链接、隐藏/非普通文件、路径越界、扩展名与大小上限、CSP、远程子资源、网络API、表单/iframe、本机绝对路径和疑似secret赋值。
 - 本地验收为`471 passed, 1 skipped`；跳过项仅因当前Windows会话不能创建测试用符号链接，校验器仍显式拒绝符号链接。`compileall`、`pip check`、证据`--check`、artifact验证和Git边界均通过。
 - 外部副作用保持0：没有push、PR、远程Actions、Pages设置、deployment、公开URL、云资源、依赖安装、MiMo调用、Qdrant写入或Docker修改。
-- 当前停在第11.2节。E2B执行前必须再次提交精确外部动作与回滚信息并取得批准。
+- 第11.2节已按批准执行；实际远程结果与二次证据回填见第14节。
+
+## 14. V2-E2B实施结果（2026-08-28）
+
+- 学习者明确批准公开`2041a6a`全部144个文件并继续E2B；候选分支已push，PR #1保留评审和失败修复历史。
+- PR远程门禁最终全部通过。跨平台修复只处理换行、CI对本地模型资产的错误依赖和冻结评估输入，不改变检索/回答指标或安全门。
+- PR #1以squash合并到`main`，merge commit为`0748abfa2f0ec579179ca8095513c0ac3462a2b1`。
+- Pages Source已设为GitHub Actions且HTTPS强制开启。首次Pages run为`33173696014`，deployment ID为`6141599225`，公开URL为`https://rorinhoon-bot.github.io/ai-application-portfolio/`。
+- `main` CI run `33173695996`的Windows离线合同与Linux API镜像合同均为`success`。
+- 根页面、CSS、JS、证据JSON和两张截图均HTTP 200，六个SHA-256逐项匹配本地首次发布制品；桌面与360px浏览器视觉检查通过。
+- 首次发布页面仍带E2A时期“Pages尚未启用”文案。该内容错误不删除首次deployment；使用独立补充提交更新发布状态，再走相同PR、CI、Pages与在线hash门。
+- 脱敏机器证据见`data/pages-public-release-report.json`。E3实时服务、域名、DNS、MiMo调用和收费云资源仍未批准。
