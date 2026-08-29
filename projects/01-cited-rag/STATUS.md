@@ -1,8 +1,8 @@
 # STATUS
 
-- 状态：`in_progress`
+- 状态：`stage_complete`
 - 版本状态：V1 已完成并保留；V2-D1运行激活、V2-D2远程CI、V2-D3有限重试、V2-E1静态证据制品与V2-E2B GitHub Pages公开激活均完成。
-- 当前唯一目标：完成V2-E2B发布状态回填、补充PR与二次公开验收；不进入E3实时服务。
+- 当前唯一目标：V2-E2B已完成；停在V2-E3设计审批前，不进入实时服务。
 - 当前阶段：活动检索为`hybrid-client-rrf-v1`，运行API为`cited-rag-api:v2-d1`，Collector运行于固定digest并仅发布回环`9464`。C3前置门未通过，Reranker不下载。
 - 暂停记录：2026-08-25由学习者要求暂停；2026-08-27明确恢复。暂停期间活动运行基线未改。
 - 已完成：
@@ -391,7 +391,11 @@
   - Pages Source设为GitHub Actions并强制HTTPS；首次run `33173696014`、deployment `6141599225`成功，公开URL为`https://rorinhoon-bot.github.io/ai-application-portfolio/`。
   - `main` CI run `33173695996`完成，Windows与Linux两个job均为`success`；六个公开文件HTTP 200且SHA-256与本地制品逐项一致。
   - 浏览器桌面与360px视觉检查通过；发现页面仍显示旧的“尚未启用”状态，按失败可追溯原则创建独立补充分支修正，不改写首次发布证据。
+  - 补充PR #2通过Pages verify及Windows/Linux P1 CI；以squash合并到`main`，merge commit为`1faaf45d3752b6277fe1fdab9a0c77d90ad185f0`。
+  - 最终Pages run `33233267570`和deployment `6152214475`成功；`main` CI run `33233267566`的Windows/Linux job均为`success`。
+  - 首页、CSS、JS、证据JSON和两张截图再次HTTP 200且SHA-256逐项匹配；新“GitHub Pages 已公开发布”文案存在，旧“尚未启用”文案不存在。
+  - 公开页保持纯静态录制证据：无任意问题输入、无FastAPI/Qdrant/MiMo公网连接、无密钥、无收费资源；V2-E2B至此完成。
 - 下一步：
-  - 完成发布证据补充PR的本地门禁、远程门禁、合并、二次Pages部署及最终URL验收。
+  - 若继续升级，先设计V2-E3受控实时服务并重新审批账户、预算、真实调用与云资源；当前授权不继承。
 - 阻塞：
   - 无当前阻塞。Docker Desktop历史失效socket问题已由Windows重启解决。
