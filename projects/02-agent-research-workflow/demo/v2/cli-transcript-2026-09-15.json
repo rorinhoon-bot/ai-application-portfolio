@@ -1,0 +1,48 @@
+{
+  "mode": "offline-scripted",
+  "network_accessed": false,
+  "steps": [
+    {
+      "command": "start --run-id run-delivery-demo --thread-id thread-delivery-demo",
+      "exit_code": 0,
+      "output": {
+        "status": "NEEDS_HUMAN",
+        "model_call_count": 0,
+        "tool_call_count": 0,
+        "artifact_id": null,
+        "review_findings": []
+      }
+    },
+    {
+      "command": "resume --thread-id thread-delivery-demo --action approve",
+      "exit_code": 0,
+      "output": {
+        "status": "REPORT_NEEDS_HUMAN",
+        "model_call_count": 3,
+        "tool_call_count": 1,
+        "artifact_id": null,
+        "review_findings": []
+      }
+    },
+    {
+      "command": "resume --thread-id thread-delivery-demo --action approve",
+      "exit_code": 0,
+      "output": {
+        "status": "COMPLETED",
+        "model_call_count": 3,
+        "tool_call_count": 1,
+        "artifact_id": "b7aa94c32648d60524752a48f4886fccfade7c0c9632ce75715f7b08392c9659",
+        "review_findings": []
+      }
+    },
+    {
+      "command": "resume --thread-id thread-delivery-demo --action approve",
+      "exit_code": 2,
+      "output": {
+        "error": "{\"error\": \"NO_HUMAN_GATE:COMPLETED\"}"
+      }
+    }
+  ],
+  "artifact_count": 1,
+  "artifact_sha256": "c03bb702592a901dda09f7cc047d529260dc1c5ea100fe2ddb0bbfa5be64703b"
+}

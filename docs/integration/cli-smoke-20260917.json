@@ -1,0 +1,10 @@
+{
+  "actor": "assistant-cli-validation-not-human-content-review",
+  "artifact_id": null,
+  "model_call_count": 0,
+  "reject": "FAILED",
+  "request_visible": true,
+  "schema_version": "cli-smoke-v1",
+  "start": "NEEDS_HUMAN",
+  "status_matches": true
+}

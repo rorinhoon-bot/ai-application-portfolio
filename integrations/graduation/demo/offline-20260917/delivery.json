@@ -1,0 +1,143 @@
+{
+  "approvals": [
+    {
+      "action": "approve",
+      "actor": "scripted-test",
+      "content_quality_approval": false,
+      "event_hash": "41f142f702b8370e777fa2621806a7f37437a8bd0e62193ad78aa7b8dd621b3d",
+      "expected_hash": "8d6e0ea9d71361480f2a2967ce469f7cca084701ad70051848e400670e86aeb4",
+      "gate": "REPORT_NEEDS_HUMAN",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5"
+    },
+    {
+      "action": "approve",
+      "actor": "scripted-test",
+      "content_quality_approval": false,
+      "event_hash": "dd6c20dfe0781bfa187b8369e541b9402bd0c01409ac0c3b6ee2877600b9e31e",
+      "expected_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "gate": "NEEDS_HUMAN",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5"
+    }
+  ],
+  "artifact_id": "1ec2a73a008b4311820c9349aac169b1a91d707ff4351c3ee1c3ac5a47b0a4dd",
+  "artifact_name": "1ec2a73a008b4311820c9349aac169b1a91d707ff4351c3ee1c3ac5a47b0a4dd.md",
+  "artifact_sha256": "19c2aa4034bfc045c7b5133c5c303d0f80025c4ceeb3f23515f2f2a117cf2227",
+  "content_quality_passed": false,
+  "cost_minor_units": 0,
+  "delivery_report_sha256": "113b566991f0353cdca557d2045f70e973c1cd5a37c0245a47e837f7bf1cc955",
+  "evidence_count": 6,
+  "limitations": [
+    "Offline synthetic fixtures and scripted model; not a real model quality evaluation.",
+    "P1 fixture-keyword adapter uses its HTML parser; BGE/Qdrant and HTTP/container behavior were not exercised.",
+    "P2 real content acceptance failed: first batch 2 limited approvals and 4 rejections; later 2 limited approvals and 1 rejection.",
+    "P2 permanent limit CNY 5; conservative occupancy 417/500 minor units and 109/109 calls. No new real calls are authorized.",
+    "Assistant implemented this integration; independent student explanation and human content grading remain unverified."
+  ],
+  "mode": "scripted-offline",
+  "p1_corpus_hash": "64e1e18351f5b7aeecdc8e015c235de45511b831c324aba30c41ad80456324f9",
+  "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+  "real_model_calls": 0,
+  "report_hash": "8d6e0ea9d71361480f2a2967ce469f7cca084701ad70051848e400670e86aeb4",
+  "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+  "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+  "schema_version": "graduation-delivery-v1",
+  "scripted_model_calls": 3,
+  "tool_events": [
+    {
+      "evidence_id": "graph-plan-human-approval#human-approval",
+      "p1_source_sha256": "a8850acf29dbd55f6111d903b65b4f434e53d8e3f955a087032a73509c9ccd1c",
+      "p3_call_id": "0d4c7ae11a7f4192a16b92e00bfec56e",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "05b51df808a97ddbe783dc51273f5a56fed64e5a15605ba0d42c64c866e99f7b",
+      "receipt_hash": "d4c61f37a66f3f96262b183a300cb0dff79a416832f5b4dcef05709c82df1bac",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "336b147e47cdb23ffec6328e2f010b7b3d0580253b1f4e7943985ede6677dd41",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "graph-plan-tool-calling#tool-calling",
+      "p1_source_sha256": "a8850acf29dbd55f6111d903b65b4f434e53d8e3f955a087032a73509c9ccd1c",
+      "p3_call_id": "106fc3dfe92841018b6871700ef43127",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "7b89b15fe8105cd69cdece4df3c9a83b583852f175a62048af80889f38316ded",
+      "receipt_hash": "a144fa8c647903d2f6892c30ab2e6803c9832908a9fa881032502528a33f0541",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "d0aa3ba36c7a3dbcb579f55290d7ddbdd14fa131abac3dbac58c8309bb24afc6",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "chain-plan-recovery#recovery",
+      "p1_source_sha256": "43c4c287a458a8e2e02612c39cc6f699f170e33292f0d07b883916817887d42a",
+      "p3_call_id": "2ec2e771fe324ec8846563455f3de25f",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "ba6ca8fbdd4e1e4caab1d0b1aa9bb3718a4d15eafa2dc6a442f67145dc6915d8",
+      "receipt_hash": "985641d10a10e50f8e251eb315c3f9890453b8d754cd8dda85ae45b4452a032b",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "8e76ce40ac4f2e48f9c7a12a16b82bc5bc6ff06882713c29edb00d50059f31c3",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "chain-plan-tool-calling#tool-calling",
+      "p1_source_sha256": "43c4c287a458a8e2e02612c39cc6f699f170e33292f0d07b883916817887d42a",
+      "p3_call_id": "3ec1d41eeae84ba1a13e08805d7233e8",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "7b89b15fe8105cd69cdece4df3c9a83b583852f175a62048af80889f38316ded",
+      "receipt_hash": "e341689b7414f2e1c140a1f790b68e6990a54aa728a3f14c16d94b005ff4a16f",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "6355389dc84865a285a264cd761d62b4ffa727318fe9fa961dc94c2323761887",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "graph-plan-recovery#recovery",
+      "p1_source_sha256": "a8850acf29dbd55f6111d903b65b4f434e53d8e3f955a087032a73509c9ccd1c",
+      "p3_call_id": "a812b6c176db4352b84b0ab927c59d7c",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "ba6ca8fbdd4e1e4caab1d0b1aa9bb3718a4d15eafa2dc6a442f67145dc6915d8",
+      "receipt_hash": "56cb2ae467fed0d213eaf8a0b5b0b19b4ce6dbeb907314d10e707475b7ecea69",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "74757d9adccb7130fdb25aae2cf7848152587038113af1fa9036f5864f7dbb65",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "chain-plan-human-approval#human-approval",
+      "p1_source_sha256": "43c4c287a458a8e2e02612c39cc6f699f170e33292f0d07b883916817887d42a",
+      "p3_call_id": "a8dd2153d51c40d8add96e6bbb0c56c8",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "05b51df808a97ddbe783dc51273f5a56fed64e5a15605ba0d42c64c866e99f7b",
+      "receipt_hash": "33bc5eb69e5362fbf403ec63bec6bc5efd046e32c5edce3332e21e6b763365de",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "e17edc29f4132c814c69ca2bc33a64fd40ea7b74344d68142b00f9c5394f1769",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "graph-plan-human-approval#human-approval",
+      "p1_source_sha256": "a8850acf29dbd55f6111d903b65b4f434e53d8e3f955a087032a73509c9ccd1c",
+      "p3_call_id": "af0aaebb1572433094eb64196a3abe54",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "e497d3d06d3e46ae8610741ac0b3df59abbddeca7b5c8906979681fa50930924",
+      "receipt_hash": "28a2c3d30af00fa9b7336d8f4a29dce002ec1d860ca41096e350c961676d3972",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "67622c18bf8180004e2f4fc737adfcc8bc058e8114f61ceafdf3008625441ab2",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    },
+    {
+      "evidence_id": "chain-plan-human-approval#human-approval",
+      "p1_source_sha256": "43c4c287a458a8e2e02612c39cc6f699f170e33292f0d07b883916817887d42a",
+      "p3_call_id": "da98ba07debe435089acea30a0b80b6d",
+      "p3_snapshot_hash": "35e85ca481727f960664f04bcf90c7c6d594770640251ab9136ad23f349d38e8",
+      "query_hash": "e497d3d06d3e46ae8610741ac0b3df59abbddeca7b5c8906979681fa50930924",
+      "receipt_hash": "888aa53f4c583c3fafacc7cc0055a008db8332306c0d6206081cb1fbaf1adc81",
+      "request_hash": "223d24820b37d5f6588f852d87a99b6696b8dcc03c0b2a6f44044711959c75f7",
+      "result_hash": "a2ad20d19a434443ae910bb9049961fb26ed07d5f88475b097795deb7d236b45",
+      "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+      "schema_version": "integration-tool-event-v1"
+    }
+  ]
+}

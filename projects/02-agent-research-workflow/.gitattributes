@@ -1,0 +1,7 @@
+# Frozen fixtures are byte-addressed; Windows checkout must not convert newlines.
+/data/synthetic-sources/** -text
+/demo/v2/** -text
+/demo/generated/** -text
+/evals/results/v2-* -text
+/evals/v2/** -text
+/evals/gold/v2-content-rubric-v1.json -text

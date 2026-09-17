@@ -1,5 +1,7 @@
 # P2 产品需求文档：AI 应用技术选型研究报告
 
+> V1 历史文档：部分阶段状态文字保留原记录；最终人工评分见项目 DECISIONS D-035。产品 V2 升级需求位于 [V2 PRD](v2/02-PRD.md)，D1/D2/D3 离线能力已实现，真实模型质量仍未验证。
+
 - 版本：v0.2
 - 状态：offline v1 implemented；final acceptance in progress
 - 日期：2026-08-01

@@ -1,0 +1,127 @@
+{
+  "schema_version": "graduation-content-review-form-v1",
+  "status": "not_reviewed",
+  "report_file": "integrations/graduation/demo/offline-20260917/report.md",
+  "report_sha256": "19c2aa4034bfc045c7b5133c5c303d0f80025c4ceeb3f23515f2f2a117cf2227",
+  "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+  "reviewer": {
+    "name": null,
+    "reviewed_at": null,
+    "human": null,
+    "participated_in_implementation": null,
+    "assistant_assistance_disclosed": null
+  },
+  "units": [
+    {
+      "unit_id": "graph-plan/tool-calling",
+      "source_location": "graph-plan.html#tool-calling",
+      "evidence_id": "graph-plan-tool-calling#tool-calling",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    },
+    {
+      "unit_id": "graph-plan/human-approval",
+      "source_location": "graph-plan.html#human-approval",
+      "evidence_id": "graph-plan-human-approval#human-approval",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    },
+    {
+      "unit_id": "graph-plan/recovery",
+      "source_location": "graph-plan.html#recovery",
+      "evidence_id": "graph-plan-recovery#recovery",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    },
+    {
+      "unit_id": "chain-plan/tool-calling",
+      "source_location": "chain-plan.html#tool-calling",
+      "evidence_id": "chain-plan-tool-calling#tool-calling",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    },
+    {
+      "unit_id": "chain-plan/human-approval",
+      "source_location": "chain-plan.html#human-approval",
+      "evidence_id": "chain-plan-human-approval#human-approval",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    },
+    {
+      "unit_id": "chain-plan/recovery",
+      "source_location": "chain-plan.html#recovery",
+      "evidence_id": "chain-plan-recovery#recovery",
+      "quoted_claim": null,
+      "quoted_source": null,
+      "support": null,
+      "scores": {
+        "factual_support": null,
+        "question_coverage": null,
+        "limitation_clarity": null,
+        "comparison_and_recommendation": null,
+        "source_location": null
+      },
+      "reasoning": null
+    }
+  ],
+  "cross_cutting_review": {
+    "summary_scope": null,
+    "candidate_choice_basis": null,
+    "synthetic_fixture_disclosure": null,
+    "performance_claims": null,
+    "report_title_ambiguity": null
+  },
+  "final_decision": null,
+  "applicable_scope": null,
+  "rejection_reasons": [],
+  "disagreements": [],
+  "adjudication": null,
+  "evaluated_unit_count": 0,
+  "content_quality_passed": null,
+  "changes_p2_historical_acceptance": false
+}

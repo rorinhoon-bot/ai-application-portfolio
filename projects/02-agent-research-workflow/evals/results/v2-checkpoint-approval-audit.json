@@ -1,0 +1,69 @@
+{
+  "mode": "offline-readonly-checkpoint-audit",
+  "rows": [
+    {
+      "runtime": "d5e-scope-retest",
+      "thread": "eval-01-dev-baseline",
+      "status": "COMPLETED",
+      "original_findings": [
+        "REPORT_SCOPE_CLAIM_INVALID"
+      ],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5e-scope-retest",
+      "thread": "eval-03-dev-recovery-scope",
+      "status": "RECOVERY_REVIEW",
+      "original_findings": [],
+      "new_scope_rule_blocks": null
+    },
+    {
+      "runtime": "d5e-scope-retest",
+      "thread": "eval-04-dev-structured-output",
+      "status": "COMPLETED",
+      "original_findings": [
+        "REPORT_SCOPE_CLAIM_INVALID"
+      ],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5f-contract-retest",
+      "thread": "eval-03-dev-recovery-scope",
+      "status": "COMPLETED",
+      "original_findings": [
+        "REPORT_SCOPE_CLAIM_INVALID"
+      ],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5f-contract-retest",
+      "thread": "eval-08-holdout-security-caveat",
+      "status": "COMPLETED",
+      "original_findings": [],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5f-contract-retest",
+      "thread": "eval-09-holdout-restart-semantics",
+      "status": "COMPLETED",
+      "original_findings": [],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5f-contract-retest",
+      "thread": "eval-10-holdout-typed-output",
+      "status": "COMPLETED",
+      "original_findings": [],
+      "new_scope_rule_blocks": false
+    },
+    {
+      "runtime": "d5f-contract-retest",
+      "thread": "eval-12-holdout-limited-brief",
+      "status": "COMPLETED",
+      "original_findings": [
+        "REPORT_SCOPE_CLAIM_INVALID"
+      ],
+      "new_scope_rule_blocks": true
+    }
+  ]
+}

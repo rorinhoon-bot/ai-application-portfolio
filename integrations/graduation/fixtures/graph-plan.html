@@ -1,0 +1,7 @@
+<!doctype html><html lang="en"><head><title>Graph plan synthetic fixture</title></head><body>
+<!-- Original synthetic test fixture. Not official documentation or performance evidence. -->
+<main role="main"><h1 id="graph-plan">Graph plan synthetic fixture</h1>
+<section id="tool-calling"><h2>Tool calling</h2><p>The graph-plan synthetic design routes tool calling through an explicit allowlist and validates arguments before dispatch. This is a proposed design, not measured performance.</p></section>
+<section id="human-approval"><h2>Human approval</h2><p>The graph-plan synthetic design requires human approval of the request and report hash before exporting a final artifact.</p></section>
+<section id="recovery"><h2>Recovery</h2><p>The graph-plan synthetic design records checkpoint recovery at node boundaries and uses idempotent export. Exactly-once behavior still requires fault tests.</p></section>
+</main></body></html>

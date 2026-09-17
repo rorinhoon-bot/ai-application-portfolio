@@ -1,0 +1,20 @@
+{
+  "schema_version": "graduation-bundle-verification-v1",
+  "bundle_consistent": true,
+  "delivery_sha256": "52d2ccab7f6972507255190763fca9b01b04ac5acfd7b94eb89b8c2e5f73e2db",
+  "anchor_status": "matched",
+  "run_id": "run-41ffe299b92f4dc29943120edcde6ac5",
+  "approval_records": 2,
+  "mcp_calls": 8,
+  "receipt_count": 16,
+  "evidence_count": 6,
+  "content_quality": "not_evaluated",
+  "actor_authenticity": "not_verified",
+  "execution_replayed": false,
+  "limitations": [
+    "Checks saved bytes and cross-file links, not source or report semantics.",
+    "Request/report objects and full MCP responses are absent; their hashes are not recomputed.",
+    "Hashes are not signatures; the optional anchor must be trusted separately.",
+    "Workflow/cost/replay counts are recorded claims, not independently replayed execution."
+  ]
+}

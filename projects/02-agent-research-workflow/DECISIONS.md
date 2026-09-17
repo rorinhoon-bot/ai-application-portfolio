@@ -1,5 +1,111 @@
 # DECISIONS
 
+## V2 设计评审记录（2026-09-13）
+
+历史 D-001～D-036 描述 V1；以下 `proposed` 不代表学习者已批准产品方案、费用或开发。完整提案见 [设计入口](docs/v2/README.md)。
+
+### D-037：本轮止于版本化设计评审
+
+- 状态：accepted（用户本轮明确范围）。
+- 决定：仅现状审查、公开资料研究、需求/架构/评估/计划与交接；不安装、不收费调用、不建云资源、不发布、不 push，不开发业务代码。
+- 基线：原为 `codex/p3-local-mcp-tool-service`，现已本地改名为 `codex/p2-langgraph-v2`；HEAD `dcb164e95059b060ffd6aebbaa093a7626177614` 不变。保护既有未提交工作，仅修改 P2 文档；不继承 P1/P3 资源和权限。
+- 证据：本轮 P2 144 项测试、冻结评估、环境恢复与依赖检查通过；并不新增真实模型能力证明。
+
+### D-038：聚焦小团队 AI 工作流框架选型
+
+- 状态：accepted，2026-09-13 用户明确接受场景与 CLI 优先。
+- 决定：首个问题比较 LangGraph/PydanticAI，2 候选、3 维度，真实官方快照、CLI 可操作审批/恢复；保留条件推荐与不足简报。
+- 原因：承接 V1 问题，形成真实新输入与可核验结论，避免扩成通用互联网研究或另建项目。
+- 代价：资料范围有限、非实时；具体用户需求尚待学习者提供。UI、云部署、多智能体后置。
+
+### D-039：V2 生产链不得以金标准限定答案
+
+- 状态：accepted（用户明确约束）；具体合同实现待开发。
+- 决定：保留 V1 夹具与基线；V2 生产链独立合同，不读取 gold，不限制声明必须等于允许事实或推荐集合。
+- 原因：本轮代码核实 V1 运行器从 gold 构造草稿，绑定器精确匹配；这些只能证明离线合同与路由。
+- 结果：代码负责引用身份/范围/片段；语义质量独立评估。新增运行时 gold 隔离、改写允许及无证据参考答案拒绝测试。
+
+### D-040：保留单图与 SQLite，增加调用账本
+
+- 状态：proposed。
+- 决定：沿用两个人工门与内容寻址导出；V2 新状态/数据库版本，单执行器；模型请求前预算预留，结果未知暂停对账，结果已落盘则恢复重放不重发。
+- 原因：checkpoint 不能保证供应商只计费一次；防止把进程恢复误写成端到端 exactly-once。
+- 代价：需要独立账本及两个存储间恢复协调；V1 数据库不自动迁移。
+
+### D-041：真实资料采集和模型费用单独授权
+
+- 状态：proposed；无费用已批准。
+- 决定：资料先提精确官方来源、commit/版本、许可、大小和路径，再冻结快照；模型先单供应商/精确 ID 和价目，建议 smoke ≤5 元、评估另批≤30元。
+- 原因：公开浏览不等于语料批量入库授权；P1/P2 历史预算不继承。未确认供应商时不推断 API 可用性或价格。
+- 边界：普通测试始终离线；未知 usage 不写零、不释放最坏费用预留。
+
+### D-042：可靠性与内容质量分别验收
+
+- 状态：accepted（用户明确要求）；量化门槛为 proposed。
+- 决定：V1 回归保持；V2 26 个以上故障/流程场景与 12 个内容问题分开，6 个预留题；B0/B1 比较新增研究循环的收益与成本。
+- 原因：引用绑定有效不等于语义正确；模型审校与 AI 自评不能替代真实人工评分。
+- 结果：质量、交付率、缺证据处理、失败成本和未知费用均披露；当前全部 V2 内容结果为未测。
+
+### D-043：开源项目只借鉴可解释的小设计
+
+- 状态：proposed。
+- 决定：借鉴研究简报、证据整理与有限补检索；不复制整套研究 Agent 或其依赖。
+- 证据：本轮官方 PyPI 最新 LangGraph 1.2.11、SQLite checkpointer 3.1.1；本地仍为 1.2.9/3.1.0。`open_deep_research` 已归档；`local-deep-researcher` 未显示归档，但末次提交日期未可靠取得。两示例为 MIT。
+- 后续：版本、安全公告、兼容性与安装另做小任务，不在规划轮修改锁文件。来源及限制见 [调研记录](docs/v2/07-RESEARCH.md)。
+
+### D-044：用户确认资料范围与模型选择，第一阶段规划交付完成
+
+- 状态：accepted（以下明确确认项）；费用和正式采集仍有独立关口。
+- 用户确认：官方资料先6页，上限12页/5MiB，精确清单冻结后确认；模型选择 `Deepseek-v4-flash`，按用户原文记录。
+- 结果：第一阶段现状审查、需求分析、启动规划、架构及实施设计已交付；产品方向、CLI 优先及模型选择不再重复询问。
+- 待核实：接口能力、usage 字段、模型可用性与官方价格，在接入前核实；适配器先按官方文档的 `deepseek-v4-flash` ID配置，不声称已验证真实 API。
+- 边界：5元 smoke 与30元评估预算尚未获批；本次仅记录确认，不启动开发、安装、采集或收费调用。理解问题尚未回答，不等同于学习者已独立掌握设计。
+
+### D-045：先交付离线 V2 闭环，真实资料与 live 模式保持独立关口
+
+- 状态：accepted，2026-09-13（开发阶段实现记录）。
+- 决定：在现有 LangGraph `1.2.9`/SQLite checkpointer `3.1.0` 基线上，不升级依赖，完成 V2 严格合同、调用账本、不可变来源快照读取、脚本模型、DeepSeek `deepseek-v4-flash` 可替换适配器、两个人工门、checkpoint 恢复、UNKNOWN 状态和内容寻址 Markdown 导出的离线最小闭环。CLI 入口为 `scripts/run_research_v2.py`。
+- 原因：用户已确认 CLI 优先和模型方向，但尚未冻结正式来源清单或批准收费调用。先让端到端可靠性可运行、可测试，再进入资料和 live 关口，避免用合成结果冒充真实质量。
+- 证据：当时 `tests/test_v2_*.py`、`demo/v2/` 合成夹具、`163 passed`；当前全量回归为 `178 passed`，V1 `workflow-v1` 基线未修改。
+- 边界：`demo/v2/manifest.json` 的 `example.invalid` 内容只验证解析、检索、引用和导出，不进入内容质量分数；live 适配器默认关闭，未发送网络请求。
+
+### D-046：模型调用异常进入恢复审查，不自动重发
+
+- 状态：accepted，2026-09-13（开发阶段兼容修正）。
+- 决定：模型请求先写 `RESERVED`/`DISPATCHED`，异常写入 `UNKNOWN`；费用/usage 未知也不写零，图停止在 `RECOVERY_REVIEW`，不继续工具、写作或自动重试。已成功响应从账本缓存重放；报告导出只捕获稳定 `ExportError` 码，不把原始异常回显到状态。
+- 原因：供应商可能已收到请求并计费，checkpoint 与账本不是原子事务；自动重发可能产生重复费用和不同结果。该恢复审查状态先保证安全停机，人工查账后的继续策略留 D4。
+- 证据：`tests/test_v2_graph.py::test_model_transport_unknown_pauses_without_follow_on_tool_execution`、`tests/test_v2_ledger.py`。
+
+### D-047：D2 先冻结六页官方候选清单，再采集
+
+- 状态：proposed，2026-09-14；等待用户确认精确清单。
+- 决定：首批候选为 LangGraph Overview、Interrupts、Persistence，以及 PydanticAI Output、Deferred Tools、Durable Execution；每页分别绑定 state-model、human-approval 或 recovery 维度。清单、采集限制和替换条件见 `docs/v2/08-SOURCE-PLAN.md`。
+- 原因：用户已确认“先 6 页、上限 12 页/5 MiB”，但具体页面尚未冻结。先固定 URL/版本/许可/哈希策略，避免把浏览记录误当成可复现资料快照。
+- 边界：本决策不授权网络下载；清单确认后仍需逐项核对重定向、许可、页面版本和字节上限，再执行 `source_collector.py`。采集器当前仅有 HTTP mock 证据。
+
+### D-048：D2 采集器默认只做显式 allowlist 下载
+
+- 状态：accepted，2026-09-14（离线实现记录）。
+- 决定：`source_collector.py` 仅接受冻结 URL/主机、HTTPS、443/默认端口和安全相对路径；默认 opener 解析目标地址并拒绝私网、回环、链路本地、保留和未指定地址；拒绝未登记 URL、用户信息、非标准端口、重定向、超出单文件/总量上限、UTF-8 无效内容和目标文件冲突。写入使用同目录临时文件、`fsync` 和不覆盖硬链接。
+- 原因：资料采集是外部副作用，必须把浏览、下载、快照读取分开；采集器可先用 HTTP mock 验证，不因代码存在而自动联网。
+- 证据（采集前）：`tests/test_v2_source_collector.py`；当时未执行真实下载，后续由 D-050 完成。
+
+### D-049：来源采集必须经过机器清单冻结闸门
+
+- 状态：accepted，2026-09-14（离线实现记录）。
+- 决定：以 `docs/v2/source-plan-v1.json` 保存候选清单；`scripts/collect_sources_v2.py check` 只做离线校验，`collect` 仅接受 `status=frozen` 且要求 `--confirm-plan-id` 与清单精确匹配。
+- 原因：把“设计提案”和“可执行下载计划”分开，减少误联网、清单漂移和未经审查的范围扩大。
+- 证据（冻结前）：`source_collector.load_source_plan`、`scripts/collect_sources_v2.py`、`tests/test_v2_source_collector.py`；当时机器清单为 `proposed-awaiting-freeze`，未执行下载。现由 D-050 完成冻结和采集。
+
+### D-050：D2 使用固定 commit 的官方原始文档快照
+
+- 状态：accepted，2026-09-14（按用户“按计划执行”继续推进）。
+- 决定：首批 6 页改用 `langchain-ai/docs` commit `671c0929a2840feb951f69532366d5227306cc3f` 的三份 Mdx，以及 `pydantic/pydantic-ai` commit `5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95` 的三份 Markdown；每项记录 MIT LICENSE URL。快照 ID 为 `snapshot-1855a50c906058faffe87039`，总大小 `163080` bytes。
+- 原因：官方网页 HTML 不满足现有 Markdown 章节读取合同；固定仓库原文可复查 commit、路径和许可，且仍在 6 页/5 MiB 范围内。
+- 证据：`docs/v2/source-plan-v1.json`、`data/real-sources/snapshot-1855a50c906058faffe87039/manifest.json`、`source_store.py` 真实章节 search/read 验证；通过本机显式 local proxy 完成 HTTPS GET，未产生费用。
+
+## V1 历史决策
+
 ## D-001：先做单工作流
 
 - 状态：accepted
@@ -303,7 +409,7 @@
 - 原因：学习资料若只复述概念，不能证明学习者能解释或复现项目；若把确定性夹具写成真实模型能力，又会形成求职误导。
 - 结构：包含 30 秒、2 分钟和 5 分钟介绍、核心概念、完整数据流、核心代码、失败路径、评估解释、面试问答、自测答案、实操步骤和复习路线。
 - 参与边界：明确记录项目在 Codex 指导和协作下完成；通过讲解、定位代码、运行验证和独立修改练习逐步建立个人掌握证据。
-- 完成边界：创建讲义不自动把 P2 标记为 `completed`；仍需单独执行最终项目验收审计。
+- 完成边界：创建讲义不自动把 P2 标记为 `completed`；仍需单独执行 `PROJECT_STANDARDS.md` 最终审计。
 
 ## D-033：最终审计不使用 AI 代替人工报告质量评分
 
@@ -331,3 +437,221 @@
 - 证据：`evals/results/workflow-v2-human-report-review.md`；评分对象为 `demo/generated/report-v2.md`，使用既有 `HUMAN_REPORT_RUBRIC.md`。
 - 验证：评分保存后重跑环境检查、pytest `144 passed`、`workflow-v1` 基线、观测样例、离线演示、SVG、`compileall` 和 `pip check`，均通过。
 - 边界：评审者未提供一句话主要问题，记录中如实标记未提供；AI 自评未用于通过结论。完成仅表示原创离线作品满足仓库标准，不表示真实模型、真实资料、现实选型、费用或部署已验证。
+
+## D-036：提供一键离线验收脚本
+
+- 状态：accepted
+- 日期：2026-08-12
+- 决定：新增 `scripts/run_checks.ps1`，自动加载可选 `.env`；缺少配置时使用 `LANGGRAPH_STRICT_MSGPACK=true` 和 `LANGSMITH_TRACING=false` 的离线默认值。
+- 原因：P2 的核心验收不依赖模型或网络，但直接运行 `pytest` 或环境检查时容易因未加载环境变量失败；一键入口降低新环境复现成本，且不改变生产代码与安全边界。
+- 验证：脚本串联环境检查、`pytest`、固定工作流评估、观测样例、离线 Demo、SVG 制品、`compileall` 和 `pip check`；任一步失败即非零退出。
+
+## D-051：支持仅有一级标题的官方 Markdown 页面
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：`SourceStore` 优先解析二级标题；当页面没有二级标题时，才把一级标题作为可读章节并按稳定规则生成 section ID。
+- 原因：D2 固定快照中的 PydanticAI durable-execution 页面只有一级标题。若只支持二级标题，会出现文件哈希校验通过但章节不可检索的“假覆盖”。优先级规则避免把普通页面的 H1 父标题重复计入搜索结果。
+- 验证：`tests/test_v2_source_store.py::test_h1_only_markdown_page_is_readable`；D2 快照 `pa-03#durable-execution` 真实读取通过；全量 P2 测试 `178 passed`。
+- 边界：章节可读取只证明定位和完整性，不证明 durable 后端的具体能力；覆盖结论记录在 `docs/v2/09-SOURCE-COVERAGE.md`。
+
+## D-052：D2 覆盖审查按两个候选×三个维度记录
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：用 `docs/v2/09-SOURCE-COVERAGE.md` 记录 LangGraph/PydanticAI 两个候选在状态/结构化输出、人工审批、恢复/持久化三个维度的可读取章节；把章节存在、语义支持和模型质量分开。
+- 原因：D2 只验证来源完整性与定位，不能把关键词命中或官方章节存在伪装成优劣结论，也不能把旧的“6 个候选”措辞带入当前范围。
+- 验证：六个单元均有至少一个可读取章节；`pa-03#durable-execution` 通过一级标题兼容分支；本地快照无网络读取成功。
+- 后续：D3-live 先让模型提出候选证据，再由人工核对；价格、性能、版本时效、质量和推荐阈值仍未评估。
+
+## D-053：确定性执行器必须强制比较已知费用上限
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：`graph.py` 在每次模型结果写入账本后汇总 `known` 的 `cost_minor_units`，超过 `BudgetAuthorization.max_cost_minor_units` 即以 `MODEL_COST_BUDGET_EXCEEDED` 失败；`unknown` 费用继续进入恢复审查，`not-applicable` 离线夹具不计入收费预算。
+- 原因：只限制调用次数和 token 仍可能超过人民币硬上限；结果先落账本再停机，保留已发生费用证据和可审计恢复边界。
+- 验证：`tests/test_v2_graph.py::test_known_cost_budget_stops_after_response_is_recorded`；超限响应仍保留一条 `SUCCEEDED` 账本记录。
+- 限制：DeepSeek 当前适配器尚未把供应商价格换算为 `known` 费用；D3-live 前需冻结价目、汇率/最小货币单位和峰谷时段规则，未知费用不得运行完整批次。
+
+## D-054：DeepSeek 适配器固定单请求输出上限并保留 reasoning usage
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：DeepSeek Chat Completions 请求默认发送 `max_tokens=3000`，构造器拒绝 1～384000 之外的值；解析 `completion_tokens_details.reasoning_tokens`（若供应商返回）并与 prompt/completion token 一起进入 usage。
+- 原因：供应商默认最大输出远高于 V2 单请求预算；显式上限降低意外费用和超长报告风险，同时保留 reasoning 用量供后续费用核算。该参数不替代图级累计预算。
+- 验证：`tests/test_v2_model_client.py` 的 HTTP double 检查请求体、上限校验和 reasoning usage；未连接真实 API。
+- 限制：当前适配器仍将费用标为 `unknown`，不把 token 乘一个未经冻结的价格；D3-live 前需核对 Chat Completions 对 JSON、tool calls、thinking 和 usage 的实际返回。
+
+## D-055：D3-live 只记录官方能力/价格核对，不自动放行收费请求
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：将官方 Models & Pricing、Chat Completions 和 Models API 的只读核对结果记录在 `docs/v2/07-RESEARCH.md` 与 `docs/v2/10-LIVE-GATE.md`；确认 `deepseek-v4-flash` 和 OpenAI 兼容入口存在，但仍要求单独的人民币硬上限与最多 3 次 smoke 授权。
+- 原因：价格页注明可调整，页面能力声明不等于本地适配器的实际响应；模型选择也不等于费用授权。先冻结价格日期、汇率和 usage 规则，才能把账本的 `unknown` 转为可审核的 `known`。
+- 边界：本轮未请求 `/models` 或 `/chat/completions`，未验证账户可用余额、限流、实际 tool call/JSON 返回和费用扣除。
+
+## D-056：审批请求必须绑定实际模型配置 hash
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：为每个模型客户端生成不含密钥的 `config_hash`；图在需求人工门前比较它与 `ResearchRequestV2.model_config_hash`，不一致以 `MODEL_CONFIGURATION_MISMATCH` 停止。CLI 的 `model-config` 子命令只读输出 live/offline hash。
+- 原因：模型 ID、endpoint、timeout 或 `max_tokens` 改变会影响能力、成本和审批范围；仅在请求 JSON 留一段未核对 hash 无法阻止运行时偷换配置。
+- 验证：图测试覆盖 mismatch 停止；CLI 测试覆盖 live `model-config` 无 key、无网络输出。
+- 边界：hash 不含 API key，也不证明供应商账户可用；价格卡和实际 usage 仍是 D3-live 放行条件。
+
+## D-057：D3-live smoke 获批 5 元硬上限
+
+- 状态：accepted
+- 日期：2026-09-14
+- 决定：最多执行 3 次 `deepseek-v4-flash` D3-live smoke，累计人民币硬上限 5 元。
+- 边界：仅授权 P2 当前固定官方快照和 D3-live 验证；不授权 D5 的 30 元评估、自动充值、云资源、发布、push 或 P1/P3 资源。
+- 前置：用户仅在 P2 `.env` 或进程环境设置 key；运行前仍要冻结人民币价格卡、生成模型配置 hash，并把预算/请求绑定同一 snapshot。
+
+## D-058：live 调用使用冻结的保守价格卡和无网络预检
+
+- 日期：2026-09-14
+- 决定：live 适配器没有价格卡时拒绝启动；价格卡绑定供应商、模型、价格页检查时间、人民币费率和规则 hash。D3 使用缓存未命中输入与输出高峰价，按 `10 CNY/USD` 安全上限换算为 440/1320 分每百万 token；完整授权 48k 输入、9k 输出的最坏估算为 33 分，小于 500 分。
+- 原因：旧适配器在收费响应后才把费用标为 unknown，无法在发送前验证授权 token 上限是否可被成本上限覆盖。
+- 验证：`live-preflight` 只输出 key 是否存在、模型/价格卡 hash，`network_accessed=false`；价格卡舍入、配置 hash、发送前最坏费用拒绝均有离线测试。
+- 边界：价格页和汇率会变化；该卡是一次 D3 安全上限，不是账单、实时汇率或生产价格服务。
+
+## D-059：真实 smoke 暴露 provider response-ID 合同缺陷，保留恢复证据
+
+- 日期：2026-09-14
+- 决定：将 `ModelResult.response_id` 从项目内部 Identifier 改为受限的供应商 ID 字符集，允许数字开头；当供应商响应已返回 usage 但业务 JSON 未通过合同，账本仍保存 usage 和稳定错误码，状态仍为 `RECOVERY_REVIEW`。
+- 证据：本轮获批的 3 次 D3 smoke 已用尽且均没有形成报告。run-003 的脱敏账本码为 `MODEL_RESULT_CONTRACT_INVALID_response-id`；run-001/002 在改动前没有持久 usage，不能回填或臆测费用。详见 `evals/results/v2-live-smoke-2026-09-14.md`。
+- 边界：修正路径只经过离线 HTTP double；未获新的外部预算，不能再次真实调用或声称真实端到端成功。
+
+## D-060：CLI 测试隔离真实配置与运行记录
+
+- 日期：2026-09-14
+- 决定：CLI 子进程测试清除继承的 DeepSeek 与 tracing 环境变量；离线路径显式使用临时目录下不存在的 env 文件，live 启动夹具使用临时 runtime。真实密钥已配置后，普通测试仍只使用自己的夹具。
+- 恢复审查：只读查询三个 live operations.sqlite3，确认各有一条 UNKNOWN，usage 均缺失，与 D-059 一致。本次没有再次请求 API，不回填费用。
+- 验证前置：首次全量运行遗漏 LANGGRAPH_STRICT_MSGPACK=true，导致 V1 评估的 2 failed / 9 errors；应使用交接中的完整环境命令，不修改 V1 安全检查迁就测试。
+- 复测结果：按完整环境命令执行，186 passed in 28.30s；workflow-v1 baseline: passed。
+
+## D-061：DeepSeek 当前模型 ID 改为 `deepseek-flash`
+
+- 日期：2026-09-14
+- 决定：适配器和价格卡使用官方当前模型 ID `deepseek-flash`，模型配置 hash 绑定该 ID、禁用 thinking 和生产 Prompt 合同。旧 `deepseek-v4-flash` 不再用于新请求。
+- 原因：官方价格页声明旧 V4 Flash 名称已下线并转由 V4.1 Flash 服务；保留旧名会削弱可复现实验身份。
+- 证据：[官方模型与价格](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)；本轮真实响应的 `model_id` 为 `deepseek-flash`。
+
+## D-062：审校 findings 必须进入人工返修门
+
+- 日期：2026-09-14
+- 决定：模型审校返回 `review_completed` 和具体 `review_findings`；存在 findings 时工作流停在报告人工门，操作者可选择 `request-changes`，下一版草稿收到这些反馈。矩阵完整性、候选作用域和已读证据引用仍由确定性代码强制。
+- 证据：`run-d3-followup-002` 检出 3 条引用不精确匹配、未导出；`run-d3-followup-003` 审校为空后经审批模拟完成导出。离线测试覆盖 findings 暂停、返修和清空路径。
+- 边界：一次通过的模型审校不是独立人工内容质量评分，D5 保持未完成。
+
+## D-063：D5 在 ¥5 总上限内按子批执行
+
+- 日期：2026-09-14
+- 决定：不采纳原 D5 ¥30 提案。依据此前 D3 的 ¥0.01 控制台证据和 ¥0.66 发送前预留，D5 先用 ¥4.35 子预算运行 12 题；输入 token 预留在首批触顶后安全停止，第二子批只运行未完成题，最坏累计预留 ¥3.77，未超过 ¥5。
+- 结果：12/12 最终报告完成，引用身份自动校验 12/12；11 个 `insufficient_evidence`、1 个条件推荐。事实语义支持率、严重错误数和人工量表均保持 N/A，不能从这些结构指标推出质量达标。
+- 证据：`evals/results/v2-content-evaluation-2026-09-14.md`；完整回归 `198 passed`，V1 baseline 通过。
+
+## D-064：unknown 的范围固定为本次已读证据
+
+- 日期：2026-09-14
+- 决定：V2 draft/review Prompt 和导出 Markdown 都明确 `unknown` 仅代表本次运行实际读取的证据未覆盖某个 candidate×dimension 单元；不得把它写成整个冻结 snapshot、框架或其文档没有该能力。
+- 原因：D5 助手单人复核发现 8/12 报告发生这种范围扩大；其中 `dev-weight-change` 因错误缺口影响了条件推荐。引用 ID 均可解析不等于报告的范围陈述正确。
+- 验证：`tests/test_v2_model_client.py` 覆盖 draft/review Prompt 合同，`tests/test_v2_exporter.py` 覆盖读者可见范围说明；定向离线测试 `25 passed in 14.21s`。随后在既有 P2 ¥5 硬上限内重跑开发题 `dev-weight-change`：3 次调用完成，价格卡 usage 6 分、发送前预留 24 分；新报告正确限定 unknown 范围。审查记录为 `evals/results/v2-content-assistant-review-2026-09-14.md`。
+- 边界：本修复没有重写 12 份历史 live 报告，也没有使 D5 内容质量自动通过。预留题未复测；后续真实复测仍须遵守 P2 累计 ¥5 上限并单独冻结样本。
+
+## D-065：候选×维度覆盖由确定性代码执行
+
+- 日期：2026-09-14
+- 决定：模型计划仍只允许一个 `search_sources` 请求，但该请求必须列出请求中的全部候选和维度。执行器随后按每个 candidate×dimension 组合，用稳定维度查询、术语映射（如 recovery 包含 persistence/durable execution/checkpoint）和候选过滤读取最多一条本地冻结证据；模型自由文本 query 不再决定覆盖范围。
+- 原因：D5 范围错误根因还包括检索覆盖不均。原执行器验证了模型给出的 candidate/dimension 参数，却忽略它们，单次关键词排序可能把 `pa-03#durable-execution` 挤出 PydanticAI recovery 资料。
+- 验证：图集成测试确认 2×3 组合全部执行，并确认实际 draft payload 包含 `pa-03#durable-execution`；真实快照测试确认 PydanticAI recovery 固定命中该页面；定向测试 `34 passed in 14.12s`。随后 D5 开发题 live 回归完成 6/6 有引用单元，PydanticAI recovery 实际引用该页、助手复核无范围错误；价格卡 usage 6 分、预留 22 分。
+- 边界：覆盖只保证每个单元尝试读取资料，不等于语义结论自动正确；空结果仍允许 unknown。该单样本不使历史 D5 内容验收通过，完整复测仍需新预算。
+
+## D-066：过宽的整快照缺证据断言在审校前暂停
+
+- 日期：2026-09-14
+- 决定：报告草稿在模型审校调用前检查摘要、矩阵声明和限制项。出现“冻结证据/快照没有、未包含、缺少、未找到”或对应英文整库断言时，不调用审校模型、不导出，而是以 `REPORT_SCOPE_CLAIM_INVALID` 暂停到人工报告门；操作者可请求返修。
+- 原因：Prompt、静态范围说明和模型审校都不能保证拦下这种会误导推荐范围的断言。确定性门先停止显式高风险模式，也节省无效审校调用。
+- 验证：图测试构造非法草稿，确认状态为 `REPORT_NEEDS_HUMAN`、finding 为稳定错误码、账本只有 plan/draft 两次调用；定向测试 `35 passed in 12.57s`，当前 V2 全部分片 `65 passed`，`compileall`、`pip check` 和 `git diff --check` 通过。
+- 边界：这是有限模式防线，不等于自然语言事实核验器；同义改写仍需模型审校和人工复核，不能据此把 D5 内容验收标为通过。
+
+## D-067：D5 重测按冻结案例批次停机，并显式约束决策枚举
+
+- 日期：2026-09-14
+- 决定：评估脚本新增 `--case-ids`，只接受唯一、已冻结的案例 ID，并按原输入顺序执行；不得同 `--limit` 或 `--start-index` 混用。首个 `RECOVERY_REVIEW` 或 CLI 错误停止同一批次。真实 draft prompt 额外写明 `decision_status` 只能为 `recommended`、`conditional` 或 `insufficient_evidence`，不翻译、不附注。
+- 原因：D5e 单案例试跑中，`dev-recovery-scope` 的草稿响应已返回 usage，但 `decision_status` 违反合同，账本按不可重发规则记为 UNKNOWN。此前人工逐案例驱动没有在该状态后停止，第三个已启动案例仍完成；批处理入口必须把停机约束放进脚本。枚举提示属于结构合同，不包含或暗示任何推荐答案。
+- 验证：D5e 的 `dev-baseline`、`dev-structured-output` 完成且引用身份有效；`dev-recovery-scope` 稳定停在 `RECOVERY_REVIEW`，失败记录保留 known usage。新离线选择测试确认非连续 ID 按冻结顺序输出；模型 Prompt 测试确认精确枚举。
+- 边界：已发送的无效响应不能重发、不能回写为成功；该记录不等于内容质量失败或通过。后续新的 live 批次须使用更新模型配置 hash、独立运行目录和 P2 ¥5 总额内的新预算授权。
+
+## D-068：跨运行目录的 P2 总额预留超限后冻结 live 调用
+
+- 日期：2026-09-14
+- 决定：停止所有新的真实模型调用，并实现共享 P2 总额账本。live CLI 现在要求 `--total-budget-file` 与 `--total-budget-ledger`；每次网络发送前先通过批次账本预留，再把同一最坏边界写入共享账本。D5e/D5f 使用独立运行目录和授权 ID 时，原有单账本各自正确执行预留，但没有共享 P2 总额视图；所有已创建预留合计 553 分，若加此前控制台观察到的 ¥0.01 为 554 分，超过用户确认的 ¥5 风险线。
+- 原因：P2 总额是跨批次约束，不能以单次供应商已知 usage 或旧控制台截图代替。D5e/D5f 的已知价格卡 usage 合计 36 分；全部现存本地账本的已知价格卡 usage 为 143 分，但这些是保守价格卡计算，不是当前供应商账单。用户的 ¥0.69 截图发生在 D5e/D5f 前且选中「全部 API Key」，不能精确对账 P2。
+- 验证：只读汇总列出 d5=188、d5b=122、d5c=24、d5d=22、d5e=39、d5f=92、live-followup=66 分预留；总计 553 分。D5f 5/5 完成、13 次操作全部成功，未发生新的 UNKNOWN。图集成测试以总账本最多 2 次为边界，确认第三次模型调用在发送前以 `BUDGET_RESERVATION_EXHAUSTED` 失败；live CLI 缺总额文件在网络前拒绝；当前 V2 `65 passed`。
+- 边界：该冻结不撤销、退款或改写已经发生的调用，也不把价格卡 usage 当作最终费用。新的共享账本不能自动追溯旧目录；恢复真实调用前必须先取得当前供应商账单，并以其剩余额度创建总额授权，不能重新给 500 分或新建授权文件绕过历史支出。
+
+
+## 最新修正：消费口径与评估批准
+
+最新用户截图与本地新增19次/83698 tokens完全吻合，显示消费0.80元。历史553分预留不是实际费用；无需再索取同一账单。共享总额仍需固定身份和历史结算检查。评估脚本已禁止对非空或缺失 review_findings 自动批准，6项行为测试通过。历史已导出报告不等于审校通过。详见 P2 `evals/results/v2-billing-and-evaluation-correction.md`；本轮无API调用，内容验收未通过。
+
+
+## D-069：持久总授权绑定、固定恢复路径及审批复核
+
+总账本单授权策略持久化，改ID或重开连接不能重置额度；live恢复使用固定P2路径。先记入150分历史占用，总额500分，新容量350分，保留原账本。范围检测修复显式否定及本次证据限定语的误报；没有放宽整快照缺证据断言。评估脚本禁止自动批准带finding的报告。全量219项测试、V1基线通过。D5e/D5f原7份导出中仅3份有无finding审校证据，4份原被自动批准，详见 `docs/v2/12-BUDGET-AND-APPROVAL-HANDOFF.md`。本轮0次API调用。
+
+
+## 2026-09-15：检索、返修及预算内交付审计
+
+- 依据：D5g恢复维度漏读，长章词频与实际2400字符摘录不一致。改为摘录词频封顶+章节/文档标题相关性；不引入依赖或固定推荐。每候选另补一个研究问题查询命中并去重；离线验证中断重执行规则可读。
+- D5h真实12题均导出，引用身份77/77，但conditional/null决策矛盾1例。新增确定性检查，返修保留前轮findings；不修改历史结果，不把模型空findings当内容正确。
+- 导出markdown-v2.1补caveat、选择、定位与hash。旧制品字节符合legacy渲染时复用，冲突拒绝，升级不默默覆盖旧批准报告。
+- 用户5元累计预算保持；固定账本497分占用、3分可预留，新增live停止。本轮48次价格卡估算89分不等于实际账单。30元提案从当前实施范围移除，不反复申请。
+- 原holdout已用于查错，降为固定回归证据；gold不动，独立评价仍缺。助手实现与单人复核不等于学习者独立能力。
+- 验收与剩余项见docs/v2/13-DELIVERY-AUDIT.md；不标记整个项目completed。
+
+
+## 2026-09-15：显式recover与持久批准恢复
+
+新增CLI recover续跑未完成节点，不构造新批准。发布后崩溃可能留下旧中断标记；只复用checkpoint pending writes中与当前身份/hash/revision完全匹配的approve。没有匹配值时保持人工门。live恢复复用固定共享总预算规则。
+
+真实子进程os._exit测试覆盖发送后未知、结果入账后、文件发布后三窗口，以及需求/报告门不得自动批准。所有模型调用为离线脚本。预算保持497分保守占用，无新API、安装、commit或push。证据见docs/v2/14-PROCESS-RECOVERY.md。
+
+CLI三种执行命令固定durability="sync"，以写入等待换取节点间checkpoint落盘保证。旧异步checkpoint通过已存批准绑定恢复，另有published_async进程用例；不把进程退出测试等同于断电或磁盘损坏测试。
+
+## 2026-09-15：可复现夹具与显式预算核销
+
+采用原MIT官方快照作为离线测试夹具，保留hash与许可，解决干净检出缺资料问题。新镜像独立venv按原锁文件复现，239项测试通过。用户最新账单1.04元/123次与48次成功回执核对一致；预算增加显式核销表，保留原预留、历史150分、原500分上限和调用计数，不自动释放UNKNOWN。详见 `docs/v2/15-REPRODUCIBILITY-AND-SETTLEMENT.md`。
+
+## 2026-09-15：可执行性合同、审校误报与交付限制
+
+D5i四题完成，D5j新六题首轮5/6导出但实验建议2/6，内容验收未通过。真实适配器增加通用格式检查：limitations必须有“下一步验证：”，conditional必须有“前置条件：”；只检查存在，不把格式通过当语义达标。新3项HTTP行为测试验证缺项失败且保留usage，不修改旧缓存、gold或历史制品。
+
+D5k一题给出条件和实验，但模型审校误判hello-world与官方集成分类。助手按用户委托逐项复核后批准有限本地演示，原findings不清空，批准不代表模型自动审校通过或总体质量验收。原预算仍500分，有效占用487分，停止新收费测试。项目不标completed；先处理质量证据，详情见最终内容复核与交付审计。
+
+## 2026-09-16：授权续期保留原始账本
+
+到期后不改原JSON日期。新增显式追加的expiry extension记录，仅延长期限，不能重置额度/调用次数；原批准、预留与核销记录全部保留。接口已离线测试，尚未应用，等待用户对剩余两题有效期的明确答复。当前D5l4/6尝试，2份拒绝、2份助手带备注批准，不能宣称全批通过。见17号交接。
+
+## 2026-09-16：用户同意继续，应用有限续期
+
+用户在已明确告知剩余两题和续期方案后答复“好的，那请继续完成剩余任务”，按该同意将原截止追加延至9月16日23:59。仅剩余两题、最多6次，5元总上限和100条历史调用上限不变。总库与D5l操作库已先SQLite backup，原授权JSON不改；记录 `.runtime/p2-budget/expiry-extension-20260916/result.json`。不是增加预算或重置授权。
+
+## 2026-09-16：本轮验证结束，保留质量失败
+
+ 最后两题已完成，D5l合计6/6尝试、18次API、2份带备注批准/4份拒绝。41/41引用有效不能代表语义正确；出现output_type行为颠倒、恢复/恰好一次判据错误。保持in_progress，不改gold或通过门槛。有效预留441分、原100条调用预留用满，停止收费重复试跑。完整证据和后续方向见18号结论，当前无待确认续期或待跑题。
+
+## 2026-09-16：审批与导出不得绕过确定性内容边界
+
+内容失败复核发现，`REPORT_SCOPE_CLAIM_INVALID` 等确定性审校结论曾只让报告停在人工门，人工批准仍可能导出。现在批准时重验报告内容hash、选择与decision状态一致性、整快照缺证据断言；导出前再次绑定批准revision/hash和报告hash。退回意见经`--feedback`写入下一版草稿上下文，长度和门状态校验。此保护只拦截已知模式，不代替逐条事实语义审查；旧真实结果、gold和结论不改写。定向65项测试、compileall与pip check通过，见19号审计。
+
+## 2026-09-16：修复后三题真实质量验证仍不通过
+
+用户提供后台累计1.56元/174次并答复“请继续”。将D5l新增18次按已知价格卡usage从保守预留核销，累计有效占用由441分降至345分；原始授权文件、历史行和5元上限不变。另追加一次性9条调用容量，非额度重置，仍受500分金额和原token上限约束。新三题在调用前冻结，实际9次成功调用、23/23引用链有效，2份有限批准、1份拒绝。拒绝原因是故障注入实验没有把节点从头重跑与行级恢复作为独立观测/判据。累计有效占用417/500分、调用容量109/109；停止新调用，不宣布内容验收通过。完整证据在`v2-content-completion-verification-20260916.json`。
+# 2026-09-16：最终助手验收不能替代独立人工复核
+
+- 用户授权助手按验收标准复核；复核确认修复后三题的2份有限批准和1份拒绝均应保持。
+- 同一助手参与过生成或既有复核，故这份复核不标为“独立人工复核”，也不覆盖首批六题的4份拒绝。
+- 完整离线回归为266 passed；工程通过不改变真实模型内容质量不通过的结论。
+- P2 V2 在现有5元总上限、417/500分保守占用和109/109调用容量下停止新增真实调用。后续内容改造另立V3设计、评估和授权。

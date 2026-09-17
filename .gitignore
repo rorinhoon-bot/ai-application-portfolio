@@ -57,3 +57,16 @@ projects/**/data/sources/license/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Private workspace inventories and generated local state
+/docs/integration/baselines/
+/.tmp/
+/.worktrees/
+/deliverables/
+/output/
+/tmp_hr_docx/
+/docs/learning-handoff/
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm

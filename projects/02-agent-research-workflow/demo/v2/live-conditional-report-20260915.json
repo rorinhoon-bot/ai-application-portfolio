@@ -1,0 +1,10 @@
+{
+  "mode": "live",
+  "model_id": "deepseek-flash",
+  "report_sha256": "eb29e4d26519e1173e7cf23ad7f34356c8907526e77741f04a45d3b37aeb3248",
+  "artifact_id": "c4e41126a92c668cb613003535a55dae4c9167e6b3d36abd4aadcf5b39e8b41b",
+  "approved_by": "Codex assistant under user delegation",
+  "review_notes": "../../evals/results/v2-d5k-assistant-approval.json",
+  "content_acceptance": "not aggregate acceptance",
+  "original_run": "d5k-actionability-retest/eval-01-selection-typed-output"
+}

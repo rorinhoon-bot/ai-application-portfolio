@@ -1,0 +1,76 @@
+{
+  "schema_version": "p2-budget-audit-final-v1",
+  "user_latest_actual_cny": "1.04",
+  "user_latest_actual_requests": 123,
+  "additional_calls_after_user_report": 33,
+  "new_actual_provider_bill": "not supplied",
+  "batches": [
+    {
+      "batch": "d5i-recovery-content",
+      "calls": 12,
+      "statuses": [
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "input_tokens": 57207,
+      "output_tokens": 5456,
+      "price_card_minor": 24
+    },
+    {
+      "batch": "d5j-fresh-holdout",
+      "calls": 18,
+      "statuses": [
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "input_tokens": 85762,
+      "output_tokens": 8663,
+      "price_card_minor": 36
+    },
+    {
+      "batch": "d5k-actionability-retest",
+      "calls": 3,
+      "statuses": [
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "input_tokens": 13965,
+      "output_tokens": 2097,
+      "price_card_minor": 6
+    }
+  ],
+  "cap_minor": 500,
+  "original_reservation_rows": 82,
+  "original_reserved_minor": 745,
+  "effective_reserved_minor": 487,
+  "available_to_reserve_minor": 13,
+  "settlement_d5g_d5h_minor": 89,
+  "historical_retained_minor": 150
+}

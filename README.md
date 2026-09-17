@@ -10,8 +10,13 @@
 |---|---|---|---|
 | [P0：结构化内容生成器](projects/00-structured-content-generator/) | 将不稳定模型文本变成可校验学习笔记 JSON | Python、Pydantic、JSON Schema、HTTPX、Prompt 评估 | 90 测试通过；10 例固定评估；Schema 100%；人工事实支持率 97.3% |
 | [P1：带引用知识库问答](projects/01-cited-rag/) · [公开证据页](https://rorinhoon-bot.github.io/ai-application-portfolio/) | 基于固定 Python 官方文档回答，并给出程序绑定引用 | FastAPI、Qdrant、Hybrid RRF、OpenTelemetry、GitHub Actions/Pages | 新20题 `Recall@5` 95%；引用绑定 100%；发布门 14/14；公开静态证据可核验 |
-| [P2：LangGraph 研究报告工作流](projects/02-agent-research-workflow/) | 将技术选型研究做成可暂停、恢复、人工批准的工作流 | LangGraph、SQLite checkpoint、Tool Calling、幂等导出 | 144 测试通过；12/12 固定案例；4.8/5 人工报告评分；SVG 演示 |
-| [P3：本地 MCP 安全工具服务](projects/03-mcp-tool-server/) | 受限笔记检索与人工确认任务创建 | MCP、SQLite、Windows HANDLE、状态机 | 240 测试；C 评估 11/11；D-6 评估 40/40；stdio 演示 8/8 |
+| [P2：LangGraph 研究报告工作流 V2](projects/02-agent-research-workflow/) | 将技术选型研究做成可暂停、恢复、人工批准的工作流 | LangGraph、SQLite checkpoint、模型适配器、预算账本、幂等导出 | 266项离线回归；双审批；真实内容验收未通过，保留失败记录 |
+| [P3：MCP 安全工具服务 V2](projects/03-mcp-tool-server/) | 默认只读的受控工具与调用审计 | MCP stdio、严格输入输出、快照哈希、Windows HANDLE | 254通过、9跳过；V2固定评估16/16；V1证据保留 |
+| [P1-P2-P3：可信研究与交付平台](integrations/graduation/) | 将可追溯资料、审批、MCP调用与报告交付关联 | 隔离适配器、持久化恢复、双审批、收据复核 | 离线端到端18/18；独立包复核28/28；合成资料与脚本模型 |
+
+P1已发布版本保持原样。P2真实模型首批六题为2份有限批准、4份拒绝；修复后三题为2份有限批准、1份拒绝，不能以工作流测试替代内容质量。P2原项目预算永久封顶5元，保守占用417/500分、调用容量109/109；本次整合及发布验证不新增真实调用。
+
+最新交付范围、隐私过滤与版本差异见[发布说明](docs/integration/PUBLICATION.md)。仅发布源码、锁定依赖、必要夹具、测试、脱敏结果和演示；开发工作树全量清单、内部学习档案、密钥、运行数据库和模型资产不进入此次提交。实现包含助手协作，学生独立设计、讲解与人工内容评价仍需单独证据。
 
 ## 推荐阅读顺序
 

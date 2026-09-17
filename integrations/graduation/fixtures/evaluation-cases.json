@@ -1,0 +1,14 @@
+{
+  "version": "graduation-evaluation-v1",
+  "frozen_before_final_regression": true,
+  "categories": {
+    "workflow": ["test_start_pauses_without_model_tools_or_report", "test_request_rejection_or_cancel_no_tools_or_export", "test_report_reject_does_not_export", "test_delivery_before_approval_rejected"],
+    "retrieval": ["test_p1_actual_parser_retrieval_candidates_and_empty"],
+    "tool_safety": ["test_snapshot_tamper_blocks_before_resume", "test_extra_snapshot_member_rejected", "test_metadata_tamper_rejected", "test_invalid_run_path", "test_p1_unknown_fields_fail", "test_bridge_schema_and_snapshot_drift", "test_receipt_tampering_blocks_delivery", "test_cli_rejects_traversal_without_opening_run"],
+    "recovery_idempotency": ["test_full_real_pipeline_checkpoint_reopen_and_idempotent_delivery", "test_mcp_failure_stops_graph_without_report", "test_process_crash_after_publish_recovers_once", "test_atomic_delivery_publication_is_no_replace"]
+  },
+  "content_quality": {"status": "not_evaluated", "reason": "Scripted model; P2 real content acceptance remains failed"},
+  "expected_failed": 0,
+  "expected_skipped": 0,
+  "expected_total": 18
+}

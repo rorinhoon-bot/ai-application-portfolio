@@ -1,0 +1,8 @@
+{
+  "version": "graduation-original-fixtures-v1",
+  "provenance": "Original synthetic designs; initial fixture heading anchor correction before evaluation freeze",
+  "files": {
+    "graph-plan.html": "a8850acf29dbd55f6111d903b65b4f434e53d8e3f955a087032a73509c9ccd1c",
+    "chain-plan.html": "43c4c287a458a8e2e02612c39cc6f699f170e33292f0d07b883916817887d42a"
+  }
+}

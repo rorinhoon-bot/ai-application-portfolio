@@ -1,0 +1,246 @@
+{
+  "schema_version": "p2-final-regression-review-v1",
+  "as_of": "2026-09-16",
+  "planned_cases": 6,
+  "attempted_cases": 6,
+  "completed_after_assistant_review": 2,
+  "rejected_after_assistant_review": 4,
+  "not_run": 0,
+  "dataset_role": "regression, not unseen holdout",
+  "dataset_sha256": "ffe5203a23b7ff093f30025a0fa245edd94715007756324f91107c1ee087fb98",
+  "content_acceptance": "NOT_PASSED",
+  "semantic_atomic_fact_support": "N/A_NOT_EXHAUSTIVELY_ANNOTATED",
+  "reviewer": "Codex assistant under user delegation, not independent human",
+  "usage": {
+    "calls": 18,
+    "successful_calls": 18,
+    "input_tokens": 87471,
+    "output_tokens": 12732,
+    "price_card_minor": 40
+  },
+  "latest_user_actual_cny": "1.44",
+  "latest_user_actual_requests": 156,
+  "user_bill_precedes_this_batch": true,
+  "effective_total_reserved_minor": 441,
+  "total_cap_minor": 500,
+  "total_reservation_rows": 100,
+  "existing_call_cap": 100,
+  "reports": [
+    {
+      "case_id": "selection-typed-output",
+      "status": "FAILED",
+      "model_review_findings": [
+        "The langgraph state-model cell cites evidence_id 'lg-01#icon-icon-download-size-20-install', whose excerpt is only an install snippet plus a hello-world StateGraph/MessagesState example. The claim that this '属于状态化工作流编排的状态建模，而非以 Pydantic 模型为中心的校验式结构化输出' asserts a negative about LangGraph's structured-output capability that the cited excerpt does not establish; the excerpt shows only the hello-world graph, so the '而非...' contrast is unsupported by this evidence (the limitation section separately and correctly notes this is unknown, so the cell claim overreaches relative to its own caveat).",
+        "The pydantic-ai recovery cell claims '官方支持 Temporal、DBOS、Prefect、Restate 与 AWS Lambda durable functions 五种持久执行方案，另有 Kitaru、Apache Airflow 等外部集成.' The evidence excerpt does support five officially supported solutions and lists Kitaru and Apache Airflow as 'Additional external SDK integrations', so the official-vs-external distinction is preserved; however the cell's caveat '持久执行依赖上述外部引擎' is acceptable. No blocking issue here beyond confirming the official/external split is stated correctly."
+      ],
+      "report_hash": "675ae59229827ed734dce15d3798f38b4af15e707a9c9cdf028d53678fe95fd0",
+      "artifact_id": null,
+      "artifact_sha256": null,
+      "decision_status": "conditional",
+      "recommendation": "pydantic-ai",
+      "cells": 6,
+      "valid_reference_count": 7,
+      "references": 7,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "selection-typed-output",
+        "decision": "reject",
+        "report_raw_response_sha256": "a0ebbf6d3caaf3e8af6d104a865aaa8ccd8b115eaace932b49c3317190b5be0f",
+        "reviewer": "Codex assistant under user delegation",
+        "blocking_issue": "Report says omitting output_type forces structured data. pa-01 excerpt explicitly says when no output type is specified (or str included), plain text responses are accepted; structured output is forced only when str is not among output types. This reverses a decisive requirement and was missed by model review.",
+        "evidence_id": "pa-01#structured-output-data-structured-output",
+        "gold_unchanged": true
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    },
+    {
+      "case_id": "selection-explicit-graph",
+      "status": "FAILED",
+      "model_review_findings": [
+        "Evidence cell langgraph/state-model cites evidence_id 'lg-01#icon-icon-download-size-20-install', but the supplied excerpt for that id is the install/hello-world snippet; the claim asserts StateGraph/MessagesState/add_node/add_edge/compile/invoke behavior. The excerpt does contain that Python hello-world code, so the claim is largely supported, but the cited section id ('icon-icon-download-size-20-install') does not match the described content, indicating a locator mismatch that should be corrected.",
+        "Evidence cell pydantic-ai/recovery claims the docs list 'Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions 等官方支持的持久执行方案'. The excerpt does say 'Pydantic AI officially supports five durable execution solutions' and lists those five, so this is supported; however the claim omits that the excerpt also lists 'Additional external SDK integrations: Kitaru, Apache Airflow', which are explicitly not official. The summary's phrasing '依赖 Temporal/DBOS/Prefect/Restate 等外部引擎的持久执行' is acceptable but should distinguish official vs additional external integrations to avoid overstating.",
+        "Executive summary states PydanticAI's official evidence '也覆盖三个维度' (also covers all three dimensions). The recovery cell is supported by pa-03, but the human-approval cell (pa-02) is about tool-call approval, not graph-node pause/resume, and the state-model cell (pa-01) is about structured output, not named workflow nodes/edges. Saying it 'covers three dimensions' is defensible only if the dimensions are read as generic; the summary should not imply PydanticAI has equivalent graph-node pause/resume or named-node/edge state modeling, which the limitations do correctly note.",
+        "The recommendation 'langgraph' with decision_status 'conditional' is consistent with the evidence and limitations. No blocking unsupported claim found there.",
+        "Limitations correctly state that unknown evidence is not negative evidence and that no performance/pricing/production-readiness evidence is provided. No scope error found.",
+        "The proposed failure-recovery experiment is framed as a next-step verification, not a completed test, which is appropriate."
+      ],
+      "report_hash": "1675832e3424dd0b83a09c116892876de5dfbad43e0f5305f4ee5db035cddb93",
+      "artifact_id": null,
+      "artifact_sha256": null,
+      "decision_status": "conditional",
+      "recommendation": "langgraph",
+      "cells": 6,
+      "valid_reference_count": 7,
+      "references": 7,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "selection-explicit-graph",
+        "decision": "reject",
+        "report_raw_response_sha256": "3980bfa4dfa0e59b8e1de126014310e79e2c88e897e20d3a6578f7501b2d9e64",
+        "reviewer": "Codex assistant under user delegation",
+        "blocking_issue": "Report repeatedly extends missing-read evidence to whole snapshot. Proposed experiment expects the node to continue at the pause point, whereas supplied frozen interrupt rules specify node restart from beginning; proposed criterion could reject correct behavior. Also avoid promoting development SqliteSaver as production endorsement.",
+        "model_findings_contain_false_positives": true,
+        "gold_unchanged": true
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    },
+    {
+      "case_id": "selection-tool-approval",
+      "status": "COMPLETED",
+      "model_review_findings": [
+        "The pydantic-ai recovery cell claims official support for 'AWS Lambda durable functions' among the five durable execution solutions, but the evidence excerpt lists it as a link to pydantic.dev/docs/ai/harness/aws-lambda/ rather than a co-maintained vendor integration like Temporal/DBOS/Prefect/Restate; the claim of official support for that specific item is not clearly established by the excerpt.",
+        "The pydantic-ai recovery cell and the executive summary/limitations state that PydanticAI 'officially supports' five durable execution solutions, but the evidence excerpt distinguishes 'officially supports five durable execution solutions, co-maintained by the Pydantic and vendor teams' from 'Additional external SDK integrations: Kitaru, Apache Airflow'; the report does not mention the additional external integrations, which is a scope omission that could mislead the student team about the full set of integrations.",
+        "The executive summary states '两者均未在证据中覆盖端点认证与敏感工具内部授权' (both lack evidence coverage of endpoint auth and sensitive-tool internal authorization), but the supplied evidence only contains an explicit warning about this for PydanticAI (pa-02); there is no equivalent evidence excerpt for LangGraph, so extending the same limitation to LangGraph is an unsupported transfer of a warning from one candidate to another.",
+        "The LangGraph human-approval cell caveat says '文档未说明审批决策能否直接基于工具参数做细粒度判定' and the limitations say LangGraph evidence does not show fine-grained approval based on tool arguments; this is acceptable as an unknown/limitation, but the executive summary's stronger phrasing that 'LangGraph 的 interrupt 更偏图级暂停/恢复，按参数判定需自行在节点内实现' asserts a positive implementation requirement not directly stated in the supplied evidence excerpts.",
+        "The LangGraph state-model cell cites evidence_id 'lg-01#icon-icon-download-size-20-install' and claims StateGraph/MessagesState state modeling with schema definition, node/edge addition, compilation, and state passing between nodes; the excerpt does show this hello-world example, so the claim is supported, but the caveat correctly notes it is an introductory example and does not establish validation strength or structured-output constraints.",
+        "The pydantic-ai state-model cell claim that output_type supports '标量、列表/字典、dataclass、Pydantic 模型及联合类型' and uses Pydantic to build JSON schema and validate model-returned data is supported by pa-01; the caveat that it does not describe cross-step session state or graph-style state management is a reasonable limitation.",
+        "The pydantic-ai human-approval cell claim that approval can be triggered by tool arguments, dependencies, or message history via requires_approval=True or raising ApprovalRequired is supported by pa-02; the caveat correctly reproduces the evidence's warning that approval is not an authorization boundary against untrusted clients and that endpoint auth and sensitive-tool internal authorization must be implemented separately.",
+        "The LangGraph recovery cell claim that checkpointer persists single-thread graph state snapshots and is officially listed for conversation continuity, human-in-the-loop, time travel, and fault tolerance, and that interrupt docs require a persistent checkpointer in production, is supported by lg-03 and lg-02; the caveat that no specific persistence backend or recovery latency data is given is a reasonable limitation.",
+        "The recommendation of pydantic-ai as a conditional starting choice is consistent with the supplied evidence: PydanticAI's approval trigger points directly on tool arguments/args_validator and its output_type + Pydantic validation matches the 'validated structured result' requirement, while LangGraph's interrupt is more graph-level pause/resume. The decision_status 'conditional' and the listed preconditions are appropriate given the evidence gaps.",
+        "The proposed approval-bypass test in the limitations is framed as a next-step verification experiment, not as a completed test, which is appropriate; it does not assert factual results."
+      ],
+      "report_hash": "d417a2dc58f0b5e6f099538896eca4d40501d3f5198175c96da665565af775e3",
+      "artifact_id": "1fbd13170b23f3f0caf380891eb90eec3d23ced36c162b3dc0e11f30e110e466",
+      "artifact_sha256": "33027bfe551cfe67ced7d731ee785ca328824544d76e91fd27eb72f4a18f2e12",
+      "decision_status": "conditional",
+      "recommendation": "pydantic-ai",
+      "cells": 6,
+      "valid_reference_count": 7,
+      "references": 7,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "selection-tool-approval",
+        "decision": "approve-limited-brief-with-notes",
+        "report_raw_response_sha256": "ffec041b68590116a32c5aca175cf5026f92de5ee68c77b78bd62ddb83f3393a",
+        "reviewer": "Codex assistant under user delegation",
+        "rationale": [
+          "pa-03 expressly includes AWS Lambda among five officially supported options; omission of additional external SDKs is not a false claim of official support.",
+          "pa-01 and pa-02 directly support typed outputs and argument-dependent ApprovalRequired; conditional choice follows user priorities.",
+          "Other review entries explicitly acknowledge supported claims or nonblocking points."
+        ],
+        "required_reading_notes": [
+          "Persistent engine is needed only if durable execution later becomes a requirement; it is not a prerequisite for current typed-output and tool-approval use.",
+          "Node implementation suggestion is engineering inference, not proof that LangGraph lacks argument-based patterns.",
+          "Bypass experiment must test unauthorized sensitive side effects, not merely function entry: authorization itself may run inside that function. Endpoint authentication and authorization are separately required by user."
+        ],
+        "aggregate_content_acceptance": false,
+        "model_findings_preserved": true
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    },
+    {
+      "case_id": "gap-price-performance",
+      "status": "COMPLETED",
+      "model_review_findings": [
+        "The langgraph state-model cell cites evidence_id 'lg-01#icon-icon-download-size-20-install', but the supplied evidence excerpt for that id is an installation/hello-world snippet; the claim that it shows 'StateGraph(MessagesState) 定义图状态、添加节点与边并编译执行' is supported by the excerpt, so no finding here — but the caveat correctly notes it is a hello-world example and does not establish full state schema semantics or concurrent state-merge rules.",
+        "The langgraph human-approval cell claims interrupt '保存当前状态并等待外部输入，恢复时通过 Command(resume=...) 将审批结果传回节点；使用前提是配置 checkpointer 与 thread_id'. The supplied lg-02 excerpt supports pausing, saving state, waiting, and resuming with input, and lists checkpointer and thread ID as requirements; however the excerpt does not explicitly show 'Command(resume=...)' as the resume mechanism (it says 'resume execution with input' and 'Command({ resume: ... })' appears only in the JS snippet). This is a minor over-specification but not a blocking unsupported claim.",
+        "The langgraph recovery cell cites 'lg-03#troubleshooting-common-issues' for the claim that 'MemorySaver/InMemorySaver 仅存于内存、进程重启即丢失，生产应使用 PostgresSaver 或 SqliteSaver 等持久化 checkpointer'. The supplied excerpt supports this. The caveat about unbounded checkpoint growth increasing latency and storage costs is also supported by the excerpt. No finding.",
+        "The pydantic-ai recovery cell claims '官方支持 Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions 等五种持久执行方案，另有 Kitaru、Apache Airflow 等外部集成'. The supplied pa-03 excerpt supports this distinction between officially supported solutions and additional external SDK integrations. No finding.",
+        "The executive_summary states '所供证据中没有任何性能基准、延迟测量或价格/计费信息，因此成本与延迟两个决定性约束均无法建立'. This is consistent with the supplied evidence excerpts, which contain no performance or pricing data. No finding.",
+        "The limitations correctly state that unknown evidence is not negative evidence and that the frozen snapshot's lack of performance/pricing data does not mean the frameworks lack such capabilities. This is consistent with the request's hard constraints. No finding.",
+        "The limitations include a proposed experiment (对照实验 with 100 concurrent users, p95 latency, cost measurement). This is a recommendation to verify, not a factual claim of completed tests, so it is acceptable. No finding.",
+        "The report's decision_status is 'insufficient_evidence' and recommendation is null, which is consistent with the request's allow_insufficient_evidence=true and the absence of performance/pricing evidence. No finding.",
+        "No cell or limitation transfers a warning about one candidate to another without evidence. The pydantic-ai human-approval caveat about approval not being an authorization boundary is correctly scoped to pydantic-ai and supported by pa-02. No finding.",
+        "The report does not claim the whole frozen snapshot or framework lacks evidence; it correctly states that the supplied read evidence for this run is insufficient for the performance/pricing decision. No finding."
+      ],
+      "report_hash": "f0548c17cb496e111261ba6afffc5f794d0be6d77f7a3a70a3142887fba3cec4",
+      "artifact_id": "47717a6f00420c025664e8add2e47d0fa2e87e39ee71c646e1e0384f90cad82c",
+      "artifact_sha256": "89ba29df416eca7f2b43550b2bd479cb449a9e4ea69ab3a03a439edd82442695",
+      "decision_status": "insufficient_evidence",
+      "recommendation": null,
+      "cells": 6,
+      "valid_reference_count": 7,
+      "references": 7,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "gap-price-performance",
+        "decision": "approve-limited-brief-with-notes",
+        "report_raw_response_sha256": "71229f40a28c18059cc78a81e83813b8d20e39043ab8db1b24326886a45062db",
+        "reviewer": "Codex assistant under user delegation",
+        "rationale": [
+          "All reviewer entries describe supported claims or explicitly nonblocking observations.",
+          "The actual Python excerpt includes the Command(resume=...) comment; locator and full excerpt hashes match.",
+          "No unsupported latency or cost winner is chosen; proposed benchmark is explicitly not executed."
+        ],
+        "required_reading_notes": [
+          "Define active system latency separately from human waiting and total elapsed time before any benchmark.",
+          "SqliteSaver is described upstream as local development storage; this brief is not a production endorsement.",
+          "Suggested load tests have not been run or separately authorized to incur new fees."
+        ],
+        "model_findings_preserved": true,
+        "new_model_calls": 0
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    },
+    {
+      "case_id": "gap-compliance",
+      "status": "FAILED",
+      "model_review_findings": [
+        "The langgraph state-model cell cites evidence_id 'lg-01#icon-icon-download-size-20-install', whose excerpt is only an install/hello-world snippet; it does show StateGraph/MessagesState and a node returning a state-update dict, so the claim is supported, but the cited section is an install section rather than a state-modeling section — the claim should be scoped to what the hello-world example actually demonstrates.",
+        "The pydantic-ai recovery cell claims official support for 'five durable execution solutions' including 'AWS Lambda durable functions'; the excerpt lists Temporal, DBOS, Prefect, Restate, and AWS Lambda durable functions as officially supported, so the count is accurate, but the claim omits that the excerpt also lists additional external SDK integrations (Kitaru, Apache Airflow) — the cell should distinguish official integrations from additional external integrations rather than implying the five are the complete set.",
+        "The executive_summary states the frozen evidence 'cannot directly prove either candidate satisfies regulatory compliance proof or isolation from untrusted tenants' and attributes this to authentication/authorization boundary issues; this is a scope conclusion about the two hard requirements, not a claim that the whole snapshot lacks evidence, so it is acceptable — but the summary should explicitly note that unknown evidence is not negative evidence and that the snapshot simply contains no compliance/isolation evidence for either candidate.",
+        "The limitations list says 'the next verification' is a minimal multi-tenant test environment; this is a proposed experiment, not a completed test, and the report correctly labels it as not yet executed — no finding, but the recommendation field is null while the limitations contain the proposed next step, which is a minor structural inconsistency rather than a factual error.",
+        "The langgraph human-approval cell cites 'lg-02#pause-using-interrupt' and claims interrupt pauses execution, saves state, and returns the resume value; the excerpt supports this, and the caveat about node re-execution and bare try/except is supported by 'lg-02#rules-of-interrupts' — however, the cell's evidence_ids do not include 'lg-02#rules-of-interrupts', so the caveat's supporting evidence is not cited in the cell.",
+        "The pydantic-ai human-approval cell correctly cites the warning that approval is not an authorization boundary against an untrusted client; the claim and caveat are supported by 'pa-02#human-in-the-loop-tool-approval', and the report does not transfer this warning to langgraph — no finding.",
+        "The langgraph recovery cell cites 'lg-03#checkpointer-vs-store' and 'lg-02#pause-using-interrupt' for checkpointer persistence, short-term memory, human-in-the-loop, time travel, and fault tolerance; the excerpt supports these uses, but the claim that 'production should use a persistent checkpointer' is supported by 'lg-02#pause-using-interrupt' rather than 'lg-03#checkpointer-vs-store', so the evidence attribution is slightly imprecise.",
+        "The pydantic-ai state-model cell claims output_type supports scalars, lists, dicts, TypedDict, dataclass, Pydantic models, and type unions, and uses Pydantic to build JSON schema and validate model returns; the excerpt supports this, and the caveat that it does not describe cross-turn state persistence is a reasonable limitation — no finding.",
+        "The executive_summary says the evidence supports 'partial capability descriptions' for both candidates across all three dimensions; this is consistent with the cells, but the summary should avoid implying the dimensions are fully covered when the state-model evidence for langgraph is only a hello-world example and the recovery evidence for both candidates lacks configuration/recovery-semantics detail."
+      ],
+      "report_hash": "89c6fa127b46bdf3257c268e73ba2f9dcc058787ab0e68ea2ac23482d7c461ff",
+      "artifact_id": null,
+      "artifact_sha256": null,
+      "decision_status": "insufficient_evidence",
+      "recommendation": null,
+      "cells": 6,
+      "valid_reference_count": 7,
+      "references": 7,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "gap-compliance",
+        "decision": "reject",
+        "report_raw_response_sha256": "66167cabaf154f01b49c235bc108a3a123776c00f2ea9c143ae82b33de81238c",
+        "reviewer": "Codex assistant under user delegation",
+        "blocking_issue": "LangGraph human-approval caveat asserts node restart and bare try/except behavior but only cites pause-using-interrupt; supporting rules-of-interrupts is not cited in that cell. The first limitation also overstates lack of endpoint-authentication discussion despite pa-02 expressly discussing the requirement, and regulatory compliance is broader than authentication/authorization alone.",
+        "model_findings_contain_false_positives": true,
+        "gold_unchanged": true
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    },
+    {
+      "case_id": "gap-exactly-once",
+      "status": "FAILED",
+      "model_review_findings": [
+        "The pydantic-ai recovery cell claims official support for 'AWS Lambda durable functions' as one of five durable execution solutions, but the evidence excerpt lists it as 'AWS Lambda durable functions' with a link to pydantic.dev/docs/ai/harness/aws-lambda/ — this is consistent with the excerpt, so no finding; however the cell's claim that these are '官方支持' (officially supported) is supported by the excerpt's wording 'officially supports five durable execution solutions'. No blocking issue.",
+        "The pydantic-ai recovery cell omits the 'Additional external SDK integrations' (Kitaru, Apache Airflow) that the evidence excerpt explicitly distinguishes from the five officially supported solutions. The claim says '官方支持 Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions 等方案' — the '等' (etc.) could be read as including the additional external integrations, which the evidence distinguishes as not officially supported. This is a minor scope ambiguity but not a blocking unsupported claim since the five named are correctly identified as official.",
+        "The LangGraph state-model cell cites evidence_id 'lg-01#icon-icon-download-size-20-install' for a claim about StateGraph/MessagesState state modeling. The evidence excerpt is an installation section that includes a hello-world example using StateGraph, MessagesState, compile(), and invoke(). The claim accurately describes what the example shows. No blocking issue.",
+        "The executive summary states the core guarantee '在本次供给证据中没有任何一条给出恰好一次（exactly-once）语义、幂等键、派发与回执的原子性、或崩溃恢复去重机制的说明' — this is a claim about the supplied evidence, which is accurate. The limitations correctly note that unknown only describes this run's supplied read evidence and does not mean the whole frozen snapshot or framework lacks the capability. No blocking issue.",
+        "The limitations list includes a proposed fault-injection experiment as '下一步验证' (next-step verification). This is framed as a recommendation, not a completed test, which is appropriate. No blocking issue.",
+        "The LangGraph human-approval cell claims interrupt() '暂停图执行、保存状态并等待恢复输入，恢复值成为 interrupt() 的返回值；使用需 checkpointer 与 thread_id'. The evidence excerpt supports all of these points. No blocking issue.",
+        "The LangGraph recovery cell claims Checkpointer persists '单线程的图状态快照' and Store is for '跨线程的应用自定义键值数据'. The evidence table supports this. The caveat correctly notes the evidence does not describe crash recovery semantics for the dispatch-before-receipt window. No blocking issue.",
+        "The pydantic-ai human-approval cell claims requires_approval=True or ApprovalRequired requires human approval, and that the docs warn approval is not an authorization boundary against untrusted clients. The evidence excerpt supports both. No blocking issue.",
+        "The pydantic-ai state-model cell claims output_type supports scalars, lists, dicts, TypedDict, dataclass, Pydantic models, and unions, and uses Pydantic for JSON schema and validation. The evidence excerpt supports this. No blocking issue.",
+        "The executive summary and limitations correctly state that the supplied evidence does not establish the exactly-once guarantee for paid external operations after a crash, including the dispatch-before-receipt window. This is consistent with the evidence. No blocking issue.",
+        "The decision_status is 'insufficient_evidence', which is appropriate given the evidence gap. No blocking issue."
+      ],
+      "report_hash": "39b5316f24426dce9cb9aa53cdb264f22b366b5c22fbf2d0e8914f877527dbfe",
+      "artifact_id": null,
+      "artifact_sha256": null,
+      "decision_status": "insufficient_evidence",
+      "recommendation": null,
+      "cells": 6,
+      "valid_reference_count": 6,
+      "references": 6,
+      "has_next_step": true,
+      "assistant_review": {
+        "case_id": "gap-exactly-once",
+        "decision": "reject",
+        "report_raw_response_sha256": "b7ffced3fa016a61e09ab1282d85e289d630e8444675fd8a5725ee562fcd78ac",
+        "reviewer": "Codex assistant under user delegation",
+        "blocking_issue": "Proposed pass criterion calls at-most-one side effect exactly-once. Zero effects also satisfies at-most-one; it cannot establish exactly-once. A single tested crash window cannot prove a universal guarantee. The insufficiency conclusion is reasonable, but the actionable experiment contains a key semantic error missed by model review.",
+        "model_findings_contain_false_positives": true,
+        "gold_unchanged": true
+      },
+      "model_config_hash": "e7865ee949e0e0801965f439a3ee2b06232b64b6405ce09d5915a0e9527e8c27"
+    }
+  ]
+}

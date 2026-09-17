@@ -1,3 +1,5 @@
+> **P3 V2（2026-09-16）**：默认只读的严格 MCP stdio 服务已实现。新增 `search_notes`/`read_note`、冻结快照与字节哈希、结构化结果、开始/结束审计、有限读重试；写意图仅显式开启，批准仍在Tool外。当前完整回归263项（254通过、9跳过），新增固定评估16/16。V1旧实现与历史证据保留。
+> V2设计与命令：[PRD](docs/v2/01-PRD.md)、[架构](docs/v2/02-ARCHITECTURE.md)、[演示及失败](docs/v2/06-DEMO-AND-FAILURES.md)。升级开发基线为 `dcb164e95059b060ffd6aebbaa093a7626177614`；公开整理由 `codex/portfolio-p2-p3-integration`承载，下文main与completed为V1历史口径。P2内容质量未通过，不能用工具测试代替报告质量。
 # P3：本地 MCP 笔记检索与受控任务创建服务
 
 系统集成作品。P3 已完成：只读 `search_notes`、受控 `create_task`、Tool 外人工确认、只读 Resource、stdio 与受限本机回环 streamable-HTTP。默认 stdio；HTTP 必须显式开启且只允许 `127.0.0.1`/`::1`，不公开部署、不调模型、不读私人笔记。当前验收：240 项 unittest（231 通过 + 9 默认跳过）、C 评估 11/11、D-6 固定离线评估 40/40、stdio 演示 8/8。
@@ -55,6 +57,7 @@ python -m unittest discover -s tests -v
 - [计划架构与安全数据流](docs/ARCHITECTURE.md)
 - [依赖提案（已安装 `mcp==2.0.0`）](docs/DEPENDENCIES.md)
 - [固定离线评估方案](docs/EVALUATION_DATA.md)
+- [V2开发交接与安全边界](docs/v2/05-HANDOFF.md)
 - [关键取舍](DECISIONS.md)
 - [当前状态](STATUS.md)
 

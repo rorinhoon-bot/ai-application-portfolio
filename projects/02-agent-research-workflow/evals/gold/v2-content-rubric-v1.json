@@ -1,0 +1,21 @@
+{
+  "schema_version": "v2-content-rubric-v1",
+  "purpose": "Post-run scoring rubric only. It is never loaded by production graph or model prompt.",
+  "scoring": {
+    "citation_identity_valid": "Every cited evidence ID is in current run read set and locator/hash resolves.",
+    "semantic_support": "Human reviewer marks every verifiable factual claim as supported, partially supported, or unsupported by cited excerpt.",
+    "scope": "Candidate IDs, dimensions, source snapshot and hard constraints are preserved.",
+    "gap_handling": "Declared unknown pairs are not treated as negative evidence and do not yield unconditional recommendation.",
+    "serious_error": "Invented capability, unsupported performance/pricing claim, ignored hard constraint, or version confusion that changes recommendation.",
+    "delivery": "Completed reports / all attempted reports; failures, budget stops and rejected reports remain in denominator."
+  },
+  "thresholds": {
+    "citation_identity_valid_rate": 1.0,
+    "semantic_support_rate": 0.9,
+    "serious_error_count": 0,
+    "requirement_coverage_rate": 1.0,
+    "known_gap_handling_rate": 1.0
+  },
+  "human_review": ["clarity", "evidence_use", "comparison_fairness", "actionability", "limitations"],
+  "prohibitions": ["Do not score by matching a fixed recommendation.", "Do not edit this rubric after seeing held-out outputs.", "Do not feed this file to model or production graph."]
+}

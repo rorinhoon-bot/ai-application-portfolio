@@ -1,0 +1,33 @@
+{
+  "schema_version": "p2-budget-audit-v1",
+  "historical_conservative_debit_minor": 150,
+  "latest_dashboard_observation_minor": 80,
+  "dashboard_is_not_current_spend": true,
+  "batches": {
+    "d5g-approval-retest": {
+      "statuses": {
+        "succeeded": 12
+      },
+      "input_tokens": 52477,
+      "output_tokens": 5181,
+      "known_price_card_cost_minor": 23,
+      "reserved_minor": 88
+    },
+    "d5h-retrieval-regression": {
+      "statuses": {
+        "succeeded": 36
+      },
+      "input_tokens": 148216,
+      "output_tokens": 16153,
+      "known_price_card_cost_minor": 66,
+      "reserved_minor": 259
+    }
+  },
+  "total": {
+    "reservations_including_history": 49,
+    "reserved_minor": 497,
+    "remaining_reservable_minor": 3,
+    "input_tokens_reserved": 996399,
+    "output_tokens_reserved": 144000
+  }
+}

@@ -1,0 +1,31 @@
+test_call_path_traversal_rejected_before_read (test_verify_bundle.BundleTests.test_call_path_traversal_rejected_before_read) ... ok
+test_cli_isolated_read_only_exit_codes (test_verify_bundle.BundleTests.test_cli_isolated_read_only_exit_codes) ... ok
+test_delivery_report_byte_tamper (test_verify_bundle.BundleTests.test_delivery_report_byte_tamper) ... ok
+test_directory_instead_of_receipt (test_verify_bundle.BundleTests.test_directory_instead_of_receipt) ... ok
+test_duplicate_call_id (test_verify_bundle.BundleTests.test_duplicate_call_id) ... ok
+test_duplicate_gate (test_verify_bundle.BundleTests.test_duplicate_gate) ... ok
+test_duplicate_json_key (test_verify_bundle.BundleTests.test_duplicate_json_key) ... ok
+test_extra_env_file_not_read (test_verify_bundle.BundleTests.test_extra_env_file_not_read) ... ok
+test_fabricated_quality_pass_rejected (test_verify_bundle.BundleTests.test_fabricated_quality_pass_rejected) ... ok
+test_manifest_artifact_path_never_followed (test_verify_bundle.BundleTests.test_manifest_artifact_path_never_followed) ... ok
+test_missing_approval (test_verify_bundle.BundleTests.test_missing_approval) ... ok
+test_nonfinite_json (test_verify_bundle.BundleTests.test_nonfinite_json) ... ok
+test_oversized_file (test_verify_bundle.BundleTests.test_oversized_file) ... ok
+test_receipt_extra (test_verify_bundle.BundleTests.test_receipt_extra) ... ok
+test_receipt_missing (test_verify_bundle.BundleTests.test_receipt_missing) ... ok
+test_receipt_self_hash_tamper (test_verify_bundle.BundleTests.test_receipt_self_hash_tamper) ... ok
+test_recorded_bundle_and_anchor_read_only (test_verify_bundle.BundleTests.test_recorded_bundle_and_anchor_read_only) ... ok
+test_rehashed_approval_other_run (test_verify_bundle.BundleTests.test_rehashed_approval_other_run) ... ok
+test_rehashed_approval_wrong_expected_hash (test_verify_bundle.BundleTests.test_rehashed_approval_wrong_expected_hash) ... ok
+test_rehashed_begin_arguments_mismatch (test_verify_bundle.BundleTests.test_rehashed_begin_arguments_mismatch) ... ok
+test_rehashed_receipt_wrong_snapshot (test_verify_bundle.BundleTests.test_rehashed_receipt_wrong_snapshot) ... ok
+test_report_byte_tamper (test_verify_bundle.BundleTests.test_report_byte_tamper) ... ok
+test_summary_counts_mismatch (test_verify_bundle.BundleTests.test_summary_counts_mismatch) ... ok
+test_type_confusion_bool_cost (test_verify_bundle.BundleTests.test_type_confusion_bool_cost) ... ok
+test_unanchored_is_explicit (test_verify_bundle.BundleTests.test_unanchored_is_explicit) ... ok
+test_whole_bundle_forgery_requires_external_anchor (test_verify_bundle.BundleTests.test_whole_bundle_forgery_requires_external_anchor) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 1.698s
+
+OK

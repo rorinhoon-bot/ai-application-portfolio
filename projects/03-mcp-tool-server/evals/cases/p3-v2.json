@@ -1,0 +1,22 @@
+{
+  "version": "p3-v2-cases-1",
+  "provenance": "Original synthetic fixtures; frozen before implementation; behavior only",
+  "cases": [
+    {"id":"search-hit","tool":"search_notes","args":{"keyword":"检索"},"status":"ok","minimum_hits":1},
+    {"id":"search-empty","tool":"search_notes","args":{"keyword":"NO_MATCH_7654321"},"status":"ok","minimum_hits":0,"maximum_hits":0},
+    {"id":"empty","tool":"search_notes","args":{"keyword":""},"status":"error","error":"invalid-arguments"},
+    {"id":"number","tool":"search_notes","args":{"keyword":42},"status":"error","error":"invalid-arguments"},
+    {"id":"boolean","tool":"search_notes","args":{"keyword":true},"status":"error","error":"invalid-arguments"},
+    {"id":"unknown-field","tool":"search_notes","args":{"keyword":"检索","root":"notes"},"status":"error","error":"invalid-arguments"},
+    {"id":"traversal","tool":"search_notes","args":{"keyword":"../outside"},"status":"error","error":"invalid-arguments"},
+    {"id":"nfkc-traversal","tool":"search_notes","args":{"keyword":"．．／outside"},"status":"error","error":"invalid-arguments"},
+    {"id":"drive","tool":"search_notes","args":{"keyword":"C:\\outside"},"status":"error","error":"invalid-arguments"},
+    {"id":"url","tool":"search_notes","args":{"keyword":"https://example.invalid"},"status":"error","error":"invalid-arguments"},
+    {"id":"shell","tool":"search_notes","args":{"keyword":"$(whoami)"},"status":"error","error":"invalid-arguments"},
+    {"id":"unknown-id","tool":"read_note","args":{"note_id":"0000000000000000"},"status":"error","error":"not-registered"},
+    {"id":"read-path","tool":"read_note","args":{"note_id":"../outside"},"status":"error","error":"invalid-arguments"},
+    {"id":"write-disabled","tool":"create_task","args":{"title":"复习","description":"读取证据"},"status":"error","error":"permission-denied"},
+    {"id":"approve-hidden","tool":"approve","args":{},"status":"error","error":"unknown-tool"},
+    {"id":"missing","tool":"search_notes","args":{},"status":"error","error":"invalid-arguments"}
+  ]
+}

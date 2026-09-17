@@ -1,0 +1,32 @@
+{
+  "schema_version": "v2-content-inputs-v1",
+  "source_snapshot_id": "snapshot-1855a50c906058faffe87039",
+  "purpose": "Post-run content evaluation inputs. Production code must not read this file.",
+  "request_defaults": {
+    "audience": "student engineering team",
+    "candidates": [
+      {"candidate_id": "langgraph", "name": "LangGraph", "scope_note": "stateful workflow orchestration"},
+      {"candidate_id": "pydantic-ai", "name": "PydanticAI", "scope_note": "typed agent application framework"}
+    ],
+    "dimensions": [
+      {"dimension_id": "state-model", "question": "What official evidence describes state or structured-output modeling?", "weight_percent": 34},
+      {"dimension_id": "human-approval", "question": "What official evidence describes a human approval boundary?", "weight_percent": 33},
+      {"dimension_id": "recovery", "question": "What official evidence describes persistence, recovery, or durable execution?", "weight_percent": 33}
+    ],
+    "hard_constraints": ["Use only supplied frozen evidence.", "Unknown evidence is not negative evidence.", "Do not infer performance, pricing, or production readiness."]
+  },
+  "cases": [
+    {"case_id": "dev-baseline", "split": "development", "research_question": "Compare both frameworks across all three dimensions for this fixed snapshot.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "dev-approval-boundary", "split": "development", "research_question": "Compare human approval mechanisms and state their authorization limits.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "dev-recovery-scope", "split": "development", "research_question": "Distinguish interrupt restart semantics from durable recovery claims.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "dev-structured-output", "split": "development", "research_question": "Compare state or structured output evidence without inferring performance.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "dev-evidence-limits", "split": "development", "research_question": "Write a limited brief that makes evidence gaps explicit.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "dev-weight-change", "split": "development", "research_question": "Reassess the same evidence with human approval as highest priority.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "holdout-no-unconditional-choice", "split": "holdout", "research_question": "Recommend only if every decisive claim has direct snapshot support.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "holdout-security-caveat", "split": "holdout", "research_question": "Explain why approval does or does not form an authorization boundary.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "holdout-restart-semantics", "split": "holdout", "research_question": "Report what restart after an interrupt means and what remains unknown.", "must_mark_unknown": ["pydantic-ai/recovery"]},
+    {"case_id": "holdout-typed-output", "split": "holdout", "research_question": "Compare typed output evidence while avoiding capability extrapolation.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "holdout-operator-review", "split": "holdout", "research_question": "Compare operator review before actions using only cited excerpts.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]},
+    {"case_id": "holdout-limited-brief", "split": "holdout", "research_question": "Produce a useful limited brief with no unsupported recommendation.", "must_mark_unknown": ["langgraph/state-model", "pydantic-ai/recovery"]}
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": "portfolio-publication-checks-v1",
+  "base_commit": "dfd2222a6adc4ecf514bbe95ffa5e1c9079e4c08",
+  "accepted": true,
+  "results": [
+    {
+      "name": "p1-readonly",
+      "command": "P1 V2 existing environment; 6 targeted test modules; socket audit block",
+      "exit_code": 0,
+      "wall_seconds": 9.16,
+      "summary": [
+        "77 passed in 7.03s"
+      ]
+    },
+    {
+      "name": "p2-full",
+      "command": "python -B -m pytest -q -p no:cacheprovider",
+      "exit_code": 0,
+      "wall_seconds": 91.258,
+      "summary": [
+        "266 passed in 89.97s (0:01:29)"
+      ]
+    },
+    {
+      "name": "bundle-tests",
+      "command": "python -I -B -m unittest discover -s integrations/graduation/verification_tests -v",
+      "exit_code": 0,
+      "wall_seconds": 1.916,
+      "summary": [
+        "Ran 28 tests in 1.652s",
+        "OK"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "python -B integrations/graduation/evaluate.py --output <new-result.json>",
+      "exit_code": 0,
+      "wall_seconds": 151.719,
+      "summary": [
+        "18/18; skipped=0"
+      ]
+    },
+    {
+      "name": "p3-full",
+      "command": "python -B -m unittest discover -s tests -p test_*.py",
+      "exit_code": 0,
+      "wall_seconds": 40.459,
+      "summary": [
+        "Ran 263 tests in 32.282s",
+        "OK (skipped=9)"
+      ]
+    }
+  ],
+  "real_model_calls": 0,
+  "new_dependency_installations": 0,
+  "content_quality": "not_accepted",
+  "p1_business_files_changed": false,
+  "website_or_deployment_files_changed": false,
+  "retained_failed_attempts": [
+    "checks.json",
+    "p2-final.json"
+  ],
+  "corrections": [
+    "Used existing P1 V2 environment for dependencies already required by published P1.",
+    "Preserved Git blob bytes for synthetic sources and generated demos; protected checkout newlines with .gitattributes."
+  ],
+  "limitations": [
+    "P1 tests are 77 targeted offline tests, not the full P1 V2 suite.",
+    "P3 9 platform tests remain skipped.",
+    "Integration uses fixture-keyword retrieval and scripted model.",
+    "Secret scanning is heuristic plus scoped manual classification; it is not a guarantee against every possible secret format."
+  ]
+}

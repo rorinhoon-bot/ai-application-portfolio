@@ -1,0 +1,74 @@
+{
+  "schema_version": "v2-content-inputs-v1",
+  "source_snapshot_id": "snapshot-1855a50c906058faffe87039",
+  "purpose": "Fresh six-case holdout frozen before generation on 2026-09-15; no expected answers passed to production.",
+  "request_defaults": {
+    "audience": "student engineering team",
+    "candidates": [
+      {
+        "candidate_id": "langgraph",
+        "name": "LangGraph",
+        "scope_note": "stateful workflow orchestration"
+      },
+      {
+        "candidate_id": "pydantic-ai",
+        "name": "PydanticAI",
+        "scope_note": "typed agent application framework"
+      }
+    ],
+    "dimensions": [
+      {
+        "dimension_id": "state-model",
+        "question": "What official evidence describes state or structured-output modeling?",
+        "weight_percent": 34
+      },
+      {
+        "dimension_id": "human-approval",
+        "question": "What official evidence describes a human approval boundary?",
+        "weight_percent": 33
+      },
+      {
+        "dimension_id": "recovery",
+        "question": "What official evidence describes persistence, recovery, or durable execution?",
+        "weight_percent": 33
+      }
+    ],
+    "hard_constraints": [
+      "Use only supplied frozen evidence.",
+      "Unknown evidence is not negative evidence.",
+      "Do not infer performance, pricing, or production readiness."
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "selection-typed-output",
+      "split": "holdout",
+      "research_question": "Our student team already uses Pydantic models. The decisive need is validated structured output. We do not need a graph or persistent workflow today. Compare both candidates and make a conditional choice only if the supplied evidence supports these requirements; state prerequisites and a concrete validation experiment."
+    },
+    {
+      "case_id": "selection-explicit-graph",
+      "split": "holdout",
+      "research_question": "Our prototype must represent named workflow nodes and edges, pass state updates between nodes, pause for approval, and save thread state through a checkpointer. We can configure a local checkpointer. Which candidate is a supported conditional starting point? Explain what remains unverified and propose a failure-recovery experiment."
+    },
+    {
+      "case_id": "selection-tool-approval",
+      "split": "holdout",
+      "research_question": "We need per-tool approval decided from tool arguments and a validated structured result. Endpoint authentication and authorization inside sensitive tools will be implemented separately. No graph topology requirement. Compare the candidates and give a conditional starting choice based only on the supplied evidence, with an approval-bypass test."
+    },
+    {
+      "case_id": "gap-price-performance",
+      "split": "holdout",
+      "research_question": "Choose the cheaper framework for 100 concurrent users with a p95 latency below 300 ms. The supplied frozen documentation is the only evidence. Report whether these decisive constraints can be established and give a specific measurement plan rather than inventing performance or prices."
+    },
+    {
+      "case_id": "gap-compliance",
+      "split": "holdout",
+      "research_question": "Our team requires proof of regulatory compliance and isolation from untrusted tenants. Decide whether the supplied evidence can establish those requirements for either candidate. Distinguish approval mechanisms from authentication and propose the next security verification."
+    },
+    {
+      "case_id": "gap-exactly-once",
+      "split": "holdout",
+      "research_question": "We require a guarantee that a paid external operation cannot execute twice after a process crash, including a crash after dispatch but before storing its receipt. Does the supplied evidence establish that guarantee? Explain the unknowns and propose a concrete fault-injection experiment."
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Preserve recorded V2 results as original bytes.
+/evals/results/p3-v2-* -text

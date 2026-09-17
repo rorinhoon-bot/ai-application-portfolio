@@ -1,0 +1,17 @@
+{
+  "as_of": "2026-09-16",
+  "usage": {
+    "calls": 18,
+    "successful_calls": 18,
+    "input_tokens": 87471,
+    "output_tokens": 12732,
+    "price_card_minor": 40
+  },
+  "latest_user_actual_cny": "1.44",
+  "latest_user_actual_requests": 156,
+  "user_bill_precedes_this_batch": true,
+  "effective_total_reserved_minor": 441,
+  "total_cap_minor": 500,
+  "total_reservation_rows": 100,
+  "existing_call_cap": 100
+}

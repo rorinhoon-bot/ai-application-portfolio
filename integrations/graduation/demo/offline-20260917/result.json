@@ -1,0 +1,24 @@
+{
+  "approval_actor": "scripted-test",
+  "artifact_count_after_replay": 1,
+  "content_quality_passed": false,
+  "cost_minor_units": 0,
+  "evidence_count": 6,
+  "limitations": [
+    "Offline synthetic fixtures and scripted model; not a real model quality evaluation.",
+    "P1 fixture-keyword adapter uses its HTML parser; BGE/Qdrant and HTTP/container behavior were not exercised.",
+    "P2 real content acceptance failed: first batch 2 limited approvals and 4 rejections; later 2 limited approvals and 1 rejection.",
+    "P2 permanent limit CNY 5; conservative occupancy 417/500 minor units and 109/109 calls. No new real calls are authorized.",
+    "Assistant implemented this integration; independent student explanation and human content grading remain unverified."
+  ],
+  "mcp_calls": 8,
+  "real_model_calls": 0,
+  "report_hash": "8d6e0ea9d71361480f2a2967ce469f7cca084701ad70051848e400670e86aeb4",
+  "schema_version": "graduation-demo-v1",
+  "scripted_model_calls": 3,
+  "workflow": [
+    "NEEDS_HUMAN",
+    "REPORT_NEEDS_HUMAN",
+    "COMPLETED"
+  ]
+}

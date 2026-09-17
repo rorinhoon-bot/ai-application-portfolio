@@ -1,0 +1,30 @@
+{
+  "schema_version": "p2-assistant-approval-review-v1",
+  "reviewer": "Codex assistant, explicitly delegated by user; not independent human reviewer",
+  "decision": "approve-as-limited-demo-with-review-notes",
+  "raw_response_sha256": "8360968f8b6507c699b10e01f66bd971aeb87626901bfbeaca5c3672b7c6909a",
+  "findings_resolution": [
+    "1: Official lg-01 excerpt directly contains StateGraph/MessagesState, add_node, add_edge, compile and invoke; hello-world supports only these demonstrated operations, not full state semantics.",
+    "2: pa-03 explicitly says five officially supported solutions and separately labels other external integrations; enumerating the five official options is supported.",
+    "3: Caveat is interpreted strictly within the supplied-read scope stated by report; it does not establish absence of built-in capability. Wording should be clearer in future reports.",
+    "4: Fixed dimension asks state OR structured output; both have cited evidence of their different modeling mechanisms. No equivalence of validation behavior established.",
+    "5: Reviewer itself labels this nonblocking.",
+    "6: Conditional fit is an inference from the explicit user need and output_type evidence, not measured performance or universal superiority.",
+    "7: Proposed 30-run/95% experiment is not performed evidence. Threshold is an example requiring team acceptance, not project evaluation gold."
+  ],
+  "additional_caveats": [
+    "SqliteSaver source labels it local storage for development; report must not be used as production database endorsement.",
+    "For a fair experiment normalize the output validation contract in both candidates; graph state alone is not Pydantic output validation.",
+    "This approval enables local demonstration only; it does not close aggregate content acceptance."
+  ],
+  "model_findings_preserved": [
+    "The langgraph state-model cell cites evidence_id lg-01#icon-icon-download-size-20-install, but the supplied excerpt for that id is an installation/hello-world snippet (pip/npm install plus a StateGraph/MessagesState mock_llm example); it does not show 'add_node/add_edge 构建图并 compile 后调用' as a state-modeling description beyond the hello-world, and the claim's framing as official state-modeling documentation overstates what this excerpt supports.",
+    "The pydantic-ai recovery cell claims '官方支持 Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions 等五种持久执行方案' and the executive_summary repeats this as the full set, but the supplied pa-03 excerpt lists those five as officially supported AND separately lists 'Additional external SDK integrations: Kitaru, Apache Airflow'; the claim omits the additional external integrations, so the '五种' enumeration is incomplete relative to the evidence.",
+    "The pydantic-ai recovery cell's caveat says '文档未说明无需外部引擎的内置持久化', which is an unsupported negative inference: the supplied pa-03 excerpt does not state that no built-in persistence exists, only that durable execution is offered via engines; absence of a statement is not evidence of absence.",
+    "The executive_summary states '两个候选在三个维度上均有官方文档支持' as a blanket conclusion, but the langgraph state-model support rests on a hello-world install excerpt (lg-01) that does not describe structured-output/state modeling in the sense the dimension asks, so the blanket 'all three dimensions supported for both' is not fully backed by the supplied excerpts.",
+    "The limitations list says '本次证据未覆盖性能、定价、生产就绪度、团队学习成本与迁移成本，这些均属未知', which is acceptable as a limitation, but the executive_summary's phrasing '证据未覆盖性能、定价、生产就绪度或团队学习成本' is fine; no blocking issue here, noted only for consistency.",
+    "The recommendation 'pydantic-ai' with decision_status 'conditional' is supported by the supplied evidence for structured output (pa-01) and the user's stated decisive need, but the executive_summary's supporting sentence 'PydanticAI 的 output_type 直接以 Pydantic 构建 schema 并校验返回值，与现有技术栈契合度更高' adds a comparative '契合度更高' judgment that the supplied excerpts do not directly measure against LangGraph; this is an unsupported comparative claim beyond the evidence.",
+    "The limitations' proposed validation experiment (30 runs, ≥95% pass rate) is a recommendation, not a completed test, and is acceptable as such; no blocking issue, but it should not be read as evidence of measured performance."
+  ],
+  "new_api_calls_for_approval": 0
+}

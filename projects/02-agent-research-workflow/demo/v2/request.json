@@ -1,0 +1,18 @@
+{
+  "schema_version": "research-request-v2",
+  "research_question": "Choose a workflow framework for a small AI team using state, human approval and recovery evidence.",
+  "audience": "student engineering team",
+  "candidates": [
+    {"candidate_id": "langgraph", "name": "LangGraph", "scope_note": "stateful workflow orchestration"},
+    {"candidate_id": "pydantic-ai", "name": "PydanticAI", "scope_note": "typed agent application framework"}
+  ],
+  "dimensions": [
+    {"dimension_id": "state-model", "question": "How is state modeled and executed?", "weight_percent": 34},
+    {"dimension_id": "human-approval", "question": "How can a human approve a step?", "weight_percent": 33},
+    {"dimension_id": "recovery", "question": "How can a run recover after failure?", "weight_percent": 33}
+  ],
+  "source_snapshot_id": "snapshot-v2-demo",
+  "model_config_hash": "ac170d18e6f4bf262f7674991c002d485ff256ccee5bcc24647d986260472b45",
+  "budget_authorization_id": "budget-offline",
+  "allow_insufficient_evidence": true
+}

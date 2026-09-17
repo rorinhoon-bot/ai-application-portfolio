@@ -1,0 +1,125 @@
+{
+  "accepted": false,
+  "cases": [
+    {
+      "name": "test_start_pauses_without_model_tools_or_report",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_full_real_pipeline_checkpoint_reopen_and_idempotent_delivery",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_request_rejection_or_cancel_no_tools_or_export[reject-FAILED]",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_request_rejection_or_cancel_no_tools_or_export[cancel-CANCELLED]",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_snapshot_tamper_blocks_before_resume",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_extra_snapshot_member_rejected",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_metadata_tamper_rejected",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_invalid_run_path",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_p1_actual_parser_retrieval_candidates_and_empty",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_p1_unknown_fields_fail",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_bridge_schema_and_snapshot_drift",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_mcp_failure_stops_graph_without_report",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_delivery_before_approval_rejected",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_process_crash_after_publish_recovers_once",
+      "passed": false,
+      "skipped": false
+    },
+    {
+      "name": "test_report_reject_does_not_export",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_receipt_tampering_blocks_delivery",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_atomic_delivery_publication_is_no_replace",
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "test_cli_rejects_traversal_without_opening_run",
+      "passed": true,
+      "skipped": false
+    }
+  ],
+  "cases_sha256": "925dc4d084b10048c5846f46b8b8b5f15b4a6e6e718eb2af06cd5c91dfc27ea1",
+  "content_quality": {
+    "reason": "Scripted model; P2 real content acceptance remains failed",
+    "status": "not_evaluated"
+  },
+  "cost_minor_units": 0,
+  "exit_code": 1,
+  "groups": {
+    "recovery_idempotency": {
+      "passed": 3,
+      "total": 4
+    },
+    "retrieval": {
+      "passed": 1,
+      "total": 1
+    },
+    "tool_safety": {
+      "passed": 8,
+      "total": 8
+    },
+    "workflow": {
+      "passed": 5,
+      "total": 5
+    }
+  },
+  "passed": 17,
+  "real_model_calls": 0,
+  "schema_version": "graduation-evaluation-v1",
+  "skipped": 0,
+  "total": 18
+}

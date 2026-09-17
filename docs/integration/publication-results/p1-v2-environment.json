@@ -1,0 +1,9 @@
+{
+  "name": "p1-readonly",
+  "command": "P1 V2 existing environment; 6 targeted test modules; socket audit block",
+  "exit_code": 0,
+  "wall_seconds": 9.16,
+  "summary": [
+    "77 passed in 7.03s"
+  ]
+}

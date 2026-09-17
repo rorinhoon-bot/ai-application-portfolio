@@ -1,0 +1,102 @@
+{
+  "schema_version": "p2-content-completion-verification-v1",
+  "as_of": "2026-09-16",
+  "dataset": "evals/v2/content-completion-verification-v1.json",
+  "dataset_role": "post-repair verification; not unseen holdout",
+  "dataset_sha256": "d9cc5494527cfcbfb04b92eafae0f42584273b7797df7c02f82213239cc258b2",
+  "attempted_cases": 3,
+  "approved_limited": 2,
+  "rejected": 1,
+  "content_acceptance": "NOT_PASSED",
+  "reason": "One of three pre-registered post-repair cases has a blocking experiment-design error; this batch cannot overturn previous six-case failure or establish aggregate model quality.",
+  "references": 23,
+  "valid_reference_count": 23,
+  "usage": {
+    "calls": 9,
+    "input_tokens": 49040,
+    "output_tokens": 8297,
+    "price_card_minor": 21
+  },
+  "budget": {
+    "effective_reserved_minor": 417,
+    "total_cap_minor": 500,
+    "reservation_rows": 109,
+    "effective_call_capacity": 109
+  },
+  "reviewer": "Codex assistant under user delegation, not independent human",
+  "reports": [
+    {
+      "case_id": "completion-structured-output-defaults",
+      "terminal_status": "COMPLETED",
+      "assistant_decision": "approve_limited",
+      "assistant_reason": "pa-01 condition is stated correctly: omitted output_type or str permits plain text; non-str output types force structured data or output function. LangGraph hello-world claim stays limited by its caveat.",
+      "report_hash": "2972b859435972ae5f64c3971681bc60185327595004431240ca8775f0f0188c",
+      "artifact_id": "69af3d256fa637a6835650ff219ce52ff094d9617fc116c9e3f421806cbd09c6",
+      "decision_status": "conditional",
+      "recommendation": "pydantic-ai",
+      "references": 7,
+      "valid_reference_count": 7,
+      "model_review_findings": [
+        "evidence_cells[0] (langgraph/state-model): The claim asserts 'LangGraph 官方文档以 StateGraph 与 MessagesState 建模图状态' and cites lg-01#icon-icon-download-size-20-install, but that excerpt is an install/hello-world snippet. It does show StateGraph(MessagesState), node returning {\"messages\": [...]}, compile() and invoke(), so the specific behavior shown is supported; however the claim's framing as official documentation of state modeling is broader than the hello-world example demonstrates. This is a scope overreach, not a factual contradiction.",
+        "evidence_cells[3] (pydantic-ai/state-model): The claim states '默认利用模型的工具调用能力返回结构化数据' as a general default. The evidence pa-01#structured-output-data-structured-output says 'By default, Pydantic AI leverages the model's tool calling capability to make it return structured data' — this is supported. No blocker.",
+        "evidence_cells[3] (pydantic-ai/state-model) caveat: The caveat says '要获得结构化输出需显式指定非 str 的输出类型.' The evidence says if str is not among output types the model is forced to return structured data or call an output function. This is supported. No blocker.",
+        "evidence_cells[4] (pydantic-ai/human-approval): The claim lists requires_approval=True on @agent.tool, @agent.tool_plain, Tool class, FunctionToolset.tool decorator, or FunctionToolset.add_function, and ApprovalRequired / RunContext.tool_call_approved. This matches pa-02#human-in-the-loop-tool-approval. No blocker.",
+        "evidence_cells[5] (pydantic-ai/recovery): The claim says '官方支持五种持久化执行方案（Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions），另有外部 SDK 集成（Kitaru、Apache Airflow）.' The evidence pa-03#durable-execution explicitly distinguishes 'officially supports five durable execution solutions' from 'Additional external SDK integrations: Kitaru, Apache Airflow.' The claim correctly separates them. No blocker.",
+        "executive_summary: The summary states 'PydanticAI 亦提供工具级 requires_approval 审批，但文档明确其不构成对不可信客户端的授权边界.' This is supported by pa-02. No blocker.",
+        "executive_summary: The summary states '其持久化执行需接入官方支持的引擎（Temporal、DBOS、Prefect、Restate、AWS Lambda 等）.' The evidence lists five official solutions plus additional external SDK integrations. The summary's '等' could be read as including the external integrations under '官方支持的引擎,' which would conflate official and external. This is a minor scope ambiguity but not a clear blocker given the evidence cell correctly separates them.",
+        "limitations[4]: '本次证据未说明 PydanticAI 在未指定 output_type 时是否仍会进行 Pydantic 校验，仅说明纯文本响应会被用作输出数据；该点属于未知，不作为负面证据.' This is an acceptable explicit unknown. No blocker.",
+        "limitations[5] (next-step verification): The proposed experiment tests (a) omit output_type, (b) output_type includes str, (c) output_type is a Pydantic model without str, and checks whether (c) returns a validated model instance while (a)(b) return plain text. The evidence already states this default behavior, so the experiment is a verification recommendation, not a factual claim. The criteria are appropriate. No blocker.",
+        "decision_status 'conditional' with recommendation 'pydantic-ai': The request asks for a conditional choice only if the output_type distinction supports it. The distinction (omit output_type or include str → plain text used as output; exclude str → forced structured data) does support a conditional recommendation. No blocker.",
+        "No finding is not proof that the report is correct. The review found no clear blocking unsupported claims or scope errors beyond the minor framing note on evidence_cells[0]."
+      ]
+    },
+    {
+      "case_id": "completion-interrupt-restart-boundary",
+      "terminal_status": "FAILED",
+      "assistant_decision": "reject",
+      "assistant_reason": "Fault-injection criterion does not explicitly distinguish whole-node restart from line-level resume. It can therefore pass without proving the requested restart semantic boundary.",
+      "report_hash": "07ab3b009111c49ea4f3520a3b45cf4595fbf18b86bea3c225b8c020e57542db",
+      "artifact_id": null,
+      "decision_status": "insufficient_evidence",
+      "recommendation": null,
+      "references": 8,
+      "valid_reference_count": 8,
+      "model_review_findings": [
+        "evidence_cells[0] (langgraph/state-model): The claim states 'LangGraph 以 StateGraph 承载图状态' and cites lg-01#icon-icon-download-size-20-install, but that excerpt is the install/hello-world section. It does show StateGraph(MessagesState), a node receiving state, returning a dict update, and graph.invoke with initial state, so the specific mechanics are supported; however the claim's framing that this is the official description of state modeling is thin. The caveat already limits it to MessagesState, so this is borderline rather than a clear blocker.",
+        "evidence_cells[4] (langgraph/recovery): The claim asserts 'checkpointer 按单个 thread 作用域保存状态快照' and lists '容错' as an official use, citing lg-03#checkpointer-vs-store. The excerpt's table does list 'fault tolerance' under Use for and 'A single thread' under Scope, so this is supported. No blocker.",
+        "evidence_cells[5] (pydantic-ai/recovery): The claim says '官方支持五种持久执行方案（Temporal、DBOS、Prefect、Restate、AWS Lambda durable functions），另有 Kitaru、Apache Airflow 等外部 SDK 集成.' The excerpt distinguishes 'officially supports five durable execution solutions' from 'Additional external SDK integrations' (Kitaru, Apache Airflow). The claim correctly separates these, so it is supported. No blocker.",
+        "executive_summary: The statement '两者在本证据中均未提供崩溃恢复的实测结果，因此无法据此断言任一候选在生产崩溃场景下的恢复保证' is consistent with the supplied evidence (no crash-recovery test results appear in any excerpt). This is an acceptable limitation, not a blocker.",
+        "limitations[4] (proposed experiment): The experiment's pass criterion '若恢复成功且副作用未重复，则记为通过' is stated, and the note correctly warns that a single passing sample only proves recoverability for that configuration. However, the criterion as written does not distinguish between 'resumed at the interrupt point' and 'node restarted from the beginning but side effects happened to be idempotent'; the side-effect counter check partially addresses this, but the criterion should explicitly require verifying that the node re-executed from the start (per lg-02#resuming-interrupts) rather than claiming line-level resumption. This is a scope/criteria gap worth flagging as a blocker for the experiment design.",
+        "evidence_cells[2] (langgraph/human-approval): The claim states '恢复时通过 Command(resume=...) 把值传回 interrupt 调用处作为其返回值' and the caveat correctly notes the node restarts from the beginning. Both are supported by lg-02#pause-using-interrupt and lg-02#resuming-interrupts. No blocker.",
+        "evidence_cells[3] (pydantic-ai/human-approval): The claim lists requires_approval=True on @agent.tool, @agent.tool_plain, Tool class, FunctionToolset.tool, add_function(), and ApprovalRequired with RunContext.tool_call_approved. All are present in pa-02#human-in-the-loop-tool-approval. The caveat correctly reproduces the official warning. No blocker.",
+        "evidence_cells[1] (pydantic-ai/state-model): The claim describes output_type supporting scalars, list/dict (TypedDict, StructuredDict), dataclass, Pydantic models, unions, default tool-calling, and Pydantic JSON schema validation. All are supported by pa-01#structured-output-data-structured-output. The caveat correctly notes no cross-turn state persistence is described. No blocker."
+      ]
+    },
+    {
+      "case_id": "completion-exactly-once-boundary",
+      "terminal_status": "COMPLETED",
+      "assistant_decision": "approve_limited",
+      "assistant_reason": "Correctly concludes supplied evidence does not establish exactly-once. Proposed test separately records zero, one and more-than-one effects, and limits conclusion to tested fault point/configuration.",
+      "report_hash": "cf20f87aec853f7f858df16d1ee26c8924e2bce66f328660ce48b95ea33ed9d5",
+      "artifact_id": "f86223d11af853d868135fe737ffea6fe1711bc3cb91d85c3c1843303477799e",
+      "decision_status": "insufficient_evidence",
+      "recommendation": null,
+      "references": 8,
+      "valid_reference_count": 8,
+      "model_review_findings": [
+        "evidence_cells[0] (langgraph/state-model): the claim asserts 'LangGraph 官方文档展示了以 StateGraph 与 MessagesState 建模图状态：节点接收状态并返回状态更新字典，图通过 add_node/add_edge 组装后 compile 并 invoke', but the cited evidence lg-01#icon-icon-download-size-20-install is the installation/hello-world section; it does show StateGraph(MessagesState), add_node/add_edge, compile, invoke, so the core claim is supported. However the claim's wording '官方文档展示了...建模图状态' overstates a hello-world snippet as documentation of state modeling semantics; the caveat already concedes it is hello-world level, so this is not a blocking unsupported claim. No finding.",
+        "evidence_cells[1] (langgraph/human-approval): claim states interrupt '会暂停图执行、保存当前图状态并等待以输入恢复，恢复值成为 interrupt() 的返回值；使用它需要 checkpointer、config 中的 thread ID，且 payload 必须可 JSON 序列化'. Evidence lg-02#pause-using-interrupt supports pause, state save via checkpointer, thread ID requirement, JSON-serializable payload, and resume value becoming interrupt() return. The caveat says '文档说明图会无限期等待恢复' — evidence says 'Graph waits indefinitely until you resume', supported. The caveat also says '静态中断（interrupt_before/interrupt_after）不推荐用于 human-in-the-loop 工作流' — evidence lg-02#debugging-with-interrupts says static interrupts are not recommended for human-in-the-loop workflows, supported. No finding.",
+        "evidence_cells[2] (langgraph/recovery): claim states checkpointer persists single-thread graph state snapshots and official uses include conversation continuity, human-in-the-loop, time travel, fault tolerance; interrupt state saved by checkpointer for later resume; production should use durable checkpointer. Evidence lg-03#checkpointer-vs-store supports the table row (Persists: Graph state snapshots; Scope: A single thread; Use for: Conversation continuity, human-in-the-loop, time travel, and fault tolerance). Evidence lg-02#pause-using-interrupt supports state saved using checkpointer and production persistent checkpointer. Caveat correctly notes no exactly-once claim for external side effects. No finding.",
+        "evidence_cells[3] (pydantic-ai/state-model): claim states output_type models structured output supporting scalar, list/dict (TypedDict, StructuredDict), dataclass, Pydantic models, type unions; default uses model tool calling; Pydantic builds JSON schema and validates returned data. Evidence pa-01#structured-output-data-structured-output supports all of this. Caveat correctly notes single-run output typing, not cross-run state persistence. No finding.",
+        "evidence_cells[4] (pydantic-ai/human-approval): claim states requires_approval=True on @agent.tool/@agent.tool_plain/Tool/FunctionToolset, or raising ApprovalRequired in tool function/args_validator, and RunContext.tool_call_approved to check approval. Evidence pa-02#human-in-the-loop-tool-approval supports these. Caveat correctly reproduces the warning that approval is not an authorization boundary against untrusted clients. No finding.",
+        "evidence_cells[5] (pydantic-ai/recovery): claim states PydanticAI provides durable execution, official claim of preserving progress across transient API failures, application errors or restarts, long-running/asynchronous/human-in-the-loop workflows; officially supports five durable execution solutions (Temporal, DBOS, Prefect, Restate, AWS Lambda durable functions), plus additional external SDK integrations (Kitaru, Apache Airflow). Evidence pa-03#durable-execution supports the durable agent claim and lists exactly five officially supported solutions and two additional external SDK integrations. The claim correctly distinguishes '官方支持五种' from '另有外部 SDK 集成'. Caveat correctly notes no exactly-once claim. No finding.",
+        "executive_summary: states both candidates have official documentation support across all three dimensions and that no evidence promises exactly-once semantics for the crash-between-dispatch-and-receipt window. This is consistent with the evidence cells and the supplied excerpts. The summary does not overclaim. No finding.",
+        "limitations[0]: states no evidence contains official statements about external side-effect deduplication, idempotency keys, or exactly-once semantics. This is accurate for the supplied excerpts. No finding.",
+        "limitations[1]: states missing decision input is the replay behavior of the chosen persistence backend in the dispatch-before-receipt window. This is a correct characterization of what is absent from the supplied evidence. No finding.",
+        "limitations[2]: describes a bounded fault-injection experiment with a countable fake paid external service, crash injection after dispatch before receipt persistence, restart and resume, observing 0/1/>1 side effects, and criteria that >1 fails, 0 with incomplete flow indicates loss, and only verifying both no-duplicate-on-replay and completion supports the configuration. This is a recommendation to verify, not a factual claim of completed tests, and the criteria do establish the stated conclusion for the tested fault point. No finding.",
+        "limitations[3]: correctly bounds the experiment's conclusion strength (single pass only proves that specific fault point/backend configuration; must test failure and completion paths and multiple injection points). No finding.",
+        "limitations[4]: states no performance, pricing, or production-readiness inference is made. Consistent with hard constraints. No finding."
+      ]
+    }
+  ]
+}

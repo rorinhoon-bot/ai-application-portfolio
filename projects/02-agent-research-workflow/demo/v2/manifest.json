@@ -1,0 +1,33 @@
+{
+  "schema_version": "source-snapshot-v2",
+  "snapshot_id": "snapshot-v2-demo",
+  "entries": [
+    {
+      "source_id": "demo-langgraph",
+      "candidate_id": "langgraph",
+      "title": "Offline LangGraph fixture",
+      "canonical_url": "https://example.invalid/p2-v2/langgraph-fixture",
+      "version": "fixture-2026-09-13",
+      "accessed_at": "2026-09-13T00:00:00Z",
+      "license_id": "demo-fixture",
+      "relative_path": "langgraph.md",
+      "raw_sha256": "ba13dcfb88177cf5b6814e316a7ae3375016c4226b2233d39c7f859e42e5dc40",
+      "normalized_sha256": "ba13dcfb88177cf5b6814e316a7ae3375016c4226b2233d39c7f859e42e5dc40",
+      "size_bytes": 609
+    },
+    {
+      "source_id": "demo-pydantic-ai",
+      "candidate_id": "pydantic-ai",
+      "title": "Offline PydanticAI fixture",
+      "canonical_url": "https://example.invalid/p2-v2/pydantic-ai-fixture",
+      "version": "fixture-2026-09-13",
+      "accessed_at": "2026-09-13T00:00:00Z",
+      "license_id": "demo-fixture",
+      "relative_path": "pydantic-ai.md",
+      "raw_sha256": "ba13dcfb88177cf5b6814e316a7ae3375016c4226b2233d39c7f859e42e5dc40",
+      "normalized_sha256": "ba13dcfb88177cf5b6814e316a7ae3375016c4226b2233d39c7f859e42e5dc40",
+      "size_bytes": 609
+    }
+  ],
+  "total_size_bytes": 1218
+}

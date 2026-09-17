@@ -1,0 +1,126 @@
+{
+  "schema_version": "p3-v2-evaluation-1",
+  "cases_sha256": "7fb2ecdb300fce9e3902b3bd69a58aee14173a45becd4ee22038b636fbfbd3ce",
+  "snapshot_hash": "ca0c93fd4922fb7adf704a48f68dac36a0905e35cf45176cc65971453df7b153",
+  "passed": 16,
+  "total": 16,
+  "cases": [
+    {
+      "id": "search-hit",
+      "passed": true,
+      "status": "ok",
+      "error_code": null,
+      "hits": 2
+    },
+    {
+      "id": "search-empty",
+      "passed": true,
+      "status": "ok",
+      "error_code": null,
+      "hits": 0
+    },
+    {
+      "id": "empty",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "number",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "boolean",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "unknown-field",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "traversal",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "nfkc-traversal",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "drive",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "url",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "shell",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "unknown-id",
+      "passed": true,
+      "status": "error",
+      "error_code": "not-registered",
+      "hits": 0
+    },
+    {
+      "id": "read-path",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    },
+    {
+      "id": "write-disabled",
+      "passed": true,
+      "status": "error",
+      "error_code": "permission-denied",
+      "hits": 0
+    },
+    {
+      "id": "approve-hidden",
+      "passed": true,
+      "status": "error",
+      "error_code": "unknown-tool",
+      "hits": 0
+    },
+    {
+      "id": "missing",
+      "passed": true,
+      "status": "error",
+      "error_code": "invalid-arguments",
+      "hits": 0
+    }
+  ],
+  "audit_receipts": 38,
+  "protocol": "actual MCP stdio",
+  "read_replay_identical": true,
+  "content_quality_evaluated": false,
+  "real_model_calls": 0
+}

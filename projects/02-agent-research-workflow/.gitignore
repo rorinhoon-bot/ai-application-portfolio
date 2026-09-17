@@ -1,0 +1,5 @@
+# Local V2 CLI state and content-addressed artifacts.
+.runtime/
+
+# Future approved official snapshots remain local until their manifest is reviewed.
+data/real-sources/

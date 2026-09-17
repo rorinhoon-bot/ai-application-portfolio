@@ -1,0 +1,39 @@
+{
+  "schema_version": "v2-content-inputs-v1",
+  "source_snapshot_id": "snapshot-1855a50c906058faffe87039",
+  "purpose": "Three pre-registered post-repair cases. Created before this batch. They test prior failure classes without passing expected answers to production.",
+  "request_defaults": {
+    "audience": "student engineering team",
+    "candidates": [
+      {"candidate_id": "langgraph", "name": "LangGraph", "scope_note": "stateful workflow orchestration"},
+      {"candidate_id": "pydantic-ai", "name": "PydanticAI", "scope_note": "typed agent application framework"}
+    ],
+    "dimensions": [
+      {"dimension_id": "state-model", "question": "What official evidence describes state or structured-output modeling?", "weight_percent": 34},
+      {"dimension_id": "human-approval", "question": "What official evidence describes a human approval boundary?", "weight_percent": 33},
+      {"dimension_id": "recovery", "question": "What official evidence describes persistence, recovery, or durable execution?", "weight_percent": 33}
+    ],
+    "hard_constraints": [
+      "Use only supplied frozen evidence.",
+      "Unknown evidence is not negative evidence.",
+      "Do not infer performance, pricing, or production readiness."
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "completion-structured-output-defaults",
+      "split": "post-repair-verification",
+      "research_question": "We need a validated Pydantic-model result now and do not need a graph or durable workflow. Compare both candidates using only the supplied evidence. State exactly what the PydanticAI output_type default permits when it is omitted or includes str, and make a conditional choice only if that distinction supports it."
+    },
+    {
+      "case_id": "completion-interrupt-restart-boundary",
+      "split": "post-repair-verification",
+      "research_question": "We need a checkpointed approval pause and recovery after restart. Compare both candidates using only the supplied evidence. Explain LangGraph interrupt restart semantics precisely, distinguish restarting a node from resuming at a source line, and propose a crash-recovery experiment whose result does not claim more than it measures."
+    },
+    {
+      "case_id": "completion-exactly-once-boundary",
+      "split": "post-repair-verification",
+      "research_question": "Our paid external operation must not execute twice after a crash between dispatch and receipt persistence. Decide whether the supplied evidence establishes an exactly-once guarantee for either candidate. If it does not, write a bounded fault-injection experiment that separately detects zero, one, and more-than-one external side effects."
+    }
+  ]
+}

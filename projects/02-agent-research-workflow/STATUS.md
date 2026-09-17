@@ -1,8 +1,23 @@
-# STATUS
+# P2 状态
 
-- 状态：`completed`
-- 当前唯一目标：P2 已完成；后续真实模型、真实资料或部署必须另立版本与批准。
-- 当前阶段：`最终验收完成`
+- 状态：`in_progress / content-acceptance-not-passed`。工程交付与本轮验证已结束，内容门槛未通过；不标记整个升级completed。
+- 当前唯一目标：保留两批失败证据与最终验收；调用与金额边界均已用尽，不能再靠付费重跑寻求通过。
+- 最终助手验收：[20-FINAL-ACCEPTANCE-AUDIT.md](docs/v2/20-FINAL-ACCEPTANCE-AUDIT.md)。2026-09-16完整离线回归：`266 passed in 128.73s`；这不改变真实内容验收失败。
+- 最新结论：[18-VALIDATION-CLOSEOUT.md](docs/v2/18-VALIDATION-CLOSEOUT.md)；[完整六题结果](evals/results/v2-final-regression-complete-20260916.json)。
+- Git：`codex/p2-langgraph-v2` / `dcb164e95059b060ffd6aebbaa093a7626177614`，原改动保留，无暂存/commit/push。
+- 工程验证：完整套件259 passed（历史完整记录）；本轮预算扩展、图、CLI、模型合同与评估定向76 passed in 52.95s，`compileall`、`pip check`通过。V1基线及独立新venv同45包复现证据保留；未改依赖。
+- D5l六题全部尝试：18次成功API，2份助手带备注批准、4份拒绝，全部人工门已处理；36格/41条引用身份、摘录、hash和定位有效，6/6有下一步条目，但有决定性事实/实验判据错误。条件建议交付1/3，低于80%门槛；不能用格式或引用有效率冒充内容达标。
+- 用户同意继续后，已追加续期至2026-09-16 23:59，仅运行最后2题/6次，未改原授权JSON、额度与次数。备份和记录在`.runtime/p2-budget/expiry-extension-20260916/`。
+- 预算：最新用户后台1.44元/156次；D5l其后新增18次，保守价格卡估算0.40元，实际新账单未知。有效占用4.41元低于5元；既有100条调用预留已用满（含历史占位），不重置计数或再增收费请求。
+- 内容修正说明：[四个失败点](evals/results/v2-failure-corrections-20260916.md)。这是助手离线纠错，不是原始模型输出成绩。
+- 本轮修复审计：[19-CONTENT-ACCEPTANCE-REPAIR.md](docs/v2/19-CONTENT-ACCEPTANCE-REPAIR.md)。新增审批/导出重验和反馈保留，仍不等于新的真实内容通过。
+- 修复后真实验证：3题/9次、2份有限批准/1份拒绝、23/23引用链有效；拒绝题的故障注入判据仍混淆节点重启与行级恢复，内容验收继续不通过。机器证据：[completion verification](evals/results/v2-content-completion-verification-20260916.json)。
+- 独立人工复核材料已冻结：[review pack](evals/results/v2-independent-review-pack-20260916.md)。它等待独立人员填写，不能由此前生成/复核报告的助手代填。
+- 预算：用户最新后台为1.56元/174次，正好对应D5l新增18次/0.12元。D5l已核销至价格卡40分；本轮新9次价格卡21分。有效保守占用417/500分、调用容量109/109，停止新收费调用。
+- 尚未满足：整体内容质量、原子事实完整标注、B0/B1收益、独立人类评分、学习者讲解。跨平台/负载、云部署/公开发布未验证或未执行。
+
+- 以下为 V1 历史验证与实现记录，不表示 V2 已完成：
+- 当前统一验证入口：`scripts/run_checks.ps1`。脚本自动加载可选 `.env`，并设置离线安全默认值；历史阶段记录中的 `in_progress` 均已被本文件顶部状态和最终审计取代。
 - 已完成：
   - 确认 Git 基线为 P1 最终提交 `741e6de7bc8941a53dab80e5acc3ef28dff8e38a`。
   - 从该提交创建并切换到 `codex/p2-agent-research-workflow`。
@@ -138,14 +153,14 @@
   - 新增项目级 `RETROSPECTIVE.md`；记录 12 个阶段提交、量化结果、Human-in-the-loop 重放、checkpoint 数据边界、恢复幂等、评估反答案泄漏和可观测性脱敏等关键经验。
   - 复盘明确记录当前限制：未接真实模型/资料、未执行人工报告质量量表、未验证真实 token/费用、并发负载或跨平台行为。
   - 固定真实模型接入门槛：独立费用与资料批准、版本化适配器和评估集、现有安全边界不放宽、保留原创 `workflow-v1` 基线。
-  - README 新增开发复盘入口；当前仍保持 `in_progress`，不提前宣称 P2 完成。
+  - README 新增开发复盘入口；当时仍保持 `in_progress`，属于历史阶段记录。
   - 本阶段验证通过：环境与 SQLite 恢复检查、144 项普通测试、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall`、`pip check`、`git diff --check` 和敏感模式扫描；无网络、模型 API 或费用。
   - 新增项目级 `LLH_Study.md`；覆盖事实卡、30 秒/2 分钟/5 分钟介绍、LangGraph 核心概念、完整数据流、12 个核心代码入口、Human-in-the-loop、checkpoint、幂等、安全、评估和真实模型边界。
   - 新增 25 道高频面试问答、25 道自测题、答案关键词、STAR 故事、实操自测和五轮复习路线。
   - 学习讲义明确区分“离线确定性工作流可靠性”和“尚未验证的真实模型语义质量”，并记录 AI 编码助手协作范围。
-  - README 新增学习讲义入口；P2 仍保持 `in_progress`，等待最终项目验收审计。
+  - README 新增学习讲义入口；当时仍保持 `in_progress`，等待最终审计，现已完成。
   - 本阶段验证通过：环境与 SQLite 恢复检查、pytest `144 passed`、`workflow-v1` 基线、观测样例、离线演示、SVG 制品、`compileall`、`pip check`、文档链接与题目计数、`git diff --check` 和敏感模式扫描；无网络、模型 API 或费用。
-  - 新增 `docs/COMPLETION_AUDIT.md`，逐项记录问题、运行、代码、测试、评估、安全和展示证据。
+  - 新增 `docs/COMPLETION_AUDIT.md`，逐项映射 `PROJECT_STANDARDS.md` 的问题、运行、代码、测试、评估、安全和展示证据。
   - README 补齐目标用户、输入、输出、非目标和 CPython 3.14 新环境安装步骤；`.env.example` 补齐离线 tracing 开关。
   - `docs/EVALUATION_DATA.md` 集中记录评估数据、金标准、运行器、完整图、来源快照、模型/Prompt 不适用状态及四类循环参数。
   - PRD 与架构文档更新到离线 v1 实际实现状态；保留阶段切片作为小步开发证据，不再把早期切片误写成当前完整范围。

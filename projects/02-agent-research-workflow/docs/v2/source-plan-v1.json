@@ -1,0 +1,88 @@
+{
+  "schema_version": "source-plan-v1",
+  "plan_id": "p2-v2-source-plan-0.1",
+  "status": "frozen",
+  "frozen_at": "2026-09-14T00:00:00Z",
+  "max_pages": 6,
+  "max_file_bytes": 1048576,
+  "max_total_bytes": 5242880,
+  "allowed_hosts": [
+    "raw.githubusercontent.com"
+  ],
+  "allowed_urls": [
+    "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/overview.mdx",
+    "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/interrupts.mdx",
+    "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/persistence.mdx",
+    "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/output.md",
+    "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/deferred-tools.md",
+    "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/durable_execution/overview.md"
+  ],
+  "items": [
+    {
+      "source_id": "lg-01",
+      "candidate_id": "langgraph",
+      "title": "LangGraph overview",
+      "canonical_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/overview.mdx",
+      "version": "671c0929a2840feb951f69532366d5227306cc3f",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/LICENSE",
+      "relative_path": "langgraph/overview.mdx"
+    },
+    {
+      "source_id": "lg-02",
+      "candidate_id": "langgraph",
+      "title": "LangGraph interrupts",
+      "canonical_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/interrupts.mdx",
+      "version": "671c0929a2840feb951f69532366d5227306cc3f",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/LICENSE",
+      "relative_path": "langgraph/interrupts.mdx"
+    },
+    {
+      "source_id": "lg-03",
+      "candidate_id": "langgraph",
+      "title": "LangGraph persistence",
+      "canonical_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/src/oss/langgraph/persistence.mdx",
+      "version": "671c0929a2840feb951f69532366d5227306cc3f",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/langchain-ai/docs/671c0929a2840feb951f69532366d5227306cc3f/LICENSE",
+      "relative_path": "langgraph/persistence.mdx"
+    },
+    {
+      "source_id": "pa-01",
+      "candidate_id": "pydantic-ai",
+      "title": "PydanticAI output",
+      "canonical_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/output.md",
+      "version": "5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/LICENSE",
+      "relative_path": "pydantic-ai/output.md"
+    },
+    {
+      "source_id": "pa-02",
+      "candidate_id": "pydantic-ai",
+      "title": "PydanticAI deferred tools",
+      "canonical_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/deferred-tools.md",
+      "version": "5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/LICENSE",
+      "relative_path": "pydantic-ai/deferred-tools.md"
+    },
+    {
+      "source_id": "pa-03",
+      "candidate_id": "pydantic-ai",
+      "title": "PydanticAI durable execution",
+      "canonical_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/docs/durable_execution/overview.md",
+      "version": "5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95",
+      "accessed_at": "2026-09-14T00:00:00Z",
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/pydantic/pydantic-ai/5cbacfc8f86d653baa0ca2e31970cbf4f0fcec95/LICENSE",
+      "relative_path": "pydantic-ai/durable-execution.md"
+    }
+  ]
+}

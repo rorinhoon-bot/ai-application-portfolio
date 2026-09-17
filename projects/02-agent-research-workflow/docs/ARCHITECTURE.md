@@ -1,5 +1,7 @@
 # P2 架构设计：LangGraph 技术选型研究工作流
 
+> 本文记录 V1 离线架构及历史切片。产品 V2 设计与实现入口见 [V2 架构](v2/03-ARCHITECTURE.md)与[设计入口](v2/README.md)；V2 D1/D2/D3 离线能力已实现，真实模型仍未启用。
+
 - 版本：v1.0
 - 状态：offline implementation verified
 - 日期：2026-08-01
@@ -604,3 +606,10 @@ P2 独立 `.venv`、精确依赖和原创固定资料已安装或创建并验证
 - 调试和状态复杂度。
 
 没有净收益，继续保留单工作流。
+
+
+### 2026-09-15 实现更新
+
+只读检索以实际2400字符摘录、章节及来源标题排名，词频封顶；先candidate×dimension覆盖，再每候选补一条research_question查询，证据去重。预算预留仍在模型请求发出前执行，补读不扩大既有授权。
+
+草稿若decision_status与recommendation有无矛盾，报告门留下REPORT_DECISION_INCONSISTENT；返修意见保留至下一草稿，新审校替换旧意见。markdown-v2.1增加每格限制、候选及定位/hash；已有旧制品先验证legacy字节并复用，不覆写。最新证据与验证边界见v2交付审计13号文档。

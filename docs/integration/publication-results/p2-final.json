@@ -1,0 +1,9 @@
+{
+  "name": "p2-full",
+  "command": "python -B -m pytest -q -p no:cacheprovider",
+  "exit_code": 1,
+  "wall_seconds": 91.905,
+  "summary": [
+    "1 failed, 265 passed in 90.54s (0:01:30)"
+  ]
+}

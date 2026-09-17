@@ -1,0 +1,46 @@
+{
+  "schema_version": "p2-holdout-review-plan-v1",
+  "input_sha256": "ffe5203a23b7ff093f30025a0fa245edd94715007756324f91107c1ee087fb98",
+  "frozen_before_generation": true,
+  "cases": [
+    {
+      "case_id": "selection-typed-output",
+      "decision_class": "answerable-conditional",
+      "criterion": "Support chosen candidate against explicit user requirements, state conditions and next experiment; no required winner."
+    },
+    {
+      "case_id": "selection-explicit-graph",
+      "decision_class": "answerable-conditional",
+      "criterion": "Support chosen candidate against explicit user requirements, state conditions and next experiment; no required winner."
+    },
+    {
+      "case_id": "selection-tool-approval",
+      "decision_class": "answerable-conditional",
+      "criterion": "Support chosen candidate against explicit user requirements, state conditions and next experiment; no required winner."
+    },
+    {
+      "case_id": "gap-price-performance",
+      "decision_class": "insufficient-decisive-evidence",
+      "criterion": "Do not claim missing benchmark, compliance or exactly-once guarantee; state specific unknowns and next validation."
+    },
+    {
+      "case_id": "gap-compliance",
+      "decision_class": "insufficient-decisive-evidence",
+      "criterion": "Do not claim missing benchmark, compliance or exactly-once guarantee; state specific unknowns and next validation."
+    },
+    {
+      "case_id": "gap-exactly-once",
+      "decision_class": "insufficient-decisive-evidence",
+      "criterion": "Do not claim missing benchmark, compliance or exactly-once guarantee; state specific unknowns and next validation."
+    }
+  ],
+  "thresholds": {
+    "answerable_recommendations": ">=80% (3/3 with this denominator)",
+    "insufficient_handling": "3/3",
+    "severe_errors": 0,
+    "citation_identity": "100%",
+    "quality_mean": ">=4/5; each dimension >=3"
+  },
+  "reviewer": "assistant; not independent human validation",
+  "no_prompt_changes_after_freeze": true
+}
