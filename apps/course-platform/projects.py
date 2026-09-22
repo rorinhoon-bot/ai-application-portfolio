@@ -87,13 +87,18 @@ class ResearchProjects:
         result.update(manifest=manifest, contract_hash=scope['contract_hash'])
         return result
 
-    def create(self, payload, actor='local-browser'):
+    def create(self, payload, actor='local-browser', *, auth=None, owner=None, reviewer_id=None):
+        require((auth is None and owner is None and reviewer_id is None) or
+                (auth is not None and owner is not None and reviewer_id is not None), 'INPUT_INVALID')
         request, value = self._validate(payload)
         signature = digest(value)
         with self.store.transaction() as connection:
             previous = connection.execute("SELECT * FROM research_projects WHERE request_id=?", (request,)).fetchone()
             if previous:
                 require(previous["payload_hash"] == signature, "PROJECT_CONFLICT")
+                if auth is not None:
+                    auth.bind_project_in_transaction(connection, previous['project_id'], owner, reviewer_id,
+                                                     existing=True)
                 return self._detail(connection, previous)
             require(connection.execute('SELECT count(*) FROM research_projects').fetchone()[0] < MAX_PROJECTS,
                     'PROJECT_LIMIT')
@@ -102,6 +107,10 @@ class ResearchProjects:
                                       tuple(value["version_ids"])).fetchall()
             require(len(rows) == len(value["version_ids"]), "NOT_FOUND")
             require(len({row["document_id"] for row in rows}) == len(rows), "PROJECT_CONTRACT")
+            if auth is not None:
+                owned = {row[0] for row in connection.execute(
+                    'SELECT document_id FROM document_owners WHERE user_id=?', (owner['user_id'],))}
+                require(all(row['document_id'] in owned for row in rows), 'NOT_FOUND')
             manifest = [Library._view(row) for row in rows]
             contract_hash = self._contract(value, manifest)
             project = "project-" + uuid.uuid4().hex
@@ -116,6 +125,8 @@ class ResearchProjects:
                 project, request, "project_frozen",
                 json.dumps({"actor": actor, "version_count": len(rows), "contract_hash": contract_hash,
                             "engine_started": False, "content_quality_approval": False}, ensure_ascii=False), created))
+            if auth is not None:
+                auth.bind_project_in_transaction(connection, project, owner, reviewer_id)
             return self._detail(connection, connection.execute("SELECT * FROM research_projects WHERE project_id=?", (project,)).fetchone())
 
     def list(self):

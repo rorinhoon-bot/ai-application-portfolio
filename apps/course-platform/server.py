@@ -156,8 +156,8 @@ class Handler(BaseHTTPRequestHandler):
                 auth.version_access(version, actor)
                 item = service.library.get(version)
                 auth.document_owner(item['document_id'], actor)
-            result = service.projects.create({k: v for k, v in payload.items() if k != 'reviewer_id'}, actor=identity)
-            auth.bind_project(result['project_id'], actor, reviewer_id)
+            result = service.projects.create({k: v for k, v in payload.items() if k != 'reviewer_id'},
+                                             actor=identity, auth=auth, owner=actor, reviewer_id=reviewer_id)
             return 201, result
         match = re.fullmatch(r'/api/projects/(project-[a-f0-9]{32})/tasks', path)
         if match:

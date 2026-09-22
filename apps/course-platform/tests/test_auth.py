@@ -10,6 +10,7 @@ import threading
 import time
 import unittest
 import uuid
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from domain import AppError
@@ -92,6 +93,29 @@ class IdentityHTTPTests(unittest.TestCase):
         status, _, project = self.call('/api/projects', payload, who)
         self.assertEqual(status, 201, project)
         return project, versions, payload
+
+    def test_project_creation_rolls_back_access_failure_and_retry_is_idempotent(self):
+        self.login('alice')
+        versions = [self.import_doc('alice', '原子甲'), self.import_doc('alice', '原子乙')]
+        payload = {'request_id': uuid.uuid4().hex, 'title': '原子创建验证',
+                   'question': '比较两个方案的资料版本与审批边界，并说明离线演示限制。',
+                   'constraints': ['原创合成资料'], 'version_ids': [v['version_id'] for v in versions],
+                   'reviewer_id': self.users['reviewa']['user_id'], 'confirmed': True}
+        with patch.object(self.service.auth, 'bind_project_in_transaction', side_effect=AppError('ACCESS_DENIED')):
+            status, _, body = self.call('/api/projects', payload, 'alice')
+        self.assertEqual(status, 403, body)
+        with self.service.store.transaction() as connection:
+            for table in ('research_projects', 'research_project_scopes', 'research_project_events', 'project_access'):
+                self.assertEqual(connection.execute('SELECT count(*) FROM ' + table).fetchone()[0], 0, table)
+        status, _, project = self.call('/api/projects', payload, 'alice')
+        self.assertEqual(status, 201, project)
+        self.assertEqual(self.call('/api/projects', payload, 'alice')[2]['project_id'], project['project_id'])
+        changed = {**payload, 'reviewer_id': self.users['reviewb']['user_id']}
+        self.assertEqual(self.call('/api/projects', changed, 'alice')[2]['error']['code'], 'NOT_FOUND')
+        with self.service.store.transaction() as connection:
+            self.assertEqual(connection.execute('SELECT count(*) FROM research_projects').fetchone()[0], 1)
+            self.assertEqual(connection.execute('SELECT count(*) FROM project_access').fetchone()[0], 1)
+            self.assertEqual(connection.execute("SELECT count(*) FROM access_audit WHERE action='project_bound'").fetchone()[0], 1)
 
     def test_auth_session_csrf_lockout_logout_and_workspace_marker(self):
         self.assertEqual(self.call('/api/tasks')[0], 401)

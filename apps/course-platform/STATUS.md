@@ -67,3 +67,9 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## 新机器与答辩准备（2026-09-22）
 
 新增`docs/INSTALLATION-CHECKLIST.md`和`docs/graduation/DEFENSE-DEMO.md`；更新学习讲义中的30秒/2分钟介绍及公网安全边界。均为助手准备的操作稿，不是全新机器验收或学生独立答辩证据。后续先取得正式条款、明确资料授权及依赖安装清单，再执行G4评分和新机器实测。
+
+## 后续独立工程（2026-09-22）
+
+当前唯一目标：保留本机权限事务修复与 G4 离线人工评分工具；工程回归已通过，接续等待浏览器接口恢复后复演隔离检出三角色流程、ZIP 实际下载，再与教师要求及授权资料对齐。创建项目/绑定审核者/审计现为单事务；故障注入证明无孤儿项目，重试幂等。新增人工评分表生成、摘要校验、分歧汇总；助手虚构评分只测试工具，真实内容质量仍未验收。
+
+实际分支 `codex/course-platform-ui`，阶段开始 HEAD `e0c4e9320f223a8ee3ac82444b6c260406708a12`；完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/next-steps-tests.json`，59/59通过、0跳过、170.601秒，见`docs/results/next-steps-tests.json`。干净源码 detached 检出仍在`b747621...`且状态为空，浏览器控制连接连续失败，未完成本轮 UI/OS ZIP 落盘复验；原开发工作树 668 条状态路径未变。详见`docs/graduation/NEXT-STEPS-ACCEPTANCE.md`。无新依赖、费用、真实调用或 P1/P2/P3 原状态操作；未 push/合并 main。

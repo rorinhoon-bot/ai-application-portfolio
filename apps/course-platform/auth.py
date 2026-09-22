@@ -173,17 +173,24 @@ class AuthManager:
                 WHERE a.reviewer_id=?''', (actor['user_id'],)))
             require(owned or assigned, 'NOT_FOUND')
 
-    def bind_project(self, project, owner, reviewer_id):
+    def bind_project_in_transaction(self, connection, project, owner, reviewer_id, *, existing=False):
+        """Bind only inside the caller's project-creation transaction."""
         self.require_role(owner, 'researcher')
-        with self.store.transaction() as connection:
-            reviewer = connection.execute("SELECT 1 FROM users WHERE user_id=? AND role='reviewer' AND enabled=1", (reviewer_id,)).fetchone()
-            require(reviewer and reviewer_id != owner['user_id'], 'ACCESS_DENIED')
-            row = connection.execute('SELECT owner_id,reviewer_id FROM project_access WHERE project_id=?', (project,)).fetchone()
-            if row:
-                require(row['owner_id'] == owner['user_id'] and row['reviewer_id'] == reviewer_id, 'NOT_FOUND')
-            else:
-                connection.execute('INSERT INTO project_access VALUES(?,?,?)', (project, owner['user_id'], reviewer_id))
-        self.audit(owner, 'project_bound', project, 'allowed')
+        researcher = connection.execute("SELECT 1 FROM users WHERE user_id=? AND role='researcher' AND enabled=1",
+                                        (owner['user_id'],)).fetchone()
+        reviewer = connection.execute("SELECT 1 FROM users WHERE user_id=? AND role='reviewer' AND enabled=1",
+                                      (reviewer_id,)).fetchone()
+        require(researcher and reviewer and reviewer_id != owner['user_id'], 'ACCESS_DENIED')
+        row = connection.execute('SELECT owner_id,reviewer_id FROM project_access WHERE project_id=?', (project,)).fetchone()
+        if existing:
+            # Never claim a legacy orphan project on an idempotent retry.
+            require(row is not None and row['owner_id'] == owner['user_id'] and
+                    row['reviewer_id'] == reviewer_id, 'NOT_FOUND')
+            return
+        require(row is None, 'PROJECT_CONFLICT')
+        connection.execute('INSERT INTO project_access VALUES(?,?,?)', (project, owner['user_id'], reviewer_id))
+        connection.execute('INSERT INTO access_audit(created_at,user_id,action,resource,outcome) VALUES(?,?,?,?,?)',
+                           (int(time.time()), owner['user_id'], 'project_bound', project, 'allowed'))
 
     def project(self, project, actor, *, owner=False, reviewer=False):
         with self.store.transaction() as connection:
