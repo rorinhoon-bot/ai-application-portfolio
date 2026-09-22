@@ -1,0 +1,60 @@
+{
+  "schema_version": "course-platform-browser-replay-v1",
+  "recorded_at": "2026-09-23T01:49:00+08:00",
+  "source_commit": "5636d6d49665f78e403157be5f38472bd55b171f",
+  "browser": {
+    "name": "Codex In-app Browser",
+    "url": "http://127.0.0.1:8894/#security",
+    "auth_required": true
+  },
+  "workflow": {
+    "project_id": "project-27c76665323f48cda2f30010148dd9f0",
+    "task_id": "task-7cf367c7ddad424bb0286b70d5310111",
+    "run_id": "run-7cf367c7ddad424bb0286b70d5310111",
+    "scope_hash": "72b0abc438a3f12c0359ba0f7a37674a6bc616243cb467af20875a7341dcc136",
+    "execution_hash": "a5eae86dc32c4b1c2612af7e6f76664537cda30fbc46f671d69eda099db78bdc",
+    "roles_replayed": [
+      "researcher",
+      "reviewer",
+      "admin"
+    ],
+    "final_status": "COMPLETED",
+    "evidence_count": 2,
+    "scripted_model_calls": 3,
+    "real_model_calls": 0,
+    "mcp_calls": 8,
+    "human_revisions": 1,
+    "supported_cells": 0,
+    "total_cells": 6,
+    "recommendation": "暂不作推荐"
+  },
+  "delivery": {
+    "browser_download_requests_allowed": 2,
+    "operating_system_download_observed": false,
+    "local_http_persistence_verified": true,
+    "zip_size_bytes": 22753,
+    "zip_sha256": "33571823626c1d44f4280781e01cb415c733c014d7a4bb6f8ce998559b1b7df0",
+    "bundle_consistent": true,
+    "schema_version": "frozen-delivery-v1",
+    "content_quality_passed": false,
+    "cost_minor_units": 0
+  },
+  "audit": {
+    "admin_page_visible": true,
+    "initial_visible_event_count": 26,
+    "final_visible_event_count": 28,
+    "scope_approval_recorded": true,
+    "revision_recorded": true,
+    "report_approval_recorded": true,
+    "completion_recorded": true,
+    "download_allowed_recorded": true,
+    "local_http_download_recorded": true,
+    "unauthenticated_request_recorded": true
+  },
+  "limits": [
+    "All imported documents and decisions were assistant-created synthetic local test data.",
+    "The in-app browser sent allowed download requests but did not create a newly observable file in the Windows Downloads directory.",
+    "A separate authenticated localhost HTTP client persisted the same delivery endpoint response under ignored .runtime state and the independent CLI verified it.",
+    "This replay does not establish real report content quality, a fresh-machine dependency install, teacher acceptance, or independent student implementation."
+  ]
+}

@@ -48,3 +48,9 @@ projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-plat
 - [完整应用回归](results/repro-g4-tests.json)：**63/63通过，0失败/0错误/0跳过，185.602秒**；包括本机 HTTP 权限、实际离线 P1/P2/P3 执行和 G4 表单/ZIP 行为。真实模型调用0、新依赖0，报告内容质量仍 `not_accepted`。
 
 本次没有在该检出复演三角色浏览器 UI 或核对操作系统下载目录；HTTP 下载可存盘的自动测试证据另见 [HTTP交付记录](graduation/HTTP-DOWNLOAD-PERSISTENCE.md)。未取得教师当届条款、正式资料授权、真人独立评分或学生独立讲解。原开发工作树 `codex/graduation-integration` 仍在 `dcb164e`，668条既有状态路径未触碰；新课设分支未 push 或合并 `main`。
+
+## 最新提交的三角色浏览器复演（2026-09-23）
+
+上述“未在该检出复演浏览器”是前一阶段结论。本阶段仍使用 `5636d6d` detached 工作树，但改用全新忽略状态目录，通过 Codex In-app Browser 完成研究者、审核者、管理员全流程。最终任务 `COMPLETED`；证据2、脚本模型3、真实模型0、MCP 8、人工修订1、费用0。管理员审计显示范围批准、报告修订、最终批准、完成和两次允许下载；报告保持0/6支持单元、暂不推荐和真实质量限制。
+
+IAB未在Windows默认下载目录创建可观察新文件，因此系统浏览器落盘仍未验收。随后同一本机接口响应保存到忽略的`.runtime`，22,753字节ZIP的SHA-256为`33571823626c1d44f4280781e01cb415c733c014d7a4bb6f8ce998559b1b7df0`，独立CLI验证`bundle_consistent: true`且`content_quality_passed: false`。完整记录见[浏览器复演](graduation/CLEAN-BROWSER-REPLAY.md)和[结构化结果](results/repro-g4-browser.json)。这不扩大全新机器、正式资料、教师条款、真人评分或学生独立讲解的证据范围。

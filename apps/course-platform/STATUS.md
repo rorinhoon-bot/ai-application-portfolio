@@ -99,3 +99,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## 最新提交干净源码复演（2026-09-23）
 
 当前唯一目标：保留干净源码复现证据，待浏览器工具与外部正式输入到位后补 UI/系统下载和 G4 真正人评。课设分支 `codex/course-platform-ui`，阶段开始 HEAD `5636d6d49665f78e403157be5f38472bd55b171f`。新 detached 工作树在该提交，开始/结束状态均空，复用原三个虚拟环境但运行当前检出业务源码；旧 `b747621` 复现检出未动。环境探针通过；合成检索8篇20题，有依据18/18、无依据2/2；完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/repro-g4-tests.json`：**63/63通过、0跳过、185.602秒**。结果与边界见 `docs/REPRODUCIBILITY.md` 及 `docs/results/repro-g4-*.json`。本阶段无业务代码变更、安装、下载或真实模型调用；原开发工作树仍668条既有状态路径。全新机器安装、浏览器/OS下载、教师要求、授权资料和独立质量评分未验证。
+
+## 最新提交三角色浏览器复演（2026-09-23）
+
+当前唯一目标：等待教师当届条款、正式资料授权及真人独立评分；最新提交的隔离三角色 UI 复演已完成。Codex In-app Browser 在 `5636d6d` detached 工作树和新状态目录中完成研究者导入/建项/建任务、审核者范围批准、研究者修订、审核者报告批准、管理员审计。最终 `COMPLETED`，证据2、脚本模型3、MCP 8、人工修订1、真实调用0、费用0；报告保持0/6支持单元与“暂不作推荐”。两次下载请求均在管理员审计中为allowed；IAB未在Windows Downloads目录产生可观察新文件，故OS浏览器落盘仍未通过。相同本机接口响应保存到忽略的`.runtime`后，独立CLI验证22,753字节ZIP一致，SHA-256 `33571823626c1d44f4280781e01cb415c733c014d7a4bb6f8ce998559b1b7df0`，`content_quality_passed: false`。证据见`docs/graduation/CLEAN-BROWSER-REPLAY.md`与`docs/results/repro-g4-browser.json`。无新依赖、外部网络、真实模型调用或敏感信息入库。
