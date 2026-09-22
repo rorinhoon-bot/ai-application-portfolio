@@ -64,3 +64,7 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 当前交付、测试命令、浏览器未验证项见 [NEXT-STEPS-ACCEPTANCE.md](graduation/NEXT-STEPS-ACCEPTANCE.md)。身份模式项目创建与绑定已合并事务；`score_content.py` 可生成空白评分表并校验独立人工标签。完整应用回归 59/59、0跳过。评分工具使用说明见 [G4-RATING-HANDOFF.md](graduation/G4-RATING-HANDOFF.md)，不得把模拟评审标签作真实质量结论。
 
 浏览器控制连接两次失败，未在 detached 干净检出复演三角色 UI 或验证操作系统 ZIP 下载目录。待界面工具恢复，先用新状态目录重走此项；正式资料/要求/独立人评仍需外部输入。原开发工作树 668 条状态路径保留，P2 预算冻结。此处的工程成果由助手协作完成，学生独立讲解待验证。
+
+## 最新交接：依赖与复现准备（2026-09-22）
+
+先读 [DEPENDENCY-READINESS.md](DEPENDENCY-READINESS.md) 和 [逐包清单](results/dependency-audit.json)。本机三套运行锁共153条项目依赖记录；P1当前虚拟环境缺9包，19条许可证元数据需复核。`pip check`三环境均通过但不检测锁文件缺包。完整应用离线回归61/61、0跳过，见 [结果](results/dependency-readiness-tests.json)。没有安装或下载软件；不把此盘点写成全新机器复现或许可证批准。浏览器接口仍失败，隔离检出 UI/OS ZIP 落盘待补。正式条款、资料授权、真实内容独立评分和学生本人演示仍待后续。

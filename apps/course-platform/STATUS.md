@@ -73,3 +73,9 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 当前唯一目标：保留本机权限事务修复与 G4 离线人工评分工具；工程回归已通过，接续等待浏览器接口恢复后复演隔离检出三角色流程、ZIP 实际下载，再与教师要求及授权资料对齐。创建项目/绑定审核者/审计现为单事务；故障注入证明无孤儿项目，重试幂等。新增人工评分表生成、摘要校验、分歧汇总；助手虚构评分只测试工具，真实内容质量仍未验收。
 
 实际分支 `codex/course-platform-ui`，阶段开始 HEAD `e0c4e9320f223a8ee3ac82444b6c260406708a12`；完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/next-steps-tests.json`，59/59通过、0跳过、170.601秒，见`docs/results/next-steps-tests.json`。干净源码 detached 检出仍在`b747621...`且状态为空，浏览器控制连接连续失败，未完成本轮 UI/OS ZIP 落盘复验；原开发工作树 668 条状态路径未变。详见`docs/graduation/NEXT-STEPS-ACCEPTANCE.md`。无新依赖、费用、真实调用或 P1/P2/P3 原状态操作；未 push/合并 main。
+
+## 新机器依赖只读盘点（2026-09-22）
+
+当前唯一目标：继续完成无需教师条款和外部授权的复现准备，浏览器接口恢复后补三角色 UI 与 ZIP 落盘验收。分支 `codex/course-platform-ui`，阶段开始 HEAD `aadfd4c60708a8a1ef73235dca6b0e27c9c192a5`；本阶段只新增课设应用依赖审计脚本、两项行为测试及文档/结果，不改 P1/P2/P3 业务代码或原工作树。
+
+只读核对 P1/P2/P3 运行锁和现有 `.venv` 元数据：153 条记录，P1 缺 9 个锁定包，已安装包版本差异 0，许可证元数据需复核 19 条（其中 1 条相互冲突）。三个环境 `python -m pip check` 均通过，但不检测锁文件缺包。完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/dependency-readiness-tests.json`；**61/61 通过、0跳过、203.933秒**。见`docs/DEPENDENCY-READINESS.md`和`docs/results/dependency-readiness-tests.json`。本轮安装/下载/真实模型调用均0；未取得新机器、正式资料、独立内容评分或教师当届条款。浏览器工具仍报`nodeRepl.fetch request failed`，故下载目录复验继续未完成。
