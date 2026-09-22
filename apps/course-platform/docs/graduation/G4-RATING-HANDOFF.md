@@ -1,6 +1,6 @@
 # G4 离线人工评分工具交接
 
-2026-09-22。工具已实现并用助手编造的两条主张测试；**尚无授权真实语料、独立评审者评分或教师正式条款**。工具仅生成空白评分表、校验和汇总人工输入，绝不替评审者决定支持程度，也不宣布报告质量合格。
+2026-09-22。工具已实现并用助手编造的两条主张测试；**尚无授权真实语料、独立评审者评分或教师正式条款**。工具生成空白评分/仲裁表，校验和汇总人工输入；绝不替评审者决定支持程度，也不宣布报告质量合格。
 
 ## 资料与预注册
 
@@ -25,6 +25,15 @@ projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-plat
 projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/score_content.py --manifest <manifest.json> --ratings <rater-a.json> <rater-b.json> --output <summary.json>
 ```
 
-脚本拒绝缺项、重复/未知主张、未填标签、重复评审者和资料摘要不匹配；输出各人标签计数、完全一致率及分歧主张编号。**一致率不是正确率**。分歧需人工仲裁并保留原始标签；报告事实支持率、关键遗漏、冲突处理与拒答表现还需单独评价。当前输出固定 `content_quality: not_accepted` 和 `judgment: requires_independent_adjudication`，不由脚本设置最终验收阈值。
+脚本拒绝缺项、重复/未知主张、未填标签、重复评审者和资料摘要不匹配；输出各人标签计数、完全一致率及分歧主张编号。**一致率不是正确率**。分歧需人工仲裁并保留原始标签。
+
+独立评分完成后，可为人工仲裁者生成第三张**空白**表；仲裁者逐条填写最终标签和原因，尤其要说明分歧项。工具不会自动选多数票或覆盖两份原始评分：
+
+```powershell
+projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/score_content.py --manifest <manifest.json> --adjudicator-id adjudicator-c --output <adjudication.json>
+projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/score_content.py --manifest <manifest.json> --ratings <rater-a.json> <rater-b.json> --adjudication <adjudication.json> --output <summary.json>
+```
+
+仲裁表必须覆盖所有主张，绑定相同资料摘要；输出 `adjudicator_id_distinct` 仅标明其**填报ID**是否与原评审ID不同，不构成真人身份或评分独立性证明。工具计算仲裁后完全支持占比及严重不支持数；这些只是已标主张的**描述统计**，不衡量报告遗漏、冲突处理或拒答，也没有预设合格阈值。无仲裁表时保持 `judgment: requires_independent_adjudication`；有完整仲裁表时为 `adjudicated_descriptive_only`；两种情况均固定 `content_quality: not_accepted`，须结合教师条款、预注册阈值与其他内容维度再人工给结论。
 
 应用行为测试：`-m unittest discover -s apps/course-platform/tests -p test_content_scoring.py -v`。测试数据完全原创合成，模拟两位评审者只是核验计算与拒绝路径，不是独立内容验收。助手编写工具和本文件，不代表学生独立完成或讲解。

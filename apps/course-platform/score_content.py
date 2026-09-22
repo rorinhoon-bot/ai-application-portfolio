@@ -1,6 +1,6 @@
 """Prepare independent claim-rating sheets and summarize human labels offline.
 
-This tool never generates labels, adjudicates disagreements, or declares quality passed.
+This tool never generates labels, resolves disagreements, or declares quality passed.
 """
 import argparse
 from collections import Counter
@@ -53,7 +53,7 @@ def manifest_info(value):
 
 
 def sheet(manifest, reviewer_id):
-    ids = manifest_info(manifest)
+    manifest_info(manifest)
     if type(reviewer_id) is not str or not IDENTIFIER.fullmatch(reviewer_id):
         raise ValueError('REVIEWER_INVALID')
     return {'schema_version': 'g4-rating-v1', 'manifest_sha256': digest(manifest), 'reviewer_id': reviewer_id,
@@ -61,15 +61,22 @@ def sheet(manifest, reviewer_id):
                         for claim in manifest['claims']]}
 
 
-def validate_rating(manifest, rating):
+def adjudication_sheet(manifest, adjudicator_id):
+    manifest_info(manifest)
+    if type(adjudicator_id) is not str or not IDENTIFIER.fullmatch(adjudicator_id):
+        raise ValueError('ADJUDICATOR_INVALID')
+    return {'schema_version': 'g4-adjudication-v1', 'manifest_sha256': digest(manifest),
+            'adjudicator_id': adjudicator_id,
+            'decisions': [{'claim_id': claim['claim_id'], 'label': None, 'severity': None, 'note': ''}
+                          for claim in manifest['claims']]}
+
+
+def validate_items(manifest, items):
     identifiers = manifest_info(manifest)
-    if (type(rating) is not dict or set(rating) != {'schema_version', 'manifest_sha256', 'reviewer_id', 'ratings'} or
-            rating['schema_version'] != 'g4-rating-v1' or rating['manifest_sha256'] != digest(manifest) or
-            type(rating['reviewer_id']) is not str or not IDENTIFIER.fullmatch(rating['reviewer_id']) or
-            type(rating['ratings']) is not list):
+    if type(items) is not list:
         raise ValueError('RATING_INVALID')
     seen = set()
-    for item in rating['ratings']:
+    for item in items:
         if type(item) is not dict or set(item) != {'claim_id', 'label', 'severity', 'note'}:
             raise ValueError('RATING_INVALID')
         if (type(item['claim_id']) is not str or item['claim_id'] not in identifiers or item['claim_id'] in seen or
@@ -82,10 +89,29 @@ def validate_rating(manifest, rating):
         seen.add(item['claim_id'])
     if seen != identifiers:
         raise ValueError('RATING_INCOMPLETE')
-    return {item['claim_id']: item for item in rating['ratings']}
+    return {item['claim_id']: item for item in items}
 
 
-def summarize(manifest, ratings):
+def validate_rating(manifest, rating):
+    if (type(rating) is not dict or set(rating) != {'schema_version', 'manifest_sha256', 'reviewer_id', 'ratings'} or
+            rating['schema_version'] != 'g4-rating-v1' or rating['manifest_sha256'] != digest(manifest) or
+            type(rating['reviewer_id']) is not str or not IDENTIFIER.fullmatch(rating['reviewer_id'])):
+        raise ValueError('RATING_INVALID')
+    return validate_items(manifest, rating['ratings'])
+
+
+def validate_adjudication(manifest, adjudication):
+    if (type(adjudication) is not dict or
+            set(adjudication) != {'schema_version', 'manifest_sha256', 'adjudicator_id', 'decisions'} or
+            adjudication['schema_version'] != 'g4-adjudication-v1' or
+            adjudication['manifest_sha256'] != digest(manifest) or
+            type(adjudication['adjudicator_id']) is not str or
+            not IDENTIFIER.fullmatch(adjudication['adjudicator_id'])):
+        raise ValueError('ADJUDICATION_INVALID')
+    return validate_items(manifest, adjudication['decisions'])
+
+
+def summarize(manifest, ratings, adjudication=None):
     manifest_info(manifest)
     if not 1 <= len(ratings) <= 2:
         raise ValueError('REVIEWER_COUNT')
@@ -111,6 +137,17 @@ def summarize(manifest, ratings):
     else:
         output.update(exact_label_agreement=None, disputed_claim_ids=None,
                       limitation='single_reviewer')
+    if adjudication is not None:
+        decided = validate_adjudication(manifest, adjudication)
+        label_counts = dict(sorted(Counter(item['label'] for item in decided.values()).items()))
+        output.update(judgment='adjudicated_descriptive_only',
+                      adjudicator_id=adjudication['adjudicator_id'],
+                      adjudicator_id_distinct=adjudication['adjudicator_id'] not in by_reviewer,
+                      adjudicated_labels=label_counts,
+                      supported_claim_rate=label_counts.get('supported', 0) / len(ids),
+                      major_or_critical_unsupported=sum(
+                          item['label'] == 'unsupported' and item['severity'] in ('major', 'critical')
+                          for item in decided.values()))
     return output
 
 
@@ -119,15 +156,25 @@ def main():
     parser.add_argument('--manifest', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reviewer-id')
+    parser.add_argument('--adjudicator-id')
     parser.add_argument('--ratings', type=Path, nargs='+')
+    parser.add_argument('--adjudication', type=Path)
     args = parser.parse_args()
-    if bool(args.reviewer_id) == bool(args.ratings):
-        parser.error('Specify --reviewer-id to prepare a sheet or --ratings to summarize')
-    if args.output.resolve() in {path.resolve() for path in [args.manifest, *(args.ratings or [])]}:
-        parser.error('Output must not overwrite a manifest or a rating sheet')
+    if sum(bool(value) for value in (args.reviewer_id, args.adjudicator_id, args.ratings)) != 1:
+        parser.error('Specify one of --reviewer-id, --adjudicator-id, or --ratings')
+    if args.adjudication and not args.ratings:
+        parser.error('--adjudication requires --ratings')
+    if args.output.resolve() in {path.resolve() for path in
+                                 [args.manifest, *(args.ratings or []), *([args.adjudication] if args.adjudication else [])]}:
+        parser.error('Output must not overwrite a manifest, rating sheet, or adjudication sheet')
     manifest = read_json(args.manifest)
-    result = sheet(manifest, args.reviewer_id) if args.reviewer_id else summarize(
-        manifest, [read_json(path) for path in args.ratings])
+    if args.reviewer_id:
+        result = sheet(manifest, args.reviewer_id)
+    elif args.adjudicator_id:
+        result = adjudication_sheet(manifest, args.adjudicator_id)
+    else:
+        result = summarize(manifest, [read_json(path) for path in args.ratings],
+                           read_json(args.adjudication) if args.adjudication else None)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({'output': str(args.output), 'manifest_sha256': digest(manifest),

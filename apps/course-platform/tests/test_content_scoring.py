@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from score_content import sheet, summarize, validate_rating
+from score_content import adjudication_sheet, sheet, summarize, validate_adjudication, validate_rating
 
 
 def invented_manifest():
@@ -55,6 +55,42 @@ class ContentScoringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'REVIEWER_DUPLICATE'):
             summarize(manifest, [rating, rating])
 
+    def test_manual_adjudication_is_descriptive_and_preserves_disagreement(self):
+        manifest = invented_manifest()
+        first, second = sheet(manifest, 'rater-a'), sheet(manifest, 'rater-b')
+        for rating in (first, second):
+            rating['ratings'][0].update(label='supported', severity='none')
+            rating['ratings'][1].update(label='unsupported', severity='major', note='无测速证据')
+        second['ratings'][1].update(label='unclear', severity='minor', note='需要其他来源')
+        decision = adjudication_sheet(manifest, 'adjudicator-c')
+        decision['decisions'][0].update(label='supported', severity='none')
+        decision['decisions'][1].update(label='unsupported', severity='major', note='现有资料没有速度比较')
+        output = summarize(manifest, [first, second], decision)
+        self.assertEqual(output['disputed_claim_ids'], ['synthetic-b'])
+        self.assertEqual(output['adjudicated_labels'], {'supported': 1, 'unsupported': 1})
+        self.assertEqual(output['supported_claim_rate'], .5)
+        self.assertEqual(output['major_or_critical_unsupported'], 1)
+        self.assertTrue(output['adjudicator_id_distinct'])
+        self.assertEqual(output['content_quality'], 'not_accepted')
+        self.assertEqual(output['judgment'], 'adjudicated_descriptive_only')
+        decision['adjudicator_id'] = 'rater-a'
+        self.assertFalse(summarize(manifest, [first, second], decision)['adjudicator_id_distinct'])
+
+    def test_adjudication_rejects_stale_or_incomplete_material(self):
+        manifest = invented_manifest()
+        decision = adjudication_sheet(manifest, 'adjudicator-c')
+        with self.assertRaisesRegex(ValueError, 'RATING_INVALID'):
+            validate_adjudication(manifest, decision)
+        for item in decision['decisions']:
+            item.update(label='supported', severity='none')
+        changed = copy.deepcopy(manifest)
+        changed['claims'][0]['claim'] = '改动后的主张'
+        with self.assertRaisesRegex(ValueError, 'ADJUDICATION_INVALID'):
+            validate_adjudication(changed, decision)
+        decision['decisions'].pop()
+        with self.assertRaisesRegex(ValueError, 'RATING_INCOMPLETE'):
+            validate_adjudication(manifest, decision)
+
     def test_cli_prepare_and_summarize_on_local_files(self):
         with tempfile.TemporaryDirectory(prefix='g4-ratings-') as folder:
             root = Path(folder)
@@ -75,3 +111,15 @@ class ContentScoringTests(unittest.TestCase):
                            check=True, capture_output=True)
             self.assertEqual(json.loads(result.read_text(encoding='utf-8'))['exact_label_agreement'], 1.0)
             self.assertEqual(json.loads(result.read_text(encoding='utf-8'))['content_quality'], 'not_accepted')
+            adjudication_path = root / 'adjudication.json'
+            subprocess.run([sys.executable, '-B', str(script), '--manifest', str(manifest_path),
+                            '--adjudicator-id', 'adjudicator-c', '--output', str(adjudication_path)],
+                           check=True, capture_output=True)
+            decision = json.loads(adjudication_path.read_text(encoding='utf-8'))
+            decision['decisions'][0].update(label='supported', severity='none')
+            decision['decisions'][1].update(label='unsupported', severity='major', note='缺少测速证据')
+            adjudication_path.write_text(json.dumps(decision, ensure_ascii=False), encoding='utf-8')
+            subprocess.run([sys.executable, '-B', str(script), '--manifest', str(manifest_path), '--ratings',
+                            str(root / 'rater-a.json'), str(root / 'rater-b.json'), '--adjudication',
+                            str(adjudication_path), '--output', str(result)], check=True, capture_output=True)
+            self.assertEqual(json.loads(result.read_text(encoding='utf-8'))['supported_claim_rate'], .5)

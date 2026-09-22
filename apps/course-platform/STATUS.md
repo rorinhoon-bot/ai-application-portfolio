@@ -83,3 +83,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## HTTP ZIP 本地持久化复核（2026-09-22）
 
 当前唯一目标：等待浏览器接口恢复后做干净检出三角色 UI 与实际下载目录验收；服务端/HTTP 层的可独立验证部分已完成。分支 `codex/course-platform-ui`，阶段开始 HEAD `be42ee59d2c28fb2ea0edaef4a3ca4efb73d4c0b`。扩展现有身份模式 E2E：两个有权身份收到相同 ZIP，HTTP 响应写入本机临时文件后可原样读回，独立 CLI 复核一致，下载审计关联两人。专项命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B -m unittest discover -s apps/course-platform/tests -p test_auth.py -k test_reviewer_finishes_real_offline_delivery -v`；最终 **1/1通过、41.360秒**。上阶段完整61/61回归保留为历史证据，本轮未再跑完整套件；仅改测试/文档，未改业务代码。浏览器工具仍报`nodeRepl.fetch request failed`，故浏览器下载目录仍未验收。详见`docs/graduation/HTTP-DOWNLOAD-PERSISTENCE.md`。
+
+## G4 人工仲裁离线准备（2026-09-22）
+
+当前唯一目标：保留独立人工内容评价可执行流程，待授权资料、真实评审和教师条款到位后执行；浏览器复演仍待工具恢复。分支 `codex/course-platform-ui`，阶段开始 HEAD `69f327ad3efba39a4447254654baabd420111617`。评分工具新增空白仲裁表、严格资料摘要/完整性校验、原始分歧保留及描述性统计；ID不同不等于真人独立，工具永不自动认定内容质量通过。完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/adjudication-tests.json`：**63/63通过、0跳过、199.404秒**。随后只调整输出字段名并专项重跑评分模块5/5通过、0.880秒。详见`docs/graduation/G4-ADJUDICATION-ACCEPTANCE.md`及`docs/results/adjudication-tests.json`。无新依赖、正式资料下载、真实模型调用或原项目状态操作；不宣称真实质量、学生独立实现或毕业设计完成。

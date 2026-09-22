@@ -72,3 +72,7 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 ## 最新交接：HTTP ZIP 存盘与浏览器边界（2026-09-22）
 
 见 [HTTP-DOWNLOAD-PERSISTENCE.md](graduation/HTTP-DOWNLOAD-PERSISTENCE.md)。身份模式 HTTP E2E 额外证实授权用户收到相同 ZIP，临时文件落盘、读回及独立 CLI 复核成功，审计保留两名下载者；专项 1/1 通过。本轮只改测试及文档，未重跑完整61项。浏览器控制仍故障，**不能**把此结果写成浏览器下载目录已验证。课设工作树开始 HEAD `be42ee5`、原开发工作树668条既有改动保持；无新依赖、收费调用或外部操作。
+
+## 最新交接：G4 仲裁工具（2026-09-22）
+
+先读 [G4-ADJUDICATION-ACCEPTANCE.md](graduation/G4-ADJUDICATION-ACCEPTANCE.md) 与 [评分工具使用说明](graduation/G4-RATING-HANDOFF.md)。新增空白仲裁表、严格完整性校验和保留原始评分的描述统计；完整应用63/63通过，随后字段命名微调后专项5/5通过。合成标签只验证流程，不是真实独立人评；`adjudicator_id_distinct`也不证明真人身份。浏览器UI、操作系统下载目录、教师正式条款和真实资料仍待验证。开始分支`codex/course-platform-ui`/HEAD`69f327a`；P2真实预算冻结，不改原项目业务与原开发工作树。
