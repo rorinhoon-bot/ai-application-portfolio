@@ -87,3 +87,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## G4 人工仲裁离线准备（2026-09-22）
 
 当前唯一目标：保留独立人工内容评价可执行流程，待授权资料、真实评审和教师条款到位后执行；浏览器复演仍待工具恢复。分支 `codex/course-platform-ui`，阶段开始 HEAD `69f327ad3efba39a4447254654baabd420111617`。评分工具新增空白仲裁表、严格资料摘要/完整性校验、原始分歧保留及描述性统计；ID不同不等于真人独立，工具永不自动认定内容质量通过。完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/adjudication-tests.json`：**63/63通过、0跳过、199.404秒**。随后只调整输出字段名并专项重跑评分模块5/5通过、0.880秒。详见`docs/graduation/G4-ADJUDICATION-ACCEPTANCE.md`及`docs/results/adjudication-tests.json`。无新依赖、正式资料下载、真实模型调用或原项目状态操作；不宣称真实质量、学生独立实现或毕业设计完成。
+
+## G4 来源包绑定（2026-09-22）
+
+当前唯一目标：待授权资料、教师条款和真人独立评审到位后执行 G4 内容验收；干净检出浏览器 UI 和操作系统 ZIP 下载目录仍待复演。分支 `codex/course-platform-ui`，阶段开始 HEAD `40dc6e04a1d4e09e13d781dc5ab124bcd098aa0b`。新 `g4-claims-v2` 从已复核 ZIP 重建报告全部证据单元、引文和限制；生成表和汇总时重校 ZIP。首次完整回归 **53/63通过、10错误**，导入离线运行器安装全局网络钩子，导致后续本机 HTTP 绑定被拦截；去掉该导入副作用后完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/g4-bundle-binding-tests-fixed.json`：**63/63通过、0跳过、205.660秒**。两次结果和限制见 `docs/graduation/G4-BUNDLE-BINDING-ACCEPTANCE.md`。原开发工作树仍 668 条既有状态路径，P2 预算冻结；真实内容质量、学生独立讲解及学校认可未验证。

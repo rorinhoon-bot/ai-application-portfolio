@@ -1,0 +1,16 @@
+{
+  "schema_version": "course-platform-evaluation-v1",
+  "at": "2026-09-22T15:44:02.129123+00:00",
+  "tests": 63,
+  "failures": 0,
+  "errors": 10,
+  "skipped": 0,
+  "passed": 53,
+  "accepted": false,
+  "seconds": 197.71,
+  "real_model_calls": 0,
+  "new_dependencies": 0,
+  "content_quality": "not_accepted",
+  "scope": "application unit, loopback HTTP, real offline P1/P2/P3 E2E; not original full regressions",
+  "command": "P2 .venv python -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/g4-bundle-binding-tests.json"
+}

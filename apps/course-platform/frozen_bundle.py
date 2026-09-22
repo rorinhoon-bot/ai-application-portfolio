@@ -4,7 +4,7 @@ import json
 import re
 
 from domain import digest, require
-from workflow_runtime import read_json
+from common import read_json
 from agent_research.v2.contracts import ResearchRequestV2, ModelResult, EvidenceRecord
 from agent_research.v2.exporter import render_markdown
 

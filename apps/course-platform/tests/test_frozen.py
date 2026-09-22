@@ -1,5 +1,6 @@
 """Real offline P1 tokenizer, P2 graph and P3 MCP through application jobs."""
 import io
+import copy
 import json
 from pathlib import Path
 import subprocess
@@ -11,6 +12,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from domain import AppError
+from score_content import manifest_from_bundle, sheet, summarize, verify_manifest_bundle
 from service import Service
 from test_platform import settled
 from test_library import source
@@ -92,12 +94,50 @@ class FrozenWorkflowTests(unittest.TestCase):
         valid=subprocess.run([sys.executable,'-B',str(verifier),str(bundle)],capture_output=True,text=True,timeout=20)
         self.assertEqual(valid.returncode,0,valid.stdout+valid.stderr)
         self.assertTrue(json.loads(valid.stdout)['bundle_consistent'])
+        bound=manifest_from_bundle(bundle)
+        self.assertEqual(bound['report_hash'],task['state']['report_hash'])
+        self.assertEqual(len(bound['claims']),len(task['state']['report']['evidence_cells']))
+        self.assertTrue(any(claim['evidence'] for claim in bound['claims']))
+        verify_manifest_bundle(bound,bundle)
+        with self.assertRaisesRegex(ValueError,'BUNDLE_REQUIRED'):
+            sheet(bound,'rater-a')
+        changed=copy.deepcopy(bound)
+        changed['claims'][0]['claim']='伪造的报告主张'
+        with self.assertRaisesRegex(ValueError,'BUNDLE_MISMATCH'):
+            sheet(changed,'rater-a',bundle)
+        changed=copy.deepcopy(bound)
+        with_evidence=next(claim for claim in changed['claims'] if claim['evidence'])
+        with_evidence['evidence'][0]['text']='伪造的引用原文'
+        with self.assertRaisesRegex(ValueError,'BUNDLE_MISMATCH'):
+            sheet(changed,'rater-a',bundle)
+        changed=copy.deepcopy(bound)
+        changed['claims'].pop()
+        with self.assertRaisesRegex(ValueError,'BUNDLE_MISMATCH'):
+            sheet(changed,'rater-a',bundle)
+        rating=sheet(bound,'rater-a',bundle)
+        for item in rating['ratings']:
+            item.update(label='unclear',severity='minor',note='合成材料只用于工具验证')
+        self.assertEqual(summarize(bound,[rating],bundle=bundle)['source_binding'],'verified_bundle')
+        scoring=Path(__file__).resolve().parents[1]/'score_content.py'
+        bound_file=Path(self.temp.name)/'bound.json'
+        prepared=subprocess.run([sys.executable,'-B',str(scoring),'--prepare-from-bundle',
+                                 '--bundle',str(bundle),'--output',str(bound_file)],
+                                capture_output=True,text=True,timeout=20)
+        self.assertEqual(prepared.returncode,0,prepared.stderr)
+        self.assertEqual(json.loads(bound_file.read_text(encoding='utf-8')),bound)
+        rating_file=Path(self.temp.name)/'rating.json'
+        ready=subprocess.run([sys.executable,'-B',str(scoring),'--manifest',str(bound_file),
+                              '--bundle',str(bundle),'--reviewer-id','rater-a','--output',str(rating_file)],
+                             capture_output=True,text=True,timeout=20)
+        self.assertEqual(ready.returncode,0,ready.stderr)
         files['report.md']=b'tampered\n'
         altered=Path(self.temp.name)/'altered.zip'
         with zipfile.ZipFile(altered,'w') as archive:
             for name,content in files.items():archive.writestr(name,content)
         invalid=subprocess.run([sys.executable,'-B',str(verifier),str(altered)],capture_output=True,text=True,timeout=20)
         self.assertEqual(invalid.returncode,2)
+        with self.assertRaisesRegex(AppError,'ENGINE_FAILED'):
+            verify_manifest_bundle(bound,altered)
         self.service.operate(task['id'],self.action(task,'recover'))
         again=settled(self.service,task['id'],180)
         self.assertIsNone(again['last_error'],again)

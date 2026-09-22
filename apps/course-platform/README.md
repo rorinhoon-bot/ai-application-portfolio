@@ -94,6 +94,7 @@ Windows，在仓库根目录双击 `start-course-platform.cmd`，或执行：
 - [G4正式要求与独立内容评价准备](docs/graduation/G4-REAL-DATA-AND-COURSE-PLAN.md)
 - [G4离线人工评分工具](docs/graduation/G4-RATING-HANDOFF.md)；只汇总人工标签，不代替独立评审
 - [G4人工仲裁离线验收](docs/graduation/G4-ADJUDICATION-ACCEPTANCE.md)、[63项应用回归](docs/results/adjudication-tests.json)
+- [G4交付ZIP与评分清单绑定](docs/graduation/G4-BUNDLE-BINDING-ACCEPTANCE.md)；逐格核对主张、引用与报告，仍须授权资料和独立人评
 - [后续独立工程验收](docs/graduation/NEXT-STEPS-ACCEPTANCE.md)、[59项离线回归](docs/results/next-steps-tests.json)
 - [干净源码检出复现记录](docs/REPRODUCIBILITY.md)、[55项复跑结果](docs/results/clean-source-tests.json)
 - [新机器复现核对清单](docs/INSTALLATION-CHECKLIST.md)、[五分钟答辩演示草案](docs/graduation/DEFENSE-DEMO.md)

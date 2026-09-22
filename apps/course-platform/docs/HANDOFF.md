@@ -76,3 +76,7 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 ## 最新交接：G4 仲裁工具（2026-09-22）
 
 先读 [G4-ADJUDICATION-ACCEPTANCE.md](graduation/G4-ADJUDICATION-ACCEPTANCE.md) 与 [评分工具使用说明](graduation/G4-RATING-HANDOFF.md)。新增空白仲裁表、严格完整性校验和保留原始评分的描述统计；完整应用63/63通过，随后字段命名微调后专项5/5通过。合成标签只验证流程，不是真实独立人评；`adjudicator_id_distinct`也不证明真人身份。浏览器UI、操作系统下载目录、教师正式条款和真实资料仍待验证。开始分支`codex/course-platform-ui`/HEAD`69f327a`；P2真实预算冻结，不改原项目业务与原开发工作树。
+
+## 最新交接：G4 ZIP 来源绑定（2026-09-22）
+
+先读 [G4-BUNDLE-BINDING-ACCEPTANCE.md](graduation/G4-BUNDLE-BINDING-ACCEPTANCE.md) 与 [评分操作说明](graduation/G4-RATING-HANDOFF.md)。`g4-claims-v2` 必须从已验证 `frozen-delivery-v1` ZIP 生成，并在每次评分表、仲裁表和汇总时提供同一 ZIP。报告矩阵主张、来源段和格内限制逐项重建校验；旧 `g4-claims-v1` 仍可格式演示但标记 `source_binding: unverified`。首次全回归因进程级网络钩子导入副作用 53/63 通过、10错误；修复后 63/63 通过、0跳过，证据和失败均保留。分支 `codex/course-platform-ui`，阶段开始 HEAD `40dc6e0`；原开发工作树 668 条既有状态路径保持。未获取正式授权资料、真人独立评分、教师当届细则；浏览器工具故障后的干净检出 UI 和系统下载目录仍未复演。P2 真实预算继续冻结，学生独立讲解待验证。
