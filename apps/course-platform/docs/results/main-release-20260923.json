@@ -1,0 +1,44 @@
+{
+  "schema_version": "course-platform-main-release-v1",
+  "recorded_at": "2026-09-23T02:10:00+08:00",
+  "source_branch": "codex/course-platform-ui",
+  "source_commit": "33b5be7559c4bda22f3f5f5cb308bf5e94f7f31b",
+  "main_before": "9e2a77219ac7fbb83d28f6ca2f3e3756a4189201",
+  "published_main": "33b5be7559c4bda22f3f5f5cb308bf5e94f7f31b",
+  "merge_mode": "fast-forward-only",
+  "remote": "origin",
+  "remote_main_verified": true,
+  "tests": {
+    "command": "P2 .venv python -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/pre-main-merge-tests.json",
+    "total": 63,
+    "passed": 63,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 171.587,
+    "real_model_calls": 0,
+    "new_dependencies": 0,
+    "content_quality": "not_accepted"
+  },
+  "publication_review": {
+    "tracked_runtime_state": false,
+    "tracked_virtual_environments": false,
+    "tracked_database_files": false,
+    "tracked_private_key_files": false,
+    "real_credential_pattern_matches": 0,
+    "expected_env_examples": 6,
+    "expected_dummy_secret_matches": 2
+  },
+  "isolation": {
+    "main_worktree": "separate-clean-worktree",
+    "original_branch": "codex/graduation-integration",
+    "original_head": "dcb164e95059b060ffd6aebbaa093a7626177614",
+    "original_status_paths": 668,
+    "original_worktree_modified": false
+  },
+  "limits": [
+    "The first verified remote publication ends at source_commit; this release record is committed and published immediately afterward.",
+    "Real report content quality remains not accepted.",
+    "Fresh-machine dependency installation, teacher requirements, authorized real sources, independent human ratings, and student explanation remain unverified."
+  ]
+}

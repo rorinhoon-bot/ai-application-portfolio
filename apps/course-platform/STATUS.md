@@ -103,3 +103,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## 最新提交三角色浏览器复演（2026-09-23）
 
 当前唯一目标：等待教师当届条款、正式资料授权及真人独立评分；最新提交的隔离三角色 UI 复演已完成。Codex In-app Browser 在 `5636d6d` detached 工作树和新状态目录中完成研究者导入/建项/建任务、审核者范围批准、研究者修订、审核者报告批准、管理员审计。最终 `COMPLETED`，证据2、脚本模型3、MCP 8、人工修订1、真实调用0、费用0；报告保持0/6支持单元与“暂不作推荐”。两次下载请求均在管理员审计中为allowed；IAB未在Windows Downloads目录产生可观察新文件，故OS浏览器落盘仍未通过。相同本机接口响应保存到忽略的`.runtime`后，独立CLI验证22,753字节ZIP一致，SHA-256 `33571823626c1d44f4280781e01cb415c733c014d7a4bb6f8ce998559b1b7df0`，`content_quality_passed: false`。证据见`docs/graduation/CLEAN-BROWSER-REPLAY.md`与`docs/results/repro-g4-browser.json`。无新依赖、外部网络、真实模型调用或敏感信息入库。
+
+## main 发布收口（2026-09-23）
+
+`codex/course-platform-ui` 的 `33b5be7` 相对 `main` 可快进；在独立干净 `main` 工作树用 `--ff-only` 从 `9e2a772` 更新并非强制推送。推送后 `git ls-remote origin refs/heads/main` 精确返回 `33b5be7559c4bda22f3f5f5cb308bf5e94f7f31b`。发布前完整应用回归63/63通过、0跳过、171.587秒，真实模型0、新依赖0、内容质量`not_accepted`。跟踪文件未包含`.runtime`、`.venv`、数据库、私钥或真实凭据；6个`.env.example`为占位配置，两处`sk-test-checkpoint-secret`为既有行为测试假值。原开发工作树保持`codex/graduation-integration`/`dcb164e`及668条既有状态路径。结构化证据见`docs/results/main-release-20260923.json`；本记录提交后还需再次快进并核对远端，最终Git指针以实际远端为准。

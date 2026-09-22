@@ -105,3 +105,7 @@ P2将人工拒绝记录为FAILED加HUMAN_REQUEST_REJECTED/REPORT_REJECTED，不�
 ## C-026：浏览器请求、服务端字节与操作系统落盘分别记证据
 
 2026-09-23。最新提交的三角色流程已在 Codex In-app Browser 和隔离状态中完整复演。管理员审计可证明下载请求经过认证并获准；独立本机 HTTP 客户端保存同一接口响应且 CLI 验证包一致，可证明服务端字节可持久化和复核。IAB 未在 Windows `Downloads` 目录产生可观察新文件，所以仍不把前两项写成操作系统浏览器落盘通过。报告的0/6支持单元、人工批准和ZIP一致性也不用于宣布内容质量达标。证据见 `docs/graduation/CLEAN-BROWSER-REPLAY.md`。
+
+## C-027：只用独立工作树快进发布 main
+
+2026-09-23。原开发工作树有668条必须保留的既有状态路径，因此不切换该工作树。先在干净课设分支完成63项回归和敏感文件扫描，再创建独立`main`工作树；确认本地与远端`main`同为`9e2a772`且都是课设分支祖先后，只执行`git merge --ff-only`和普通`git push origin main`。首轮远端核对精确到`33b5be7`，不使用force、reset、stash、clean或全量暂存。`.env.example`仅留变量名和占位说明；运行状态、ZIP、会话、演示口令及虚拟环境不进入提交。
