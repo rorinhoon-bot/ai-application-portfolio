@@ -95,3 +95,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## G4 报告整体覆盖复核（2026-09-23）
 
 当前唯一目标：等待当届教师条款、资料授权与真人独立评分；可逆离线准备已将矩阵外报告部分加入人工复核。分支 `codex/course-platform-ui`，阶段开始 HEAD `d7b0393ee9d44a816d2f695285e7fcd352532ba8`。从已验证 ZIP 生成报告摘要、推荐、限制、证据格、已读/未引用证据及五项人工检查，完成表必须对同一 ZIP 重建并比对；只报描述计数，质量固定 `not_accepted`。完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/g4-coverage-tests.json`：**63/63通过、0跳过、208.744秒**，见 `docs/graduation/G4-COVERAGE-ACCEPTANCE.md` 与 `docs/results/g4-coverage-tests.json`。浏览器接口仍失败；原生 Edge 无关页面未操作，干净检出 UI/操作系统下载目录仍未复演。原开发工作树 668 条状态路径保留，P2 真实预算冻结；正式内容质量和学生独立讲解未验证。
+
+## 最新提交干净源码复演（2026-09-23）
+
+当前唯一目标：保留干净源码复现证据，待浏览器工具与外部正式输入到位后补 UI/系统下载和 G4 真正人评。课设分支 `codex/course-platform-ui`，阶段开始 HEAD `5636d6d49665f78e403157be5f38472bd55b171f`。新 detached 工作树在该提交，开始/结束状态均空，复用原三个虚拟环境但运行当前检出业务源码；旧 `b747621` 复现检出未动。环境探针通过；合成检索8篇20题，有依据18/18、无依据2/2；完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/repro-g4-tests.json`：**63/63通过、0跳过、185.602秒**。结果与边界见 `docs/REPRODUCIBILITY.md` 及 `docs/results/repro-g4-*.json`。本阶段无业务代码变更、安装、下载或真实模型调用；原开发工作树仍668条既有状态路径。全新机器安装、浏览器/OS下载、教师要求、授权资料和独立质量评分未验证。

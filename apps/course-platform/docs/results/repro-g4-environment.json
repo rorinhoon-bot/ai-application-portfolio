@@ -1,0 +1,35 @@
+{
+  "schema_version": "course-environment-v1",
+  "ready": true,
+  "results": [
+    {
+      "project": "01-cited-rag",
+      "ready": true,
+      "python": "3.14.3",
+      "packages": {
+        "pydantic": "2.13.4"
+      }
+    },
+    {
+      "project": "02-agent-research-workflow",
+      "ready": true,
+      "python": "3.14.3",
+      "packages": {
+        "pydantic": "2.13.4",
+        "langgraph": "1.2.9",
+        "langgraph-checkpoint-sqlite": "3.1.0"
+      }
+    },
+    {
+      "project": "03-mcp-tool-server",
+      "ready": true,
+      "python": "3.13.14",
+      "packages": {
+        "mcp": "2.0.0",
+        "pydantic": "2.13.4"
+      }
+    }
+  ],
+  "installs": 0,
+  "real_model_calls": 0
+}

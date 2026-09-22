@@ -1,6 +1,6 @@
 # 新机器复现核对清单
 
-本文件是未来验收步骤，**尚未在全新机器执行**。现有证据只覆盖[干净源码检出、复用原有虚拟环境](REPRODUCIBILITY.md)。不得把清单当作完成记录。
+本文件是未来验收步骤，**尚未在全新机器执行**。现有证据只覆盖[干净源码检出、复用原有虚拟环境](REPRODUCIBILITY.md)；最新 `5636d6d` 提交也已在独立检出复演。不得把清单当作完成记录。
 
 1. 从包含 `apps/course-platform` 的 Git 提交取得源码；当前仅有本地 `codex/course-platform-ui` 提交，未 push，远程克隆是否包含此应用尚未验证。不要复制 `.runtime`、数据库、真实 `.env`、缓存或原项目账本。
 2. 在 Windows 核对 P1、P2、P3 README、`pyproject.toml` 和依赖文件。已验证解释器为 P1/P2 Python 3.14.3、P3 Python 3.13.14；新机器兼容性未知。P1/P2 使用各自 `requirements.txt`，P3 使用 `requirements.lock.txt`。先看[本机只读依赖盘点](DEPENDENCY-READINESS.md)：153条记录中P1有9个现有环境缺包、19条许可证元数据待复核；P1 `requirements-api.txt` 仅适用指定 Linux 目标。安装前逐包核准精确版本、许可证、用途、离线替代方案、下载来源和费用；本轮未安装。
