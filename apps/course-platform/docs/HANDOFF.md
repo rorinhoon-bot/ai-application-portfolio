@@ -80,3 +80,7 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 ## 最新交接：G4 ZIP 来源绑定（2026-09-22）
 
 先读 [G4-BUNDLE-BINDING-ACCEPTANCE.md](graduation/G4-BUNDLE-BINDING-ACCEPTANCE.md) 与 [评分操作说明](graduation/G4-RATING-HANDOFF.md)。`g4-claims-v2` 必须从已验证 `frozen-delivery-v1` ZIP 生成，并在每次评分表、仲裁表和汇总时提供同一 ZIP。报告矩阵主张、来源段和格内限制逐项重建校验；旧 `g4-claims-v1` 仍可格式演示但标记 `source_binding: unverified`。首次全回归因进程级网络钩子导入副作用 53/63 通过、10错误；修复后 63/63 通过、0跳过，证据和失败均保留。分支 `codex/course-platform-ui`，阶段开始 HEAD `40dc6e0`；原开发工作树 668 条既有状态路径保持。未获取正式授权资料、真人独立评分、教师当届细则；浏览器工具故障后的干净检出 UI 和系统下载目录仍未复演。P2 真实预算继续冻结，学生独立讲解待验证。
+
+## 最新交接：G4 报告整体覆盖复核（2026-09-23）
+
+先读 [覆盖复核操作](graduation/G4-COVERAGE-HANDOFF.md) 和 [离线验收](graduation/G4-COVERAGE-ACCEPTANCE.md)。矩阵外摘要、推荐、限制及已读却未引用的证据现在进入独立人工核对表；每次验证重校完整 ZIP，完成标签只出描述计数，不能宣称真实质量。应用全套63/63通过、0跳过。开始分支 `codex/course-platform-ui`、HEAD `d7b0393`；原开发工作树 668 条既有状态路径保持。浏览器连接仍失败且原生 Edge 是无关页面，未做本轮 UI/系统下载复演。正式资料授权、当届条款、真人评审和学生本人讲解仍需后续；P2 真实预算冻结。

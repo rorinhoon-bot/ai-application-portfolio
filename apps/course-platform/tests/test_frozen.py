@@ -12,6 +12,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from domain import AppError
+from coverage_review import CHECKS, prepare as prepare_coverage, validate as validate_coverage
 from score_content import manifest_from_bundle, sheet, summarize, verify_manifest_bundle
 from service import Service
 from test_platform import settled
@@ -130,6 +131,45 @@ class FrozenWorkflowTests(unittest.TestCase):
                               '--bundle',str(bundle),'--reviewer-id','rater-a','--output',str(rating_file)],
                              capture_output=True,text=True,timeout=20)
         self.assertEqual(ready.returncode,0,ready.stderr)
+        coverage=prepare_coverage(bundle,'coverage-rater-a')
+        material=coverage['material']
+        self.assertEqual(material['report']['executive_summary'],task['state']['report']['executive_summary'])
+        self.assertEqual(material['report']['limitations'],task['state']['report']['limitations'])
+        self.assertEqual(len(material['cells']),len(bound['claims']))
+        self.assertEqual(len(material['evidence']),len(task['state']['evidence']))
+        self.assertEqual([item['check_id'] for item in material['review_criteria']],
+                         [check_id for check_id,_ in CHECKS])
+        self.assertEqual(len(coverage['answers']),len(CHECKS))
+        with self.assertRaisesRegex(ValueError,'REVIEW_INVALID'):
+            validate_coverage(coverage,bundle)
+        changed=copy.deepcopy(coverage)
+        changed['material']['report']['executive_summary']='伪造的摘要'
+        with self.assertRaisesRegex(ValueError,'BUNDLE_MISMATCH'):
+            validate_coverage(changed,bundle)
+        for item in coverage['answers']:
+            item.update(status='adequate',note='')
+        coverage['answers'][2].update(status='concern',note='需要核对全部冻结资料是否有遗漏')
+        coverage_summary=validate_coverage(coverage,bundle)
+        self.assertEqual(coverage_summary['concern_check_ids'],['omissions_conflicts'])
+        self.assertEqual(coverage_summary['content_quality'],'not_accepted')
+        self.assertFalse(coverage_summary['reviewer_identity_verified'])
+        coverage_tool=Path(__file__).resolve().parents[1]/'coverage_review.py'
+        coverage_file=Path(self.temp.name)/'coverage.json'
+        created=subprocess.run([sys.executable,'-B',str(coverage_tool),'--bundle',str(bundle),
+                                '--reviewer-id','coverage-rater-b','--output',str(coverage_file)],
+                               capture_output=True,text=True,timeout=20)
+        self.assertEqual(created.returncode,0,created.stderr)
+        filled=json.loads(coverage_file.read_text(encoding='utf-8'))
+        for item in filled['answers']:
+            item.update(status='unclear',note='合成资料仅供工具行为测试')
+        coverage_file.write_text(json.dumps(filled,ensure_ascii=False),encoding='utf-8')
+        summary_file=Path(self.temp.name)/'coverage-summary.json'
+        checked=subprocess.run([sys.executable,'-B',str(coverage_tool),'--bundle',str(bundle),
+                                '--review',str(coverage_file),'--output',str(summary_file)],
+                               capture_output=True,text=True,timeout=20)
+        self.assertEqual(checked.returncode,0,checked.stderr)
+        self.assertEqual(json.loads(summary_file.read_text(encoding='utf-8'))['status_counts'],
+                         {'unclear':len(CHECKS)})
         files['report.md']=b'tampered\n'
         altered=Path(self.temp.name)/'altered.zip'
         with zipfile.ZipFile(altered,'w') as archive:
@@ -138,6 +178,8 @@ class FrozenWorkflowTests(unittest.TestCase):
         self.assertEqual(invalid.returncode,2)
         with self.assertRaisesRegex(AppError,'ENGINE_FAILED'):
             verify_manifest_bundle(bound,altered)
+        with self.assertRaisesRegex(AppError,'ENGINE_FAILED'):
+            validate_coverage(coverage,altered)
         self.service.operate(task['id'],self.action(task,'recover'))
         again=settled(self.service,task['id'],180)
         self.assertIsNone(again['last_error'],again)

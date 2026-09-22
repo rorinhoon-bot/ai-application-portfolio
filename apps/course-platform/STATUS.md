@@ -91,3 +91,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## G4 来源包绑定（2026-09-22）
 
 当前唯一目标：待授权资料、教师条款和真人独立评审到位后执行 G4 内容验收；干净检出浏览器 UI 和操作系统 ZIP 下载目录仍待复演。分支 `codex/course-platform-ui`，阶段开始 HEAD `40dc6e04a1d4e09e13d781dc5ab124bcd098aa0b`。新 `g4-claims-v2` 从已复核 ZIP 重建报告全部证据单元、引文和限制；生成表和汇总时重校 ZIP。首次完整回归 **53/63通过、10错误**，导入离线运行器安装全局网络钩子，导致后续本机 HTTP 绑定被拦截；去掉该导入副作用后完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/g4-bundle-binding-tests-fixed.json`：**63/63通过、0跳过、205.660秒**。两次结果和限制见 `docs/graduation/G4-BUNDLE-BINDING-ACCEPTANCE.md`。原开发工作树仍 668 条既有状态路径，P2 预算冻结；真实内容质量、学生独立讲解及学校认可未验证。
+
+## G4 报告整体覆盖复核（2026-09-23）
+
+当前唯一目标：等待当届教师条款、资料授权与真人独立评分；可逆离线准备已将矩阵外报告部分加入人工复核。分支 `codex/course-platform-ui`，阶段开始 HEAD `d7b0393ee9d44a816d2f695285e7fcd352532ba8`。从已验证 ZIP 生成报告摘要、推荐、限制、证据格、已读/未引用证据及五项人工检查，完成表必须对同一 ZIP 重建并比对；只报描述计数，质量固定 `not_accepted`。完整命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/g4-coverage-tests.json`：**63/63通过、0跳过、208.744秒**，见 `docs/graduation/G4-COVERAGE-ACCEPTANCE.md` 与 `docs/results/g4-coverage-tests.json`。浏览器接口仍失败；原生 Edge 无关页面未操作，干净检出 UI/操作系统下载目录仍未复演。原开发工作树 668 条状态路径保留，P2 真实预算冻结；正式内容质量和学生独立讲解未验证。
