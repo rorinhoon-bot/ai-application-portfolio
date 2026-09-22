@@ -1,0 +1,45 @@
+{
+  "schema_version": "course-browser-review-v1",
+  "date": "2026-09-18",
+  "executor": "assistant",
+  "browser": "Codex in-app browser",
+  "checks": {
+    "empty_dashboard": true,
+    "create": true,
+    "request_approval": true,
+    "report_approval": true,
+    "completed_after_restart": true,
+    "evidence_count": 6,
+    "mcp_events": 8,
+    "approval_records": 2,
+    "knowledge_checkpoint_matches": 2,
+    "list_search_and_status_filter": true,
+    "cancel": true,
+    "archive": true,
+    "untrusted_title_as_text": true,
+    "injected_img_count": 0,
+    "script_dialog": false,
+    "narrow_viewport_css_width": 391,
+    "narrow_document_scroll_width": 391,
+    "download_success_toast": true,
+    "http_zip_status": 200,
+    "http_zip_bytes": 16212
+  },
+  "download_os_file_verified": false,
+  "download_event_wait": "timeout_30_seconds",
+  "console_errors_observed": 0,
+  "screenshots": [
+    "dashboard.jpg",
+    "report-review.jpg",
+    "report.jpg",
+    "audit.jpg",
+    "knowledge.jpg",
+    "mobile-dashboard.jpg"
+  ],
+  "limits": [
+    "fixed synthetic corpus and scripted model",
+    "content quality not accepted",
+    "not independent student work",
+    "not school final acceptance"
+  ]
+}

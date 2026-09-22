@@ -1,0 +1,62 @@
+{
+  "schema_version": "course-ui-review-v2",
+  "review_date": "2026-09-19",
+  "branch": "codex/course-platform-ui",
+  "head": "9e2a77219ac7fbb83d28f6ca2f3e3756a4189201",
+  "http_regression": {
+    "passed": 6,
+    "command": "projects/02-agent-research-workflow/.venv/Scripts/python.exe -B -m unittest discover -s apps/course-platform/tests -p test_platform.py -k HTTPTests -v",
+    "seconds": 3.455,
+    "failed": 0
+  },
+  "browser_checks": {
+    "historical_report_evidence_count": 6,
+    "application_console_errors": [],
+    "responsive_document_has_horizontal_overflow": false,
+    "responsive_document_widths": [
+      360,
+      754
+    ],
+    "no_results_clears_reader": true,
+    "explicit_cancel_and_archive": true,
+    "historical_mcp_count": 8,
+    "template_prefills_creation": true,
+    "responsive_requested_widths": [
+      375,
+      768
+    ],
+    "content_quality_limit_disclosed": true,
+    "fingerprints_visible": true,
+    "clear_search_restores_six": true,
+    "historical_approval_count": 2,
+    "checkpoint_matches": 2,
+    "record_selection_updates_reader_and_focus": true,
+    "new_task_waits_for_scope_approval": true,
+    "chinese_approval_matches": 2,
+    "source_filter_counts": [
+      3,
+      3,
+      6
+    ]
+  },
+  "backend_and_test_hashes_unchanged": true,
+  "original_worktree_status_unchanged": true,
+  "original_status_count": 668,
+  "new_dependencies": 0,
+  "new_real_model_calls": 0,
+  "remote_skill_installed": false,
+  "committed": false,
+  "pushed": false,
+  "screenshots": "docs/screenshots/ui-v2/",
+  "web_sha256": {
+    "styles.css": "6c69f31ca0f87a60f445f59a59e6ec4e890c70f0da3eccaa1d3dde74b46d0e99",
+    "index.html": "4f823734421cd8d8fd58a054654a41305255d421bd07c58c90c5ecda6d10dc11",
+    "app.js": "f02e42cb435ee3433157547a8e7a04c25f02d024e30eefd46c17154d0e28cbd2"
+  },
+  "limitations": [
+    "Browser inspection is not a full accessibility certification.",
+    "Historical full 21-test result is retained; this refresh reran 6 HTTP tests.",
+    "Real model content quality remains unaccepted.",
+    "No new OS download persistence or clean-machine acceptance."
+  ]
+}

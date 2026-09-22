@@ -1,0 +1,67 @@
+{
+  "schema_version": "graduation-g1-browser-v1",
+  "verified_at": "2026-09-21",
+  "branch": "codex/course-platform-ui",
+  "head": "9e2a77219ac7fbb83d28f6ca2f3e3756a4189201",
+  "preview": "http://127.0.0.1:8879/#library",
+  "state_dir": "apps/course-platform/.runtime/graduation-g1-state",
+  "checks": [
+    {
+      "name": "empty_library_and_import_dialog",
+      "result": "passed"
+    },
+    {
+      "name": "pasted_utf8_text_requires_explicit_authorization",
+      "result": "passed"
+    },
+    {
+      "name": "source_and_rights_visible",
+      "result": "passed"
+    },
+    {
+      "name": "chinese_search_and_source_locator",
+      "result": "passed"
+    },
+    {
+      "name": "untrusted_html_rendered_as_text",
+      "result": "passed",
+      "evidence": "project-reader img count 0"
+    },
+    {
+      "name": "new_revision_and_history_selector",
+      "result": "passed"
+    },
+    {
+      "name": "unmatched_query_returns_empty_without_answer",
+      "result": "passed"
+    },
+    {
+      "name": "reload_preserves_latest_and_history",
+      "result": "passed"
+    },
+    {
+      "name": "mobile_375_no_horizontal_overflow",
+      "result": "passed",
+      "evidence": "clientWidth 360, scrollWidth 360"
+    },
+    {
+      "name": "tablet_768_no_horizontal_overflow",
+      "result": "passed",
+      "evidence": "clientWidth 754, scrollWidth 754"
+    },
+    {
+      "name": "browser_error_logs",
+      "result": "passed",
+      "evidence": "no console error entries"
+    }
+  ],
+  "limitations": [
+    "OS file chooser path was not exercised in browser; backend contract tested",
+    "synthetic assistant-authored demo content only",
+    "not a formal accessibility, multi-user, clean-machine, or real-content-quality acceptance"
+  ],
+  "artifacts": [
+    "docs/screenshots/graduation-g1/library-desktop.jpg",
+    "docs/screenshots/graduation-g1/library-mobile.jpg"
+  ]
+}

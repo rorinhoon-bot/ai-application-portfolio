@@ -1,0 +1,62 @@
+{
+  "schema_version": "graduation-g2a-browser-v1",
+  "date": "2026-09-21",
+  "branch": "codex/course-platform-ui",
+  "head": "9e2a77219ac7fbb83d28f6ca2f3e3756a4189201",
+  "preview": "http://127.0.0.1:8880/#projects",
+  "demo_project": "project-6b3d53f5700349c198e209e13cb4a4f6",
+  "checks": {
+    "empty_library_create_disabled": true,
+    "missing_selection_rejected": true,
+    "project_creation_and_scope": true,
+    "frozen_search_and_evidence_check": true,
+    "source_revision_does_not_change_scope": true,
+    "new_word_excluded_old_text_found": true,
+    "html_as_text_zero_images": true,
+    "reload_and_list_return": true,
+    "desktop_no_overflow": [
+      1266,
+      1266
+    ],
+    "mobile_375_no_overflow": [
+      360,
+      360
+    ],
+    "tablet_768_no_overflow": [
+      754,
+      754
+    ],
+    "mobile_dialog_no_overflow": [
+      312,
+      312
+    ],
+    "console_errors": 0
+  },
+  "original_worktree": {
+    "branch": "codex/graduation-integration",
+    "head": "dcb164e95059b060ffd6aebbaa093a7626177614",
+    "status_count": 668,
+    "status_same": true
+  },
+  "original_modules_unchanged": true,
+  "new_dependencies": 0,
+  "real_model_calls": 0,
+  "committed": false,
+  "pushed": false,
+  "limitations": [
+    "G2-A only; no dynamic task/report/approval execution",
+    "synthetic assistant-authored content, not quality acceptance",
+    "not formal accessibility or cross-browser certification"
+  ],
+  "source_sha256": {
+    "projects.py": "b0411d68bbe88837f8ae8649c7f82a99a5145d7f651fbbdf961ab6af69cf9067",
+    "domain.py": "5448f47a459342eb542a4ed0bce2fef5ba3dcde73427a66a1e7e0c6b890a64ff",
+    "service.py": "aef6d23b30e08d3473ba7b4c7271999976693fb7eca2307d6890f77fd2e3d56d",
+    "server.py": "76e04c91c73e29c2f74f934f8222e65f7bb77db38e8737fbf0c7c4b7e1ec78b1",
+    "web/projects.js": "dcff165d76d02ee703a24ced45c07dfb39c5886bf186a523fcb0067fb0ba1e63",
+    "web/app.js": "89dc97b9666f48c3fcc48c4cbc4c5c5193d80e7bd02a7b5d23156aa993f231d5",
+    "web/index.html": "18b0cd8e843309a91739f5db3f3d2d837a24449af975cb66d613506ef95f2417",
+    "web/styles.css": "532ae709e9bdfda44723eec0a31a2fde07f1877d644664847aa262a5110e70df",
+    "tests/test_projects.py": "f17b87b302009324dadc66cf506891b10abb36f400f369f6c4f968ce8d548b84"
+  }
+}

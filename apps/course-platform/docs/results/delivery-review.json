@@ -1,0 +1,23 @@
+{
+  "schema_version": "course-delivery-review-v1",
+  "branch": "codex/course-platform-ui",
+  "head": "9e2a77219ac7fbb83d28f6ca2f3e3756a4189201",
+  "original_status_count": 668,
+  "original_status_unchanged": true,
+  "p1_p2_p3_business_changed": false,
+  "secret_pattern_findings": [],
+  "new_source_sha256": {
+    "apps/course-platform/check_environment.py": "301bac1028bd00f2adf77267204141b8c91867f23587c0b0052e510e1201c32c",
+    "apps/course-platform/domain.py": "c4bef4f6a0c394986e53cba43b11f3f9f6b12f33bdca1a90f0bef5a53c0356f7",
+    "apps/course-platform/engine.py": "ba154dabc159be7193e8dd2ea0445c66256f85b00dfa053ffcd0049698d90cc1",
+    "apps/course-platform/engine_worker.py": "94f993176d3dc8a3438815a1ead0166dd7b679bcdae4fe33cf9f2268389ec6c9",
+    "apps/course-platform/evaluate.py": "3da057b64296828948e25c814ed06936de5ff745415a8b85abbdc8255271e58d",
+    "apps/course-platform/server.py": "377c6cc06cb754ac7ee7699f6c1c9aab49ec460f77a02800111d61631e655a8b",
+    "apps/course-platform/service.py": "3a16298a1ec65ce7239bc5d1c15cac97a799f149a150a50f4ed851ad9e6991a6",
+    "apps/course-platform/store.py": "62889755854f678230a936506613186ea3d277d988b8871122db1cd94e4a16e8",
+    "apps/course-platform/tests/test_platform.py": "c53ce5e46b3e09d9c9523ace508f85b666d5b848764f5fb20e03add0301adb34",
+    "apps/course-platform/web/app.js": "84e7c659e5695c018771a477646dd1865ba1cea8c7dd7c741325e5dffbdb029a",
+    "apps/course-platform/web/index.html": "1fbbc18d778c3dbb3767f61ef3bffd56e8233cca00b4321e4cce0b7ef24d809f",
+    "apps/course-platform/web/styles.css": "bb82312a3aeea45e15a16041dcf133c727c0aff2755d47addf5efa50f3c604ac"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "course-platform-evaluation-v1",
+  "at": "2026-09-19T06:39:45.684994+00:00",
+  "tests": 36,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 36,
+  "accepted": true,
+  "seconds": 58.44,
+  "real_model_calls": 0,
+  "new_dependencies": 0,
+  "content_quality": "not_accepted",
+  "scope": "application unit, loopback HTTP, real offline P1/P2/P3 E2E; not original full regressions",
+  "command": "P2 .venv python -B apps/course-platform/evaluate.py --output apps/course-platform/docs/results/graduation-g1-tests.json"
+}

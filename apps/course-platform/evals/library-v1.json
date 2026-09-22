@@ -1,0 +1,36 @@
+{
+  "schema_version": "synthetic-library-eval-v1",
+  "provenance": "Original assistant-authored synthetic design notes. Not external product documentation, student-authored evidence, or independent content-quality gold.",
+  "documents": [
+    {"id":"recovery","title":"恢复设计说明","content":"断点恢复在每个节点完成后保存状态。恢复时重新读取检查点，避免重复执行已完成步骤。\n\nCheckpoint recovery resumes an interrupted workflow from its saved state."},
+    {"id":"approval","title":"审批设计说明","content":"人工审批绑定当前报告版本。修改正文后，旧的批准记录不再允许交付。\n\nHuman approval is bound to the report hash. The model cannot approve its own output."},
+    {"id":"retrieval","title":"检索设计说明","content":"混合检索结合关键词与向量召回，随后重排候选段落。需要用独立问题验证召回效果。\n\nHybrid retrieval combines lexical search with vector search and reranking."},
+    {"id":"permission","title":"文件工具设计说明","content":"文件工具只读白名单目录。路径穿越和符号链接必须被拒绝，参数中的命令不会执行。\n\nPath traversal is rejected. Read-only tools cannot write outside an allowed directory."},
+    {"id":"queue","title":"任务队列设计说明","content":"任务队列设置容量上限。超时任务保留错误记录，新的请求收到明确错误。\n\nA bounded queue limits pending jobs. Worker timeout retains diagnostics."},
+    {"id":"version","title":"资料版本设计说明","content":"资料版本不可变。每个段落记录来源文件、行号与内容指纹，更新资料不会覆盖旧版本。\n\nImmutable source versions preserve citations with line numbers and content fingerprints."},
+    {"id":"identity","title":"身份隔离设计说明","content":"身份认证确认操作者，权限检查限制研究者与审核者可以执行的动作。页面隐藏按钮不能代替服务端授权。\n\nAuthentication identifies the user. Server authorization enforces the reviewer role."},
+    {"id":"cost","title":"费用限制设计说明","content":"费用预算按实际账本检查。调用容量耗尽后禁止继续调用，不能更换账本绕过限制。\n\nA budget ledger rejects requests after the call capacity is exhausted."}
+  ],
+  "questions": [
+    {"query":"断点恢复","expected":"recovery"},
+    {"query":"recovery checkpoint","expected":"recovery"},
+    {"query":"保存状态 节点","expected":"recovery"},
+    {"query":"人工审批","expected":"approval"},
+    {"query":"hash approval","expected":"approval"},
+    {"query":"修改正文 批准记录","expected":"approval"},
+    {"query":"混合检索","expected":"retrieval"},
+    {"query":"reranking hybrid","expected":"retrieval"},
+    {"query":"路径穿越","expected":"permission"},
+    {"query":"traversal directory","expected":"permission"},
+    {"query":"任务队列","expected":"queue"},
+    {"query":"timeout worker","expected":"queue"},
+    {"query":"资料版本","expected":"version"},
+    {"query":"fingerprints citations","expected":"version"},
+    {"query":"身份认证","expected":"identity"},
+    {"query":"reviewer authorization","expected":"identity"},
+    {"query":"费用预算","expected":"cost"},
+    {"query":"ledger exhausted","expected":"cost"},
+    {"query":"火星气象预报","expected":null},
+    {"query":"photosynthesis chlorophyll","expected":null}
+  ]
+}

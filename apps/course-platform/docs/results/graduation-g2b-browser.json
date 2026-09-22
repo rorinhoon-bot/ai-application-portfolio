@@ -1,0 +1,33 @@
+{
+  "schema_version": "graduation-g2b-browser-v1",
+  "date_local": "2026-09-22",
+  "preview": "http://127.0.0.1:8881",
+  "state_dir": "apps/course-platform/.runtime/graduation-g2b-state",
+  "project_id": "project-a5f7375a7b2c44c58b9626e6af367a14",
+  "task_id": "task-fd6a31fc2f5c4de0ab734ea4615b0f74",
+  "content": "two assistant-authored synthetic documents imported through UI",
+  "checks": {
+    "project_versions": 2,
+    "candidates": 2,
+    "pre_approval_scripted_calls": 0,
+    "pre_approval_mcp_calls": 0,
+    "post_scope_approval_status": "REPORT_NEEDS_HUMAN",
+    "deduplicated_evidence": 2,
+    "mcp_read_calls": 8,
+    "scripted_model_calls": 3,
+    "human_revision_count": 1,
+    "post_report_approval_status": "COMPLETED",
+    "download_ui_message": "交付包校验通过，已开始下载",
+    "desktop_client_width": 987,
+    "desktop_scroll_width": 987,
+    "mobile_requested_width": 375,
+    "mobile_client_width": 360,
+    "mobile_scroll_width": 360,
+    "browser_script_error_count_observed": 0
+  },
+  "limits": [
+    "Browser button and HTTP ZIP verified; operating-system file persistence not separately observed.",
+    "Synthetic scripted demonstration is not real-model content quality acceptance.",
+    "Preview state and services are isolated from the preexisting 8878/8879/8880 previews."
+  ]
+}

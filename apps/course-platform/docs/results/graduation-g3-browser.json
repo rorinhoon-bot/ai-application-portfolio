@@ -1,0 +1,34 @@
+{
+  "schema_version": "graduation-g3-browser-v1",
+  "date_local": "2026-09-22",
+  "preview": "http://127.0.0.1:8882",
+  "state_dir": "apps/course-platform/.runtime/graduation-g3-state",
+  "project_id": "project-de88a1ae3ac043fbad7a080f132df317",
+  "task_id": "task-344d8dd06cf84378a15ac092c1af8bcb",
+  "accounts": "three assistant-created synthetic local accounts; credentials not recorded",
+  "content": "two assistant-authored synthetic documents imported through UI",
+  "checks": {
+    "researcher_approval_button_visible": false,
+    "assigned_reviewer_approval_button_visible": true,
+    "pre_approval_scripted_calls": 0,
+    "pre_approval_mcp_calls": 0,
+    "deduplicated_evidence": 2,
+    "mcp_read_calls": 8,
+    "scripted_model_calls": 3,
+    "post_report_approval_status": "COMPLETED",
+    "download_button_request_completed": true,
+    "admin_audit_events_observed": 19,
+    "audit_has_allowed_and_denied": true,
+    "mobile_requested_width": 375,
+    "mobile_client_width": 360,
+    "mobile_scroll_width": 360,
+    "viewport_reset_client_width": 1266,
+    "viewport_reset_scroll_width": 1266
+  },
+  "limits": [
+    "Operating-system persistence of the browser download was not separately observed; HTTP ZIP bytes were tested.",
+    "The preview process was started before the final audit username display change; final endpoint behavior passed HTTP tests.",
+    "The isolated port 8882 preview was stopped after browser checks; preexisting previews were not touched.",
+    "Synthetic scripted research does not demonstrate real-model content quality or a production security audit."
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "schema_version": "synthetic-library-eval-v1",
+  "at": "2026-09-19T06:38:46.558143+00:00",
+  "fixture_sha256": "989307f86ac81ab788414693e5afb869cdc4f4615314f4390ce7c62b42d24572",
+  "documents": 8,
+  "questions": 20,
+  "answerable": 18,
+  "unanswerable": 2,
+  "metrics": {
+    "lexical": {
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "no_evidence_correct": 1.0
+    },
+    "exact_substring": {
+      "hit_at_1": 0.4444444444444444,
+      "hit_at_3": 0.4444444444444444,
+      "no_evidence_correct": 1.0
+    }
+  },
+  "rows": [
+    {
+      "query": "断点恢复",
+      "expected": "recovery",
+      "lexical": {
+        "predicted": [
+          "recovery"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "recovery"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.849
+    },
+    {
+      "query": "recovery checkpoint",
+      "expected": "recovery",
+      "lexical": {
+        "predicted": [
+          "recovery"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.139
+    },
+    {
+      "query": "保存状态 节点",
+      "expected": "recovery",
+      "lexical": {
+        "predicted": [
+          "recovery"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.102
+    },
+    {
+      "query": "人工审批",
+      "expected": "approval",
+      "lexical": {
+        "predicted": [
+          "approval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "approval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.761
+    },
+    {
+      "query": "hash approval",
+      "expected": "approval",
+      "lexical": {
+        "predicted": [
+          "approval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.23
+    },
+    {
+      "query": "修改正文 批准记录",
+      "expected": "approval",
+      "lexical": {
+        "predicted": [
+          "approval",
+          "queue",
+          "version"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.184
+    },
+    {
+      "query": "混合检索",
+      "expected": "retrieval",
+      "lexical": {
+        "predicted": [
+          "retrieval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "retrieval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.243
+    },
+    {
+      "query": "reranking hybrid",
+      "expected": "retrieval",
+      "lexical": {
+        "predicted": [
+          "retrieval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.046
+    },
+    {
+      "query": "路径穿越",
+      "expected": "permission",
+      "lexical": {
+        "predicted": [
+          "permission"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "permission"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.025
+    },
+    {
+      "query": "traversal directory",
+      "expected": "permission",
+      "lexical": {
+        "predicted": [
+          "permission"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 1.903
+    },
+    {
+      "query": "任务队列",
+      "expected": "queue",
+      "lexical": {
+        "predicted": [
+          "queue"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "queue"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.09
+    },
+    {
+      "query": "timeout worker",
+      "expected": "queue",
+      "lexical": {
+        "predicted": [
+          "queue"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.262
+    },
+    {
+      "query": "资料版本",
+      "expected": "version",
+      "lexical": {
+        "predicted": [
+          "version",
+          "approval"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "version"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.175
+    },
+    {
+      "query": "fingerprints citations",
+      "expected": "version",
+      "lexical": {
+        "predicted": [
+          "version"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 1.988
+    },
+    {
+      "query": "身份认证",
+      "expected": "identity",
+      "lexical": {
+        "predicted": [
+          "identity"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "identity"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 2.193
+    },
+    {
+      "query": "reviewer authorization",
+      "expected": "identity",
+      "lexical": {
+        "predicted": [
+          "identity"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.334
+    },
+    {
+      "query": "费用预算",
+      "expected": "cost",
+      "lexical": {
+        "predicted": [
+          "cost"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [
+          "cost"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "latency_ms": 1.99
+    },
+    {
+      "query": "ledger exhausted",
+      "expected": "cost",
+      "lexical": {
+        "predicted": [
+          "cost"
+        ],
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "empty_correct": null
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "empty_correct": null
+      },
+      "latency_ms": 2.069
+    },
+    {
+      "query": "火星气象预报",
+      "expected": null,
+      "lexical": {
+        "predicted": [],
+        "hit_at_1": null,
+        "hit_at_3": null,
+        "empty_correct": true
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": null,
+        "hit_at_3": null,
+        "empty_correct": true
+      },
+      "latency_ms": 2.17
+    },
+    {
+      "query": "photosynthesis chlorophyll",
+      "expected": null,
+      "lexical": {
+        "predicted": [],
+        "hit_at_1": null,
+        "hit_at_3": null,
+        "empty_correct": true
+      },
+      "exact_substring": {
+        "predicted": [],
+        "hit_at_1": null,
+        "hit_at_3": null,
+        "empty_correct": true
+      },
+      "latency_ms": 2.114
+    }
+  ],
+  "real_model_calls": 0,
+  "real_world_quality_accepted": false,
+  "provenance": "Original assistant-authored synthetic design notes. Not external product documentation, student-authored evidence, or independent content-quality gold.",
+  "limitation": "Same-author small synthetic fixture; lexical mechanism check only. No independent corpus or semantic paraphrase benchmark."
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "course-platform-failure-record-v1",
+  "date_local": "2026-09-22",
+  "failed_command": "P2 .venv python -B apps/course-platform/evaluate.py --output apps/course-platform/docs/results/graduation-g2b-tests.json",
+  "test": "test_library.LibraryHTTPTests.test_http_permissions_invalid_paths_and_original_task_limit",
+  "result": "51 passed, 1 error of 52; 93.151 seconds",
+  "error": "ConnectionAbortedError: [WinError 10053]",
+  "assessment": "Windows client sometimes lost the 400/403 response when HTTP rejected a POST with unread body; this is the most likely cause, not independently proven from packet traces.",
+  "change": "server.Handler.drain_rejected_body reads at most 262144 already-sent bytes with 0.25 second socket timeout before sending the rejection response; no rejected body is decoded or processed.",
+  "focused_repetition": "10/10 passed after change",
+  "final_full_suite": "See latest graduation-g2b-tests.json; this failure record is retained even after a passing rerun."
+}
