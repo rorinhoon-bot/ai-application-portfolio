@@ -79,3 +79,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 当前唯一目标：继续完成无需教师条款和外部授权的复现准备，浏览器接口恢复后补三角色 UI 与 ZIP 落盘验收。分支 `codex/course-platform-ui`，阶段开始 HEAD `aadfd4c60708a8a1ef73235dca6b0e27c9c192a5`；本阶段只新增课设应用依赖审计脚本、两项行为测试及文档/结果，不改 P1/P2/P3 业务代码或原工作树。
 
 只读核对 P1/P2/P3 运行锁和现有 `.venv` 元数据：153 条记录，P1 缺 9 个锁定包，已安装包版本差异 0，许可证元数据需复核 19 条（其中 1 条相互冲突）。三个环境 `python -m pip check` 均通过，但不检测锁文件缺包。完整应用命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B apps/course-platform/evaluate.py --output apps/course-platform/.runtime/dependency-readiness-tests.json`；**61/61 通过、0跳过、203.933秒**。见`docs/DEPENDENCY-READINESS.md`和`docs/results/dependency-readiness-tests.json`。本轮安装/下载/真实模型调用均0；未取得新机器、正式资料、独立内容评分或教师当届条款。浏览器工具仍报`nodeRepl.fetch request failed`，故下载目录复验继续未完成。
+
+## HTTP ZIP 本地持久化复核（2026-09-22）
+
+当前唯一目标：等待浏览器接口恢复后做干净检出三角色 UI 与实际下载目录验收；服务端/HTTP 层的可独立验证部分已完成。分支 `codex/course-platform-ui`，阶段开始 HEAD `be42ee59d2c28fb2ea0edaef4a3ca4efb73d4c0b`。扩展现有身份模式 E2E：两个有权身份收到相同 ZIP，HTTP 响应写入本机临时文件后可原样读回，独立 CLI 复核一致，下载审计关联两人。专项命令 `projects/02-agent-research-workflow/.venv/Scripts/python.exe -B -m unittest discover -s apps/course-platform/tests -p test_auth.py -k test_reviewer_finishes_real_offline_delivery -v`；最终 **1/1通过、41.360秒**。上阶段完整61/61回归保留为历史证据，本轮未再跑完整套件；仅改测试/文档，未改业务代码。浏览器工具仍报`nodeRepl.fetch request failed`，故浏览器下载目录仍未验收。详见`docs/graduation/HTTP-DOWNLOAD-PERSISTENCE.md`。

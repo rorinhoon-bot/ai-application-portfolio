@@ -98,6 +98,7 @@ Windows，在仓库根目录双击 `start-course-platform.cmd`，或执行：
 - [新机器复现核对清单](docs/INSTALLATION-CHECKLIST.md)、[五分钟答辩演示草案](docs/graduation/DEFENSE-DEMO.md)
 - [依赖只读盘点与复现缺口](docs/DEPENDENCY-READINESS.md)、[153条逐包元数据](docs/results/dependency-audit.json)
 - [61项离线回归](docs/results/dependency-readiness-tests.json)
+- [身份模式 HTTP ZIP 落盘与独立复核](docs/graduation/HTTP-DOWNLOAD-PERSISTENCE.md)；浏览器下载目录仍待验证
 
 ```powershell
 .\projects\02-agent-research-workflow\.venv\Scripts\python.exe -B -m unittest discover -s apps\course-platform\tests -v

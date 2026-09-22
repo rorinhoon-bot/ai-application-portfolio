@@ -4,6 +4,7 @@ import http.client
 import json
 from pathlib import Path
 import secrets
+import subprocess
 import sys
 import tempfile
 import threading
@@ -225,8 +226,26 @@ class IdentityHTTPTests(unittest.TestCase):
         self.assertEqual(approve(task)[0],202)
         task=settled(self.service,task['id'],180)
         self.assertEqual(task['status'],'COMPLETED',task['last_error'])
-        self.assertEqual(self.call('/api/tasks/'+task['id']+'/download',who='reviewa')[0],200)
-        self.assertEqual(self.call('/api/tasks/'+task['id']+'/download',who='alice')[0],200)
+        status, headers, archive = self.call('/api/tasks/'+task['id']+'/download',who='reviewa')
+        self.assertEqual(status, 200)
+        self.assertEqual(headers['Content-Type'], 'application/zip')
+        self.assertIn('attachment', headers['Content-Disposition'])
+        owner_status, _, owner_archive = self.call('/api/tasks/'+task['id']+'/download',who='alice')
+        self.assertEqual(owner_status, 200)
+        self.assertEqual(hashlib.sha256(archive).digest(), hashlib.sha256(owner_archive).digest())
+        bundle = Path(self.temp.name) / 'http-delivery.zip'
+        bundle.write_bytes(archive)
+        self.assertEqual(bundle.read_bytes(), archive)
+        verifier = Path(__file__).resolve().parents[1] / 'frozen_bundle_cli.py'
+        verified = subprocess.run([sys.executable, '-B', str(verifier), str(bundle)],
+                                  capture_output=True, text=True, timeout=20)
+        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
+        self.assertTrue(json.loads(verified.stdout)['bundle_consistent'])
+        with self.service.store.transaction() as connection:
+            downloaded_by = {row['user_id'] for row in connection.execute(
+                "SELECT user_id FROM access_audit WHERE action='download' AND resource=?",
+                ('/api/tasks/' + task['id'] + '/download',))}
+        self.assertEqual(downloaded_by, {self.users['alice']['user_id'], self.users['reviewa']['user_id']})
         actors = [e['details'].get('actor') for e in task['events'] if e['kind']=='operation_requested']
         self.assertIn(self.users['alice']['user_id'],actors)
         self.assertIn(self.users['reviewa']['user_id'],actors)

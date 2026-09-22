@@ -68,3 +68,7 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 ## 最新交接：依赖与复现准备（2026-09-22）
 
 先读 [DEPENDENCY-READINESS.md](DEPENDENCY-READINESS.md) 和 [逐包清单](results/dependency-audit.json)。本机三套运行锁共153条项目依赖记录；P1当前虚拟环境缺9包，19条许可证元数据需复核。`pip check`三环境均通过但不检测锁文件缺包。完整应用离线回归61/61、0跳过，见 [结果](results/dependency-readiness-tests.json)。没有安装或下载软件；不把此盘点写成全新机器复现或许可证批准。浏览器接口仍失败，隔离检出 UI/OS ZIP 落盘待补。正式条款、资料授权、真实内容独立评分和学生本人演示仍待后续。
+
+## 最新交接：HTTP ZIP 存盘与浏览器边界（2026-09-22）
+
+见 [HTTP-DOWNLOAD-PERSISTENCE.md](graduation/HTTP-DOWNLOAD-PERSISTENCE.md)。身份模式 HTTP E2E 额外证实授权用户收到相同 ZIP，临时文件落盘、读回及独立 CLI 复核成功，审计保留两名下载者；专项 1/1 通过。本轮只改测试及文档，未重跑完整61项。浏览器控制仍故障，**不能**把此结果写成浏览器下载目录已验证。课设工作树开始 HEAD `be42ee5`、原开发工作树668条既有改动保持；无新依赖、收费调用或外部操作。
