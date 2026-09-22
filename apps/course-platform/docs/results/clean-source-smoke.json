@@ -1,0 +1,7 @@
+{
+  "home_status": 200,
+  "bootstrap_status": 200,
+  "session_status": 200,
+  "mode": "default-offline",
+  "real_model_calls": 0
+}

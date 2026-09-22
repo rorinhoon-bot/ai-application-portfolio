@@ -17,6 +17,8 @@ Windows，在仓库根目录双击 `start-course-platform.cmd`，或执行：
 
 本版新增依赖 **0**，前端不需 Node、构建步骤或 CDN。后端使用 Python 标准库；引擎复用三个项目各自 `.venv` 和既有依赖。环境探针只查询解释器与包版本，完整功能仍以端到端测试为准。新电脑若缺环境，按三个项目原 README 与锁文件准备；本应用不自动安装、下载资料或创建容器。本机开发工作树使用已有环境的目录联接，联接不进入 Git；尚未在全新机器重建验收。
 
+已从发布提交做[干净源码检出复现](docs/REPRODUCIBILITY.md)：55项离线回归和新状态HTTP启动通过，虚拟环境仍复用本机已有依赖。全新机器依赖安装与启动仍待验证。
+
 ## 身份隔离模式（G3）
 
 先选一个**全新的空状态目录**，在未运行该目录服务时依次创建管理员、研究者和审核者。命令会交互式读取并二次确认密码，不在参数、`.env` 或仓库文件保存密码：
@@ -90,6 +92,7 @@ Windows，在仓库根目录双击 `start-course-platform.cmd`，或执行：
 - [G2-B验收与浏览器证据](docs/graduation/G2B-ACCEPTANCE.md)、[52项完整应用回归](docs/results/graduation-g2b-tests.json)
 - [G3本机身份与权限验收](docs/graduation/G3-ACCEPTANCE.md)、[55项完整应用回归](docs/results/graduation-g3-tests.json)、[三角色浏览器复核](docs/results/graduation-g3-browser.json)
 - [G4正式要求与独立内容评价准备](docs/graduation/G4-REAL-DATA-AND-COURSE-PLAN.md)
+- [干净源码检出复现记录](docs/REPRODUCIBILITY.md)、[55项复跑结果](docs/results/clean-source-tests.json)
 
 ```powershell
 .\projects\02-agent-research-workflow\.venv\Scripts\python.exe -B -m unittest discover -s apps\course-platform\tests -v
