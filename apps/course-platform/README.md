@@ -93,6 +93,7 @@ Windows，在仓库根目录双击 `start-course-platform.cmd`，或执行：
 - [G3本机身份与权限验收](docs/graduation/G3-ACCEPTANCE.md)、[55项完整应用回归](docs/results/graduation-g3-tests.json)、[三角色浏览器复核](docs/results/graduation-g3-browser.json)
 - [G4正式要求与独立内容评价准备](docs/graduation/G4-REAL-DATA-AND-COURSE-PLAN.md)
 - [干净源码检出复现记录](docs/REPRODUCIBILITY.md)、[55项复跑结果](docs/results/clean-source-tests.json)
+- [新机器复现核对清单](docs/INSTALLATION-CHECKLIST.md)、[五分钟答辩演示草案](docs/graduation/DEFENSE-DEMO.md)
 
 ```powershell
 .\projects\02-agent-research-workflow\.venv\Scripts\python.exe -B -m unittest discover -s apps\course-platform\tests -v

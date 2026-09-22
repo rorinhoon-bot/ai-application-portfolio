@@ -1,5 +1,7 @@
 # 演示与开发交接
 
+以下早期阶段记录保留原状；其中“未提交”“单用户”是当时状态。最新进展见文末更新与[复现记录](REPRODUCIBILITY.md)。
+
 ## 当前交付
 
 研据工作台为完整本机离线操作闭环，源代码在apps/course-platform。工作分支codex/course-platform-ui，基线HEAD9e2a77219ac7fbb83d28f6ca2f3e3756a4189201，未提交/推送。本分支位于同仓库的独立course-platform工作树；原开发工作树仍保留668条已有改动，不能全量git add或把它们当成UI改动。
@@ -50,3 +52,9 @@ P2真实内容质量未通过，预算417/500分、调用容量109/109已封顶�
 ## G2-B交接（2026-09-22）
 
 先读`graduation/G2B-WORKFLOW.md`和`graduation/G2B-ACCEPTANCE.md`。最新新预览为`http://127.0.0.1:8881/#projects`，独立状态`.runtime/graduation-g2b-state`；旧8878/8879/8880保持独立。浏览器演示项目和任务标明助手原创合成，已走冻结候选、范围批准、P1分词/P2图/P3 MCP、人工修订、重新批准及交付提示。全套应用52项离线测试结果见`docs/results/graduation-g2b-tests.json`；后续G3/G4、真实内容评分和学校当届要求未完成。新包必须用`frozen_bundle_cli.py`，旧包仍用原integrations验证器。分支和HEAD仍为`codex/course-platform-ui`/`9e2a77219ac7fbb83d28f6ca2f3e3756a4189201`，无暂存、commit或push。
+
+## 最新交接：G3发布与隔离复现（2026-09-22）
+
+本机身份模式与三角色权限已实现。系统提交`b7476219cf9bd427dc3537154485223a3ef4a911`，隔离复现证据提交`6ebdab4`；工作分支`codex/course-platform-ui`，未push或合并main。原开发工作树668条既有状态路径未改。旧固定示例默认模式与新身份状态目录互斥。三角色浏览器历史证据在`graduation/G3-ACCEPTANCE.md`；干净源码检出重新运行三角色HTTP行为测试55/55，未在该检出再次做浏览器三角色全流程。
+
+新机器操作顺序见[安装核对清单](INSTALLATION-CHECKLIST.md)，学习者亲自演示与追问见[五分钟答辩草案](graduation/DEFENSE-DEMO.md)。正式条款与获授权资料到位后才做G4独立内容评分。不能把脚本报告、哈希一致性或助手演示写作生产安全、真实内容质量或学生独立完成。

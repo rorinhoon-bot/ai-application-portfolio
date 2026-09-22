@@ -63,3 +63,7 @@ Git仍为codex/course-platform-ui，HEAD为9e2a77219ac7fbb83d28f6ca2f3e3756a4189
 ## 发布提交与隔离复现（2026-09-22）
 
 本应用94个有用文件提交为`b7476219cf9bd427dc3537154485223a3ef4a911`；截图扩展名按真实JPEG内容改为`.jpg`，原字节未变。暂存密钥/隐私模式扫描无命中，忽略状态与虚拟环境未入库；未push或改main。该提交的detached干净源码工作树`git status`为0，复用既有虚拟环境但使用当前检出P1/P2/P3源码，完整应用55/55、0跳过、170.923秒；合成检索8篇20题；新应用状态HTTP首页、bootstrap、session均200且服务已停止。证据见docs/REPRODUCIBILITY.md和docs/results/clean-source-*.json。全新机器重新安装依赖、三角色浏览器在此检出复演、系统下载落盘、正式内容质量、教师要求及学生独立讲解未完成；P2真实预算仍冻结。原工作树668条既有状态路径保持不变。
+
+## 新机器与答辩准备（2026-09-22）
+
+新增`docs/INSTALLATION-CHECKLIST.md`和`docs/graduation/DEFENSE-DEMO.md`；更新学习讲义中的30秒/2分钟介绍及公网安全边界。均为助手准备的操作稿，不是全新机器验收或学生独立答辩证据。后续先取得正式条款、明确资料授权及依赖安装清单，再执行G4评分和新机器实测。
